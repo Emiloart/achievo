@@ -1,0 +1,38 @@
+# Node modules
+/node_modules
+
+# Compilation output
+/dist
+/build
+
+# pnpm deploy output
+/bundle
+
+# Hardhat Build Artifacts
+/artifacts
+
+# Hardhat compilation (v2) support directory
+/cache
+
+# Typechain output
+/types
+
+# Hardhat coverage reports
+/coverage
+
+# Next.js
+/.next
+
+# Env files
+.env*
+
+# Playwright
+/playwright-report
+/test-results
+
+# E2E runtime artifacts
+/backend/test/e2e/.runtime.json
+/backend/test/e2e/logs
+/contracts/deployments/local
+/backend/storage/e2e-exports
+/backend/storage/e2e-proofs
