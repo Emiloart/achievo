@@ -1,0 +1,63 @@
+{
+  "name": "achievo",
+  "version": "1.0.0",
+  "description": "Achievo – proof-of-achievement protocol (MVP) using Hardhat 3 + Ethers v6",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "node": "hardhat node",
+    "compile": "hardhat compile",
+    "clean": "hardhat clean",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:base-sepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
+    "deploy:v11:base-sepolia": "hardhat run scripts/deployV11.ts --network baseSepolia",
+    "deploy:governance:base-sepolia": "hardhat run scripts/deploy-governance.ts --network baseSepolia",
+    "deploy:org-registry:base-sepolia": "hardhat run scripts/deploy-org-registry.ts --network baseSepolia",
+    "deploy:username-registry:base-sepolia": "hardhat run scripts/deployUsernameRegistryV1.ts --network baseSepolia",
+    "export:abi": "node scripts/export-abi.mjs",
+    "mint:base-sepolia": "hardhat run scripts/mintExample.ts --network baseSepolia",
+    "web:dev": "npm --prefix web run dev",
+    "web:build": "npm --prefix web run build",
+    "web:start": "npm --prefix web run start",
+    "console:local": "hardhat console --network localhost",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "npm run format:check && npm --prefix web run lint",
+    "typecheck": "npm --prefix backend run typecheck && npm --prefix web run typecheck",
+    "test:contracts": "hardhat test",
+    "test:unit": "npm --prefix backend run test:unit && npm run test:contracts",
+    "test:integration": "npm --prefix backend run test:integration",
+    "test:e2e": "npm --prefix backend run test:e2e",
+    "test:e2e:web": "npm --prefix web run test:e2e",
+    "smoke:test": "node scripts/smoke-test.mjs",
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "build": "npm run compile && npm --prefix backend run build && npm --prefix web run build",
+    "ci": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build",
+    "prepare": "husky",
+    "secret:scan": "node scripts/secret-scan.mjs"
+  },
+  "keywords": [],
+  "author": "Emiloart",
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "19.5.0",
+    "@commitlint/config-conventional": "19.5.0",
+    "@nomicfoundation/hardhat-ethers": "4.0.2",
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "3.0.1",
+    "@openzeppelin/contracts": "^5.0.2",
+    "@types/node": "^22.7.4",
+    "ethers": "6.15.0",
+    "hardhat": "3.0.11",
+    "husky": "9.1.6",
+    "lint-staged": "15.2.10",
+    "prettier": "3.3.3",
+    "typescript": "^5.6.3"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,json,md,mdx,yml,yaml,css,scss}": "prettier --write",
+    "web/**/*.{js,jsx,ts,tsx}": "node scripts/run-eslint.mjs"
+  },
+  "dependencies": {
+    "viem": "^2.41.2"
+  }
+}

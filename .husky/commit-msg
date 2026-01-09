@@ -1,0 +1,10 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npx --no-install commitlint --edit "$1"
+if [ $? -ne 0 ]; then
+  echo "Commit message must follow Conventional Commits."
+  echo "Format: <type>(optional scope): <description>"
+  echo "Types: feat|fix|refactor|chore|docs|test|build|ci|perf|revert"
+  exit 1
+fi
