@@ -1,0 +1,1560 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  userId         String   @unique // ACHUSR-XXXXXXXXXX
+  primaryWallet  String   @unique
+  recoveryWallet String?  @unique
+  displayName    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  wallets Wallet[]
+  proofs  ProofArtifact[]
+  exports ProfileExport[]
+}
+
+model UserPrivacySettings {
+  id                           String          @id @default(uuid())
+  userId                       String          @unique
+  defaultProfileVisibility     VisibilityLevel @default(PUBLIC)
+  showConsistency              Boolean         @default(true)
+  defaultProofVisibility       VisibilityLevel @default(PUBLIC)
+  defaultValidationVisibility  VisibilityLevel @default(PUBLIC)
+  defaultAchievementVisibility VisibilityLevel @default(PUBLIC)
+  createdAt                    DateTime        @default(now())
+  updatedAt                    DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+model ContentVisibilityOverride {
+  id               String          @id @default(uuid())
+  ownerUserId      String
+  contentType      String
+  contentId        String
+  visibility       VisibilityLevel
+  redaction        RedactionMode   @default(NONE)
+  unlistedPublicId String?         @unique
+  reason           String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@unique([ownerUserId, contentType, contentId])
+  @@index([ownerUserId])
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  address   String   @unique
+  role      WalletRole
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+model WalletNonce {
+  id        String   @id @default(uuid())
+  address   String   @unique
+  nonce     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuthSession {
+  id                    String   @id @default(cuid())
+  userId                String
+  walletAddress         String
+  refreshTokenHash      String   @unique
+  refreshTokenFamilyId  String
+  createdAt             DateTime @default(now())
+  lastUsedAt            DateTime @default(now())
+  revokedAt             DateTime?
+  ip                    String?
+  userAgent             String?
+
+  @@index([userId])
+  @@index([walletAddress])
+  @@index([refreshTokenFamilyId])
+}
+
+model AuthNonce {
+  id          String   @id @default(cuid())
+  walletAddress String
+  nonce       String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@unique([walletAddress])
+  @@index([expiresAt])
+}
+
+model Username {
+  id                 String          @id @default(uuid())
+  achusrId           String          // e.g. ACHUSR-0000000123
+  walletAddress      String
+  username           String
+  usernameNormalized String          @unique
+  status             UsernameStatus  @default(ACTIVE)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([achusrId])
+  @@index([walletAddress])
+}
+
+model UsernameOrder {
+  id                 String        @id @default(uuid())
+  usernameNormalized String
+  normalized         String?
+  handleHash         String?
+  type               UsernameOrderType
+  status             UsernameOrderStatus    @default(OPEN)
+  makerUserId        String?
+  makerAchusrId      String
+  makerAddress       String?
+  takerAddress       String?
+  price              BigInt
+  priceWei           String?
+  currency           String         @default("NATIVE")
+  nonce              String?
+  salt               String?
+  orderHash          String?        @unique
+  typedData          Json?
+  signature          String?
+  signerRecovered    String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  expiresAt          DateTime?
+
+  @@index([usernameNormalized])
+  @@index([handleHash, status, type])
+  @@index([makerAchusrId])
+  @@index([makerAddress, status])
+  @@unique([makerAddress, nonce])
+}
+
+model UsernameTrade {
+  id                 String   @id @default(uuid())
+  usernameNormalized String
+  normalized         String?
+  handleHash         String?
+  askOrderId         String?
+  bidOrderId         String?
+  offerOrderId       String?
+  sellerAchusrId     String
+  buyerAchusrId      String
+  sellerAddress      String?
+  buyerAddress       String?
+  price              BigInt
+  priceWei           String?
+  currency           String
+  status             SettlementStatus @default(PENDING)
+  txHash             String?
+  chainId            Int?
+  blockNumber        Int?
+  confirmedAt        DateTime?
+  completedAt        DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([usernameNormalized])
+  @@index([handleHash, createdAt])
+  @@index([sellerAchusrId])
+  @@index([buyerAchusrId])
+  @@index([status, createdAt])
+  @@unique([chainId, txHash])
+}
+
+model Party {
+  id            String          @id @default(uuid())
+  slug          String          @unique
+  name          String
+  description   String?
+  ownerAchusrId String
+  visibility    PartyVisibility @default(PUBLIC)
+  avatarUrl     String?
+  bannerUrl     String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  members   PartyMember[]
+  invites   PartyInvite[]
+  feedItems PartyFeedItem[]
+  projects  Project[]
+
+  @@index([ownerAchusrId])
+}
+
+model PartyMember {
+  id        String            @id @default(uuid())
+  partyId   String
+  achusrId  String
+  role      PartyMemberRole
+  status    PartyMemberStatus @default(ACTIVE)
+  joinedAt  DateTime          @default(now())
+  leftAt    DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  party Party @relation(fields: [partyId], references: [id])
+
+  @@unique([partyId, achusrId])
+  @@index([partyId])
+  @@index([achusrId])
+}
+
+model PartyInvite {
+  id             String            @id @default(uuid())
+  partyId        String
+  token          String            @unique
+  creatorAchusrId String
+  status         PartyInviteStatus @default(ACTIVE)
+  maxUses        Int?
+  useCount       Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  expiresAt      DateTime?
+
+  party Party @relation(fields: [partyId], references: [id])
+
+  @@index([partyId])
+  @@index([creatorAchusrId])
+}
+
+model Project {
+  id              String            @id @default(uuid())
+  ownerAchusrId   String
+  slug            String            @unique
+  name            String
+  description     String?
+  status          ProjectStatus     @default(ACTIVE)
+  visibility      ProjectVisibility @default(PRIVATE)
+  clientName      String?
+  clientReference String?
+  dueDate         DateTime?
+  linkedPartyId   String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  linkedParty Party? @relation(fields: [linkedPartyId], references: [id])
+  members     ProjectMember[]
+  goals       ProjectGoal[]
+  shareLinks  ProjectShareLink[]
+  events      ProjectEvent[]
+  billing     ProjectBillingSettings?
+  timeEntries TimeEntry[]
+  invoices    Invoice[]
+
+  @@index([ownerAchusrId])
+  @@index([linkedPartyId])
+}
+
+model ProjectMember {
+  id        String              @id @default(uuid())
+  projectId String
+  achusrId  String
+  role      ProjectMemberRole
+  status    ProjectMemberStatus @default(ACTIVE)
+  joinedAt  DateTime            @default(now())
+  leftAt    DateTime?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, achusrId])
+  @@index([projectId])
+  @@index([achusrId])
+}
+
+model ProjectGoal {
+  id        String   @id @default(uuid())
+  projectId String
+  goalId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, goalId])
+  @@index([projectId])
+  @@index([goalId])
+}
+
+model ProjectShareLink {
+  id          String              @id @default(uuid())
+  projectId   String
+  slug        String              @unique
+  title       String
+  description String?
+  visibility  ShareLinkVisibility @default(UNLISTED)
+  sections    Json
+  theme       ShareLinkTheme      @default(AUTO)
+  isPrimary   Boolean             @default(false)
+  expiresAt   DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@index([projectId])
+}
+
+model ProjectEvent {
+  id        String           @id @default(uuid())
+  projectId String
+  achusrId  String?
+  type      ProjectEventType
+  payload   Json
+  createdAt DateTime         @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@index([projectId, createdAt])
+  @@index([achusrId])
+}
+
+model ProjectBillingSettings {
+  id               String        @id @default(uuid())
+  projectId        String        @unique
+  billingModel     BillingModel  @default(HOURLY)
+  currency         String
+  hourlyRateAmount Decimal?
+  fixedFeeAmount   Decimal?
+  taxPercent       Decimal?
+  defaultDueDays   Int?
+  notes            String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model TimeEntry {
+  id              String   @id @default(uuid())
+  projectId       String
+  achusrId        String
+  goalId          String?
+  startedAt       DateTime
+  endedAt         DateTime?
+  durationMinutes Int?
+  note            String?
+  billable        Boolean  @default(true)
+  invoiceId       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@index([projectId])
+  @@index([achusrId])
+  @@index([goalId])
+  @@index([invoiceId])
+}
+
+model Invoice {
+  id               String           @id @default(uuid())
+  projectId        String
+  ownerAchusrId    String
+  clientName       String
+  clientEmail      String?
+  clientAddress    String?
+  currency         String
+  issueDate        DateTime
+  dueDate          DateTime?
+  status           InvoiceStatus    @default(DRAFT)
+  subtotalAmount   Decimal          @default(0)
+  taxAmount        Decimal          @default(0)
+  totalAmount      Decimal          @default(0)
+  notes            String?
+  publicSlug       String?          @unique
+  publicVisibility InvoiceVisibility @default(UNLISTED)
+  publicTheme      ShareLinkTheme   @default(AUTO)
+  publicExpiresAt  DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  lineItems InvoiceLineItem[]
+  timeEntries TimeEntry[]
+
+  @@index([projectId])
+  @@index([ownerAchusrId])
+  @@index([publicSlug])
+}
+
+model InvoiceLineItem {
+  id          String          @id @default(uuid())
+  invoiceId   String
+  description String
+  quantity    Decimal         @default(1)
+  unitAmount  Decimal         @default(0)
+  totalAmount Decimal         @default(0)
+  linkedType  InvoiceLineType?
+  linkedRef   String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model ProofArtifact {
+  id              String               @id @default(uuid())
+  userId          String
+  achievementId   String?
+  badgeTokenId    String?
+  kind            ProofKind
+  title           String?
+  description     String?
+  sourceUrl       String?
+  mimeType        String?
+  sizeBytes       Int?
+  storageProvider ProofStorageProvider @default(NONE)
+  storageKey      String?
+  sha256          String
+  contentHash     String
+  chainId         Int?
+  anchorTxHash    String?
+  anchorContract  String?
+  anchoredAt      DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@index([userId, createdAt])
+  @@index([sha256])
+  @@index([badgeTokenId])
+  @@index([achievementId])
+}
+
+model ProfileExport {
+  id              String               @id @default(uuid())
+  userId          String
+  format          ExportFormat
+  version         String               @default("1")
+  snapshot        Json
+  snapshotHash    String
+  signatureType   String
+  signerAddress   String
+  signature       String
+  publicId        String               @unique
+  storageProvider ProofStorageProvider @default(NONE)
+  storageKey      String?
+  mimeType        String?
+  sizeBytes       Int?
+  chainId         Int?
+  anchorTxHash    String?
+  anchorContract  String?
+  anchoredAt      DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@index([userId, createdAt])
+  @@index([snapshotHash])
+}
+
+model ValidatorProfile {
+  id              String        @id @default(uuid())
+  type            ValidatorType
+  displayName     String
+  walletAddress   String        @unique
+  userId          String?
+  bio             String?
+  website         String?
+  verifiedByAdmin Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model ValidationRequest {
+  id                       String            @id @default(uuid())
+  claimantUserId           String
+  achievementId            String?
+  badgeTokenId             String?
+  title                    String
+  summary                  String?
+  evidenceLinks            Json?
+  requestedValidatorWallet String
+  status                   ValidationStatus  @default(PENDING)
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+  attestations             ValidationAttestation[]
+
+  @@index([claimantUserId, createdAt])
+  @@index([requestedValidatorWallet, status])
+  @@index([badgeTokenId])
+  @@index([achievementId])
+}
+
+model ValidationAttestation {
+  id                 String           @id @default(uuid())
+  requestId          String
+  validatorWallet    String
+  validatorProfileId String?
+  issuerOrgId        String?
+  status             ValidationStatus
+  message            String?
+  score              Int?
+  issuedAt           DateTime
+  domainName         String           @default("Achievo")
+  domainVersion      String           @default("1")
+  chainId            Int
+  verifyingContract  String?
+  nonce              String
+  typedData          Json
+  signature          String
+  signerRecovered    String
+  attestationHash    String?
+  hashAlgo           String           @default("EIP712_KECCAK256")
+  anchorTxHash       String?
+  anchorContract     String?
+  anchoredAt         DateTime?
+  version            Int              @default(1)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  request ValidationRequest @relation(fields: [requestId], references: [id])
+
+  @@unique([requestId, version])
+  @@index([validatorWallet])
+  @@index([issuerOrgId])
+  @@index([attestationHash])
+}
+
+model UserFollow {
+  id               String       @id @default(uuid())
+  followerAchusrId String
+  followedAchusrId String
+  status           FollowStatus @default(ACTIVE)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([followerAchusrId, followedAchusrId])
+  @@index([followerAchusrId])
+  @@index([followedAchusrId])
+}
+
+model PartyFeedItem {
+  id        String            @id @default(uuid())
+  partyId   String
+  achusrId  String
+  type      PartyFeedItemType
+  payload   Json
+  createdAt DateTime          @default(now())
+
+  party Party @relation(fields: [partyId], references: [id])
+
+  @@index([partyId, createdAt])
+  @@index([achusrId])
+}
+
+model UserActivity {
+  id        String            @id @default(uuid())
+  achusrId  String
+  type      PartyFeedItemType
+  payload   Json
+  createdAt DateTime          @default(now())
+
+  @@index([achusrId])
+}
+
+model UserActivityEvent {
+  id         String            @id @default(uuid())
+  userId     String
+  type       ActivityEventType
+  refId      String?
+  weight     Int               @default(1)
+  occurredAt DateTime
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([userId, occurredAt])
+  @@index([userId, type, occurredAt])
+  @@index([refId])
+}
+
+model UserConsistencyScore {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  scoreVersion     String   @default("1")
+  streakDays       Int      @default(0)
+  bestStreakDays   Int      @default(0)
+  streakScore      Int      @default(0)
+  reliabilityScore Int      @default(0)
+  anomalyScore     Int      @default(0)
+  credibilityScore Int      @default(0)
+  lastActiveDay    DateTime?
+  computedAt       DateTime
+  explanations     Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model UserRiskProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  riskVersion     String   @default("1")
+  riskScore       Int      @default(0)
+  riskLevel       String
+  signals         Json
+  lastEvaluatedAt DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([riskScore])
+}
+
+model RiskSignalEvent {
+  id        String         @id @default(uuid())
+  userId    String
+  type      RiskSignalType
+  severity  Int
+  evidence  Json
+  createdAt DateTime       @default(now())
+
+  @@index([userId, type, createdAt])
+  @@index([type])
+}
+
+model QuestTemplate {
+  id              String          @id @default(uuid())
+  slug            String          @unique
+  title           String
+  description     String
+  type            QuestType
+  triggerEvent    QuestEventType
+  targetCount     Int
+  xpReward        Int
+  isUniquePerUser Boolean         @default(false)
+  active          Boolean         @default(true)
+  sortOrder       Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  userQuests UserQuest[]
+}
+
+model UserQuest {
+  id              String         @id @default(uuid())
+  achusrId        String
+  questTemplateId String
+  questTemplate   QuestTemplate  @relation(fields: [questTemplateId], references: [id])
+  periodKey       String?
+  currentCount    Int            @default(0)
+  targetCount     Int
+  status          UserQuestStatus @default(ACTIVE)
+  startedAt       DateTime       @default(now())
+  completedAt     DateTime?
+  claimedAt       DateTime?
+  lastProgressAt  DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([achusrId])
+  @@index([questTemplateId])
+  @@index([periodKey])
+  @@unique([achusrId, questTemplateId, periodKey])
+}
+
+model UserStreak {
+  id             String   @id @default(uuid())
+  achusrId       String   @unique
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastActiveDate DateTime?
+  lastBreakDate  DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model StreakMilestone {
+  id         String   @id @default(uuid())
+  achusrId   String
+  threshold  Int
+  xpReward   Int
+  awardedAt  DateTime @default(now())
+
+  @@unique([achusrId, threshold])
+  @@index([achusrId])
+}
+
+model QuestEventLog {
+  id        String          @id @default(uuid())
+  achusrId  String
+  eventType QuestEventType
+  refType   String
+  refId     String
+  occurredAt DateTime       @default(now())
+
+  @@unique([achusrId, eventType, refType, refId])
+  @@index([achusrId])
+}
+
+model ProfessionalProfile {
+  id            String       @id @default(uuid())
+  achusrId      String       @unique
+  headline      String?
+  currentRole   String?
+  currentOrg    String?
+  location      String?
+  timezone      String?
+  bioShort      String?
+  skills        String[]      @default([])
+  industries    String[]      @default([])
+  availability  Availability @default(UNSPECIFIED)
+  hourlyRateMin Decimal?
+  hourlyRateMax Decimal?
+  currency      String?
+  websiteUrl    String?
+  githubUrl     String?
+  linkedinUrl   String?
+  xUrl          String?
+  portfolioUrl  String?
+  isPublic      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([achusrId])
+}
+
+model ProfileShareLink {
+  id          String             @id @default(uuid())
+  achusrId    String
+  slug        String             @unique
+  title       String
+  description String?
+  isPrimary   Boolean            @default(false)
+  visibility  ShareLinkVisibility @default(UNLISTED)
+  sections    Json
+  theme       ShareLinkTheme     @default(AUTO)
+  expiresAt   DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([achusrId])
+}
+
+model SkillTag {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  displayName   String
+  createdByUserId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userSkills UserSkill[]
+
+  @@index([displayName])
+}
+
+model UserSkill {
+  id         String   @id @default(uuid())
+  userId     String
+  skillTagId String
+  proficiency Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  skillTag SkillTag @relation(fields: [skillTagId], references: [id])
+
+  @@unique([userId, skillTagId])
+  @@index([userId])
+  @@index([skillTagId])
+}
+
+model Endorsement {
+  id                      String               @id @default(uuid())
+  endorserUserId          String
+  targetUserId            String
+  targetType              EndorsementTargetType
+  targetId                String?
+  message                 String?
+  status                  EndorsementStatus    @default(ACTIVE)
+  endorserCredibilityScore Int
+  endorserRiskScore       Int
+  computedWeight          Int
+  weightVersion           String               @default("1")
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+  revokedAt               DateTime?
+
+  @@unique([endorserUserId, targetUserId, targetType, targetId])
+  @@index([targetUserId, targetType, targetId])
+  @@index([createdAt])
+}
+
+model ProfilePin {
+  id        String         @id @default(uuid())
+  achusrId  String
+  type      ProfilePinType
+  ref       String
+  position  Int
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([achusrId, type, ref])
+  @@index([achusrId])
+}
+
+model Organization {
+    id              String         @id @default(uuid())
+    handle          String         @unique
+    displayName     String
+    description     String?
+  website         String?
+  logoUrl         String?
+  visibility      OrgVisibility  @default(PUBLIC)
+  primaryWallet   String?
+  verifiedDomain  String?
+    createdByUserId String
+    chainId         Int?
+    creationTxHash  String?
+    handleHash      String?
+    onchainCreator  String?
+    onchainCreatedAt DateTime?
+    onchainChainId  Int?
+    onchainCreationTxHash String?
+    onchainHandleHash String?
+    onchainStatus   OrgOnchainStatus?
+    onchainBlockNumber Int?
+    onchainBlockHash String?
+    onchainConfirmedAt DateTime?
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
+
+  members     OrgMember[]
+  invites     OrgInvite[]
+  programs    OrgProgram[]
+  submissions MilestoneSubmission[]
+  auditLogs   OrgAuditLog[]
+
+    @@index([createdByUserId, createdAt])
+    @@unique([handleHash])
+    @@index([creationTxHash])
+    @@unique([onchainCreationTxHash])
+  }
+
+model OrgMember {
+  id             String   @id @default(uuid())
+  orgId          String
+  userId         String
+  role           OrgRole  @default(MEMBER)
+  joinedAt       DateTime @default(now())
+  invitedByUserId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id])
+
+  @@unique([orgId, userId])
+  @@index([orgId])
+  @@index([orgId, role])
+}
+
+model OrgInvite {
+  id              String   @id @default(uuid())
+  orgId           String
+  email           String?
+  targetUserId    String?
+  role            OrgRole  @default(MEMBER)
+  token           String   @unique
+  expiresAt       DateTime
+  acceptedAt      DateTime?
+  createdByUserId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, createdAt])
+}
+
+model OrgProgram {
+  id              String        @id @default(uuid())
+  orgId           String
+  slug            String
+  title           String
+  summary         String?
+  status          ProgramStatus @default(DRAFT)
+  startsAt        DateTime?
+  endsAt          DateTime?
+  rules           Json
+  createdByUserId String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  milestones   ProgramMilestone[]
+  submissions  MilestoneSubmission[]
+
+  @@unique([orgId, slug])
+  @@index([orgId, status])
+}
+
+model ProgramMilestone {
+  id           String   @id @default(uuid())
+  programId    String
+  order        Int
+  title        String
+  description  String?
+  requirements Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  program     OrgProgram @relation(fields: [programId], references: [id])
+  submissions MilestoneSubmission[]
+
+  @@unique([programId, order])
+}
+
+model MilestoneSubmission {
+  id             String           @id @default(uuid())
+  programId      String
+  milestoneId    String
+  orgId          String
+  userId         String
+  status         SubmissionStatus @default(SUBMITTED)
+  note           String?
+  evidence       Json
+  reviewerUserId String?
+  reviewNote     String?
+  reviewedAt     DateTime?
+  submissionHash String?
+  chainId        Int?
+  anchorTxHash   String?
+  anchorContract String?
+  anchoredAt     DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  program     OrgProgram      @relation(fields: [programId], references: [id])
+  milestone   ProgramMilestone @relation(fields: [milestoneId], references: [id])
+  organization Organization    @relation(fields: [orgId], references: [id])
+
+  @@index([milestoneId, userId, createdAt])
+  @@index([orgId, status, createdAt])
+  @@index([programId, userId])
+}
+
+model AnchorJob {
+  id             String           @id @default(uuid())
+  kind           Int
+  hash           String
+  entityType     String
+  entityId       String
+  status         AnchorJobStatus  @default(PENDING)
+  attempts       Int              @default(0)
+  lastError      String?
+  nextRunAt      DateTime         @default(now())
+  anchorTxHash   String?
+  anchorContract String?
+  anchoredAt     DateTime?
+  chainId        Int?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([entityType, entityId, kind, hash])
+  @@index([status, nextRunAt])
+  @@index([kind, hash])
+  @@index([entityType, entityId])
+}
+
+model OrgAuditLog {
+  id         String   @id @default(uuid())
+  orgId      String
+  actorUserId String
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, createdAt])
+  @@index([orgId, action, createdAt])
+}
+
+model ChainCursor {
+  id                       String   @id @default(uuid())
+  chainId                  Int      @unique
+  latestProcessedBlock     Int
+  latestProcessedBlockHash String?
+  latestFinalizedBlock     Int
+  updatedAt                DateTime @updatedAt
+}
+
+model ChainLog {
+  id          String   @id @default(uuid())
+  chainId     Int
+  blockNumber Int
+  blockHash   String
+  txHash      String
+  logIndex    Int
+  address     String
+  topic0      String
+  topic1      String?
+  topic2      String?
+  topic3      String?
+  data        String
+  removed     Boolean  @default(false)
+  fetchedAt   DateTime @default(now())
+
+  @@unique([chainId, txHash, logIndex])
+  @@index([chainId, blockNumber])
+  @@index([chainId, address])
+}
+
+model DecodedEvent {
+    id          String   @id @default(uuid())
+    chainId     Int
+    contractAddress String
+    contractKey String
+    eventName   String
+    blockNumber Int
+    txHash      String
+    logIndex    Int
+    args        Json
+    eventId     String   @unique
+    removed     Boolean  @default(false)
+    createdAt   DateTime @default(now())
+
+    @@index([chainId, contractKey, eventName, blockNumber])
+  }
+
+model ChainActionReceipt {
+  id                    String           @id @default(cuid())
+  chainId               Int
+  type                  ChainActionType
+  txHash                String
+  status                ChainActionStatus
+  attempts              Int              @default(0)
+  fromAddress           String?
+  toAddress             String?
+  blockNumber           Int?
+  blockHash             String?
+    logIndex              Int?
+    observedAt            DateTime
+    finalizedAt           DateTime?
+    confirmationsRequired Int
+    errorCode             String?
+    errorMessage          String?
+  metadata              Json?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+    @@unique([chainId, type, txHash])
+  @@index([status, chainId])
+  @@index([chainId, blockNumber])
+}
+
+model AdminRequestNonce {
+  id        String   @id @default(cuid())
+  nonce     String   @unique
+  ts        Int
+  path      String
+  createdAt DateTime @default(now())
+}
+
+model AdminAuditLog {
+  id           String   @id @default(cuid())
+  action       String
+  method       String?
+  path         String?
+  adminKeyHash String?
+  requestId    String?
+  statusCode   Int?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  @@index([action, createdAt])
+  @@index([createdAt])
+}
+
+model OperationalAlert {
+  id        String                 @id @default(cuid())
+  severity  OperationalAlertSeverity
+  type      OperationalAlertType
+  message   String
+  details   Json?
+  createdAt DateTime               @default(now())
+
+  @@index([type, createdAt])
+  @@index([severity, createdAt])
+}
+
+model ProjectionRebuildRun {
+  id            String   @id @default(cuid())
+  chainId       Int
+  fromBlock     Int
+  toBlock       Int
+  projectorKeys Json?
+  status        ProjectionRebuildStatus
+  startedAt     DateTime @default(now())
+  finishedAt    DateTime?
+  stats         Json?
+}
+
+model ProjectionCursor {
+  id                 String   @id @default(uuid())
+  chainId            Int
+  projectorKey       String
+  lastProcessedBlock Int
+  updatedAt          DateTime @updatedAt
+
+  @@unique([chainId, projectorKey])
+}
+
+model LegacyBadgeOwnership {
+  id                 String   @id @default(uuid())
+  chainId            Int
+  contractAddress    String
+  tokenId            String
+  ownerAddress       String
+  lastUpdatedEventId String
+  removed            Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+
+  @@unique([chainId, contractAddress, tokenId])
+  @@index([ownerAddress])
+}
+
+model LegacyOwnerBadgeToken {
+  id              String   @id @default(uuid())
+  chainId         Int
+  contractAddress String
+  ownerAddress    String
+  tokenId         String
+  updatedAt       DateTime @updatedAt
+
+  @@unique([chainId, contractAddress, ownerAddress, tokenId])
+  @@index([ownerAddress])
+  @@index([tokenId])
+}
+
+model LegacyGoal {
+  id                 String   @id @default(uuid())
+  chainId            Int
+  contractAddress    String
+  goalId             String
+  creatorAddress     String
+  goalCid            String?
+  evidenceCid        String?
+  level              Int?
+  approvals          Int?
+  verified           Boolean?
+  badgeMinted        Boolean?
+  peersRestricted    Boolean?
+  autoVerifier       String?
+  autoDataHash       String?
+  autoVerifiedAt     DateTime?
+  createdAtBlock     Int?
+  createdAtTxHash    String?
+  createdAt          DateTime?
+  lastUpdatedEventId String?
+  removed            Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+
+  @@unique([chainId, contractAddress, goalId])
+  @@index([creatorAddress])
+}
+
+model LegacyGoalEvidence {
+  id          String   @id @default(uuid())
+  chainId     Int
+  contractAddress String
+  goalId      String
+  evidenceCid String
+  submitter   String
+  txHash      String
+  blockNumber Int
+  createdAt   DateTime
+  eventId     String   @unique
+  removed     Boolean  @default(false)
+}
+
+model LegacyGoalApproval {
+  id          String   @id @default(uuid())
+  chainId     Int
+  contractAddress String
+  goalId      String
+  approver    String
+  approvals   Int
+  txHash      String
+  blockNumber Int
+  createdAt   DateTime
+  eventId     String   @unique
+  removed     Boolean  @default(false)
+
+  @@index([goalId])
+  @@index([approver])
+}
+
+model UsernameOwnership {
+  id            String   @id @default(uuid())
+  chainId       Int
+  handleHash    String
+  normalized    String
+  ownerAddress  String
+  updatedAtBlock Int?
+  txHash        String?
+  removed       Boolean  @default(false)
+  updatedAt     DateTime @updatedAt
+
+  @@unique([chainId, handleHash])
+  @@index([ownerAddress])
+  @@index([normalized])
+}
+
+enum UsernameStatus {
+  ACTIVE
+  LOCKED
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  REVIEWER
+  MEMBER
+}
+
+enum OrgVisibility {
+    PUBLIC
+    UNLISTED
+    PRIVATE
+  }
+
+enum OrgOnchainStatus {
+    PENDING_CONFIRMATIONS
+    CONFIRMED
+    DROPPED_REORG
+    FAILED
+  }
+
+enum ChainActionType {
+    ORG_CREATE
+    ANCHOR_PROOF
+    ANCHOR_VALIDATION
+    ANCHOR_EXPORT
+    ANCHOR_SUBMISSION
+    USERNAME_TRANSFER
+    OTHER
+  }
+
+enum ChainActionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  DROPPED_REORG
+}
+
+enum OperationalAlertSeverity {
+  INFO
+  WARN
+  CRITICAL
+}
+
+enum OperationalAlertType {
+  STUCK_CHAIN_ACTIONS
+  INDEXER_LAG
+  ANCHOR_BACKLOG
+  REORG_SPIKE
+  RPC_DOWN
+  CONFIG_MISMATCH
+}
+
+enum ProjectionRebuildStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum UsernameOrderType {
+  ASK
+  BID
+  OFFER
+}
+
+enum UsernameOrderStatus {
+  OPEN
+  RESERVED
+  CANCELLED
+  CANCELED
+  FILLED
+  EXPIRED
+  INVALID
+}
+
+enum SettlementStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  DROPPED_REORG
+}
+
+enum ProgramStatus {
+  DRAFT
+  LIVE
+  PAUSED
+  ENDED
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+}
+
+enum AnchorJobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+
+enum PartyVisibility {
+  PUBLIC
+  INVITE_ONLY
+  PRIVATE
+}
+
+enum PartyMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum PartyMemberStatus {
+  ACTIVE
+  LEFT
+  KICKED
+}
+
+enum PartyInviteStatus {
+  ACTIVE
+  REVOKED
+  USED
+}
+
+enum FollowStatus {
+  ACTIVE
+  MUTED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum ProjectVisibility {
+  PRIVATE
+  INVITE_ONLY
+  PUBLIC
+}
+
+enum ProjectMemberRole {
+  OWNER
+  COLLABORATOR
+  VIEWER
+  CLIENT
+}
+
+enum ProjectMemberStatus {
+  ACTIVE
+  LEFT
+  REMOVED
+}
+
+enum ProjectEventType {
+  PROJECT_CREATED
+  PROJECT_STATUS_CHANGED
+  MEMBER_ADDED
+  MEMBER_REMOVED
+  MEMBER_ROLE_CHANGED
+}
+
+enum PartyFeedItemType {
+  QUEST_CLAIMED
+  GOAL_VERIFIED
+  BADGE_MINTED
+  STREAK_MILESTONE
+}
+
+enum ActivityEventType {
+  CHECKIN
+  TASK_STARTED
+  TASK_COMPLETED
+  BADGE_MINTED
+  PROOF_ADDED
+  VALIDATION_APPROVED
+  VALIDATION_REJECTED
+}
+
+enum RiskSignalType {
+  VELOCITY_BURST
+  REPETITIVE_ACTIONS
+  PROOF_REUSE
+  VALIDATION_COLLUSION
+  DEVICE_FINGERPRINT_MISMATCH
+  IP_CLUSTER
+  ACCOUNT_AGE_LOW
+  USERNAME_FLIP_ABUSE
+  DISPUTE_ABUSE
+  OTHER
+}
+
+enum QuestType {
+  DAILY
+  WEEKLY
+  MILESTONE
+}
+
+enum QuestEventType {
+  DAILY_LOGIN
+  GOAL_CREATED
+  GOAL_VERIFIED
+  BADGE_MINTED
+}
+
+enum BillingModel {
+  HOURLY
+  FIXED_FEE
+  HYBRID
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  CANCELLED
+  OVERDUE
+}
+
+enum InvoiceVisibility {
+  UNLISTED
+  DISABLED
+}
+
+enum InvoiceLineType {
+  TIME_ENTRY
+  GOAL
+  CUSTOM
+}
+
+enum ProofKind {
+  FILE
+  URL
+  TEXT
+}
+
+enum ProofStorageProvider {
+  S3
+  LOCAL
+  NONE
+}
+
+enum VisibilityLevel {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum RedactionMode {
+  NONE
+  METADATA_ONLY
+  FULL
+}
+
+enum ExportFormat {
+  JSON
+  JSONLD
+  PDF
+}
+
+enum ValidationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVOKED
+}
+
+enum ValidatorType {
+  INDIVIDUAL
+  ORGANIZATION
+}
+
+enum Availability {
+  OPEN_TO_WORK
+  OPEN_TO_COLLAB
+  NOT_AVAILABLE
+  UNSPECIFIED
+}
+
+enum ShareLinkVisibility {
+  PUBLIC
+  UNLISTED
+  DISABLED
+}
+
+enum ShareLinkTheme {
+  AUTO
+  LIGHT
+  DARK
+}
+
+enum EndorsementTargetType {
+  PROFILE
+  ACHIEVEMENT
+  BADGE
+  SKILL
+}
+
+enum EndorsementStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum ProfilePinType {
+  GOAL
+  BADGE
+  PARTY
+  CASE_STUDY
+}
+
+enum UserQuestStatus {
+  ACTIVE
+  COMPLETED
+  CLAIMED
+  EXPIRED
+}
+
+enum WalletRole {
+  PRIMARY
+  SUB
+  RECOVERY_REF
+}

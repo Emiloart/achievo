@@ -1,0 +1,21 @@
+export const colors = {
+  bg: "var(--color-bg)",
+  surface: "var(--color-surface)",
+  surface2: "var(--color-surface-2)",
+  border: "var(--color-border)",
+  text: "var(--color-text)",
+  textMuted: "var(--color-text-muted)",
+  accent: "var(--color-accent)",
+  accentSoft: "var(--color-accent-soft)",
+  success: "var(--color-success)",
+  warning: "var(--color-warning)",
+  danger: "var(--color-danger)",
+  info: "var(--color-info)",
+  status: {
+    verified: "var(--status-verified)",
+    partial: "var(--status-partial)",
+    unverified: "var(--status-unverified)",
+    private: "var(--status-private)",
+    unlisted: "var(--status-unlisted)",
+  },
+};

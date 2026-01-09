@@ -1,0 +1,23 @@
+process.env.NODE_ENV = "test";
+process.env.JWT_SECRET = process.env.JWT_SECRET || "test-secret";
+process.env.RPC_URL = process.env.RPC_URL || "http://localhost:8545";
+process.env.CHAIN_ID = process.env.CHAIN_ID || "84532";
+process.env.DATABASE_URL = process.env.DATABASE_URL || "postgresql://user:pass@localhost:5432/achievo_test";
+process.env.NEXT_PUBLIC_ACHIEVO_CORE_V11_ADDRESS =
+  process.env.NEXT_PUBLIC_ACHIEVO_CORE_V11_ADDRESS || "0x0000000000000000000000000000000000000001";
+process.env.NEXT_PUBLIC_ACHIEVO_BADGE_V11_ADDRESS =
+  process.env.NEXT_PUBLIC_ACHIEVO_BADGE_V11_ADDRESS || "0x0000000000000000000000000000000000000002";
+process.env.NEXT_PUBLIC_IDENTITY_ADDRESS =
+  process.env.NEXT_PUBLIC_IDENTITY_ADDRESS || "0x0000000000000000000000000000000000000003";
+process.env.ACHIEVO_USERNAME_REGISTRY_ADDRESS =
+  process.env.ACHIEVO_USERNAME_REGISTRY_ADDRESS || "0x0000000000000000000000000000000000000004";
+process.env.IDENTITY_ADDRESS = process.env.IDENTITY_ADDRESS || "0x0000000000000000000000000000000000000001";
+process.env.ANCHORING_ENABLED = process.env.ANCHORING_ENABLED || "false";
+process.env.ANCHOR_QUEUE_ENABLED = process.env.ANCHOR_QUEUE_ENABLED || "false";
+process.env.VERIFY_PORTAL_ENABLED = process.env.VERIFY_PORTAL_ENABLED || "false";
+process.env.REQUEST_BODY_LIMIT_MB = process.env.REQUEST_BODY_LIMIT_MB || "2";
+process.env.THROTTLE_TTL = process.env.THROTTLE_TTL || "60";
+process.env.THROTTLE_LIMIT = process.env.THROTTLE_LIMIT || "120";
+process.env.THROTTLE_AUTH_TTL = process.env.THROTTLE_AUTH_TTL || "60";
+process.env.THROTTLE_AUTH_LIMIT = process.env.THROTTLE_AUTH_LIMIT || "3";
+process.env.METRICS_ENABLED = process.env.METRICS_ENABLED || "false";

@@ -1,0 +1,68 @@
+name: e2e
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"
+
+jobs:
+  e2e-local:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: achievo_e2e
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/achievo_e2e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+      - name: Contract tests
+        run: npm run test:contracts
+      - name: Backend unit tests
+        run: npm --prefix backend run test:unit
+      - name: E2E (local)
+        run: npm run test:e2e
+      - name: Upload E2E artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: |
+            backend/test/e2e/logs
+            backend/test/e2e/.runtime.json
+            contracts/deployments/local/e2e.json
+
+  base-sepolia-smoke:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' && secrets.BASE_SEPOLIA_RPC_URL != '' && secrets.BASE_SEPOLIA_SMOKE_ENABLED == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+      - name: Base Sepolia smoke
+        env:
+          BASE_SEPOLIA_RPC_URL: ${{ secrets.BASE_SEPOLIA_RPC_URL }}
+        run: node backend/scripts/base-sepolia-smoke.cjs

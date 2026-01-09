@@ -1,0 +1,81 @@
+@import "@fontsource/manrope/400.css";
+@import "@fontsource/manrope/500.css";
+@import "@fontsource/manrope/600.css";
+@import "@fontsource/manrope/700.css";
+@import "@fontsource/fraunces/400.css";
+@import "@fontsource/fraunces/600.css";
+@import "@fontsource/fraunces/700.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --font-sans: "Manrope";
+  --font-display: "Fraunces";
+  --color-bg: #f6f3ee;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1ede6;
+  --color-border: #d7d1c7;
+  --color-text: #1b1b1b;
+  --color-text-muted: #6b6a66;
+  --color-accent: #1b5c5e;
+  --color-accent-soft: #d6ece9;
+  --color-success: #1f7a5b;
+  --color-warning: #b7791f;
+  --color-danger: #b42318;
+  --color-info: #1f4fa3;
+  --status-verified: #0f766e;
+  --status-partial: #b7791f;
+  --status-unverified: #64748b;
+  --status-private: #6b7280;
+  --status-unlisted: #0f766e;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0c0f11;
+  --color-surface: #13181d;
+  --color-surface-2: #1a2229;
+  --color-border: #2a333c;
+  --color-text: #f4f2ee;
+  --color-text-muted: #9aa3ad;
+  --color-accent: #6dd1c8;
+  --color-accent-soft: #1c4b49;
+  --color-success: #38b089;
+  --color-warning: #d6a14d;
+  --color-danger: #f05d5e;
+  --color-info: #6aa4ff;
+  --status-verified: #53d6c7;
+  --status-partial: #d6a14d;
+  --status-unverified: #9aa3ad;
+  --status-private: #8b949e;
+  --status-unlisted: #53d6c7;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  background-image: radial-gradient(circle at 16% 8%, rgba(27, 92, 94, 0.14), transparent 45%),
+    radial-gradient(circle at 85% 0%, rgba(183, 121, 31, 0.14), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, transparent 65%);
+  background-attachment: fixed;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

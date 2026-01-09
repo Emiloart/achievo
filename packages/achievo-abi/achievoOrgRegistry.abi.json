@@ -1,0 +1,58 @@
+[
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "initialFee", "type": "uint256" },
+      { "internalType": "address", "name": "initialTreasury", "type": "address" },
+      { "internalType": "address", "name": "admin", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "bytes32", "name": "handleHash", "type": "bytes32" },
+      { "indexed": false, "internalType": "string", "name": "handle", "type": "string" },
+      { "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
+      { "indexed": false, "internalType": "uint64", "name": "createdAt", "type": "uint64" },
+      { "indexed": false, "internalType": "uint256", "name": "feePaid", "type": "uint256" }
+    ],
+    "name": "OrgCreated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "createOrgFee",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "treasury",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "string", "name": "handle", "type": "string" }],
+    "name": "createOrg",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "name": "orgCreatorByHandleHash",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "name": "orgCreatedAtByHandleHash",
+    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

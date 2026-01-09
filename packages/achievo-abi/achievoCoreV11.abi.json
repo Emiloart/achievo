@@ -1,0 +1,366 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "indexed": true, "internalType": "uint256", "name": "legacyId", "type": "uint256" },
+      { "indexed": true, "internalType": "bytes32", "name": "legacyTxHash", "type": "bytes32" },
+      { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }
+    ],
+    "name": "GoalImported",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
+      { "indexed": false, "internalType": "string", "name": "goalCID", "type": "string" },
+      { "indexed": false, "internalType": "uint8", "name": "level", "type": "uint8" }
+    ],
+    "name": "GoalCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "approver", "type": "address" },
+      { "indexed": false, "internalType": "uint8", "name": "approvals", "type": "uint8" },
+      { "indexed": false, "internalType": "uint8", "name": "threshold", "type": "uint8" }
+    ],
+    "name": "PeerApproved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "indexed": false, "internalType": "string", "name": "evidenceCID", "type": "string" }
+    ],
+    "name": "ProofSubmitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "by", "type": "address" }
+    ],
+    "name": "SelfVerified",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "to", "type": "address" },
+      { "indexed": false, "internalType": "string", "name": "tokenURI", "type": "string" }
+    ],
+    "name": "BadgeMinted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "indexed": false, "internalType": "bool", "name": "restricted", "type": "bool" }
+    ],
+    "name": "PeerAllowListUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "verifier", "type": "address" },
+      { "indexed": false, "internalType": "bool", "name": "allowed", "type": "bool" }
+    ],
+    "name": "AutoVerifierUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "verifier", "type": "address" },
+      { "indexed": false, "internalType": "bytes32", "name": "dataHash", "type": "bytes32" }
+    ],
+    "name": "AutoVerified",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "previousOwner", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "newOwner", "type": "address" }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "newOwner", "type": "address" }],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint8", "name": "newThreshold", "type": "uint8" }],
+    "name": "setPeerThreshold",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "badgeAddr", "type": "address" }],
+    "name": "setBadge",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "verifier", "type": "address" },
+      { "internalType": "bool", "name": "allowed", "type": "bool" }
+    ],
+    "name": "setAutoVerifier",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "creator", "type": "address" },
+      { "internalType": "string", "name": "goalCID", "type": "string" },
+      { "internalType": "string", "name": "evidenceCID", "type": "string" },
+      { "internalType": "uint8", "name": "level", "type": "uint8" },
+      { "internalType": "uint8", "name": "approvals", "type": "uint8" },
+      { "internalType": "bool", "name": "verified", "type": "bool" },
+      { "internalType": "bool", "name": "badgeMinted", "type": "bool" },
+      { "internalType": "bool", "name": "peersRestricted", "type": "bool" },
+      { "internalType": "address", "name": "autoVerifier", "type": "address" },
+      { "internalType": "bytes32", "name": "autoDataHash", "type": "bytes32" },
+      { "internalType": "uint64", "name": "autoVerifiedAt", "type": "uint64" },
+      { "internalType": "uint64", "name": "createdAt", "type": "uint64" },
+      { "internalType": "uint256", "name": "legacyId", "type": "uint256" },
+      { "internalType": "bytes32", "name": "legacyTxHash", "type": "bytes32" }
+    ],
+    "name": "importGoalFromLegacy",
+    "outputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "string", "name": "goalCID", "type": "string" }],
+    "name": "createGoal",
+    "outputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "goalCID", "type": "string" },
+      { "internalType": "uint8", "name": "level", "type": "uint8" }
+    ],
+    "name": "createGoalWithLevel",
+    "outputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "goalCID", "type": "string" },
+      { "internalType": "address[]", "name": "peers", "type": "address[]" },
+      { "internalType": "bool", "name": "restricted", "type": "bool" }
+    ],
+    "name": "createGoalWithPeers",
+    "outputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "internalType": "string", "name": "evidenceCID", "type": "string" }
+    ],
+    "name": "submitProof",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "name": "selfVerify",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "name": "approve",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "internalType": "bytes32", "name": "dataHash", "type": "bytes32" }
+    ],
+    "name": "verifyAuto",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "internalType": "string", "name": "tokenURI_", "type": "string" }
+    ],
+    "name": "mintBadge",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "internalType": "address[]", "name": "peers", "type": "address[]" },
+      { "internalType": "bool", "name": "restricted", "type": "bool" }
+    ],
+    "name": "setPeerAllowList",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "name": "getGoal",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "address", "name": "creator", "type": "address" },
+          { "internalType": "string", "name": "goalCID", "type": "string" },
+          { "internalType": "string", "name": "evidenceCID", "type": "string" },
+          { "internalType": "uint8", "name": "level", "type": "uint8" },
+          { "internalType": "uint8", "name": "approvals", "type": "uint8" },
+          { "internalType": "uint64", "name": "createdAt", "type": "uint64" },
+          { "internalType": "bool", "name": "verified", "type": "bool" },
+          { "internalType": "bool", "name": "badgeMinted", "type": "bool" },
+          { "internalType": "bool", "name": "peersRestricted", "type": "bool" },
+          { "internalType": "address", "name": "autoVerifier", "type": "address" },
+          { "internalType": "bytes32", "name": "autoDataHash", "type": "bytes32" },
+          { "internalType": "uint64", "name": "autoVerifiedAt", "type": "uint64" },
+          { "internalType": "uint256", "name": "legacyId", "type": "uint256" },
+          { "internalType": "bytes32", "name": "legacyTxHash", "type": "bytes32" }
+        ],
+        "internalType": "struct AchievoCoreV11.Goal",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "creator", "type": "address" }],
+    "name": "getGoalsByCreator",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "address", "name": "creator", "type": "address" },
+          { "internalType": "string", "name": "goalCID", "type": "string" },
+          { "internalType": "string", "name": "evidenceCID", "type": "string" },
+          { "internalType": "uint8", "name": "level", "type": "uint8" },
+          { "internalType": "uint8", "name": "approvals", "type": "uint8" },
+          { "internalType": "uint64", "name": "createdAt", "type": "uint64" },
+          { "internalType": "bool", "name": "verified", "type": "bool" },
+          { "internalType": "bool", "name": "badgeMinted", "type": "bool" },
+          { "internalType": "bool", "name": "peersRestricted", "type": "bool" },
+          { "internalType": "address", "name": "autoVerifier", "type": "address" },
+          { "internalType": "bytes32", "name": "autoDataHash", "type": "bytes32" },
+          { "internalType": "uint64", "name": "autoVerifiedAt", "type": "uint64" },
+          { "internalType": "uint256", "name": "legacyId", "type": "uint256" },
+          { "internalType": "bytes32", "name": "legacyTxHash", "type": "bytes32" }
+        ],
+        "internalType": "struct AchievoCoreV11.Goal[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "name": "getApprovers",
+    "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "name": "getAllowedPeers",
+    "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "internalType": "address", "name": "account", "type": "address" }
+    ],
+    "name": "isPeerAllowed",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "goalId", "type": "uint256" },
+      { "internalType": "address", "name": "approver", "type": "address" }
+    ],
+    "name": "isApprovedBy",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "goalId", "type": "uint256" }],
+    "name": "isVerified",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "peerThreshold",
+    "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nextGoalId",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "badge",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

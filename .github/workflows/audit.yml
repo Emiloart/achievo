@@ -1,0 +1,22 @@
+name: dependency-audit
+
+on:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * 1"
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Audit root dependencies
+        run: npm audit --audit-level=high || true
+      - name: Audit backend dependencies
+        run: npm audit --audit-level=high --prefix backend || true
+      - name: Audit web dependencies
+        run: npm audit --audit-level=high --prefix web || true

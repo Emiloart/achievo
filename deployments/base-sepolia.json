@@ -1,0 +1,20 @@
+{
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "deployer": "0x4E0A046D36BEe4b082826f99f926BF34e3f7d8b1",
+  "contracts": {
+    "AchievoIdentity": {
+      "address": "0x5BE61bF52AE08790355232F7114f4DBD2dd0848d",
+      "explorer": "https://base-sepolia.blockscout.com/address/0x5BE61bF52AE08790355232F7114f4DBD2dd0848d#code"
+    },
+    "AchievoCore": {
+      "address": "0xAdBf86ec7Acef2921e038883c6c04166851f0a16",
+      "explorer": "https://base-sepolia.blockscout.com/address/0xAdBf86ec7Acef2921e038883c6c04166851f0a16#code"
+    },
+    "BadgeSBT": {
+      "address": "0x5E04f674BDa4b9429c408935C9D6aE0655eE7055",
+      "explorer": "https://base-sepolia.blockscout.com/address/0x5E04f674BDa4b9429c408935C9D6aE0655eE7055#code"
+    }
+  },
+  "timestamp": "${BUILD_TIME}"
+}

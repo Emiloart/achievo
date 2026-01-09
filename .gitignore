@@ -1,30 +1,33 @@
 # Node modules
-/node_modules
+node_modules
 
 # Compilation output
-/dist
+dist
 /build
 
 # pnpm deploy output
-/bundle
+bundle
 
 # Hardhat Build Artifacts
-/artifacts
+artifacts
 
 # Hardhat compilation (v2) support directory
-/cache
+cache
 
 # Typechain output
-/types
+types
 
 # Hardhat coverage reports
-/coverage
+coverage
 
 # Next.js
-/.next
+.next
 
 # Env files
 .env*
+
+# TypeScript build info
+*.tsbuildinfo
 
 # Playwright
 /playwright-report
