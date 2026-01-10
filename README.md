@@ -114,7 +114,7 @@ Org creation envs:
 - `ORG_CREATE_CHAIN_ID=84532`
 - `ORG_REGISTRY_ADDRESS=0x...` (or deployment artifact)
 
-## Auth (Sign Once)
+## Auth (Sign Once, still working on it)
 
 - Wallet signing is only required to start a session (login) or sign marketplace orders.
 - Backend issues short-lived access + long-lived refresh tokens via httpOnly cookies.
