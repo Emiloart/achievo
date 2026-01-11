@@ -1,10 +1,14 @@
 "use client";
 
-import { getApiErrorMessage } from "../../../lib/apiError";
+import { getApiError } from "../../../lib/apiError";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useBackendAuth } from "../../../hooks/useBackendAuth";
+import { PageHeader } from "../../../components/nav/PageHeader";
+import { EmptyState } from "../../../components/states/EmptyState";
+import { ErrorState } from "../../../components/states/ErrorState";
+import { LoadingState } from "../../../components/states/LoadingState";
 import { Badge, ButtonLink, Card, CardBody, Section } from "../../../components/ui";
 
 type OrgSummary = {
@@ -29,7 +33,7 @@ export default function OrgPage() {
   const tokenParam = searchParams.get("token");
   const { token } = useBackendAuth();
   const [data, setData] = useState<OrgSummary | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<{ message: string; requestId?: string | null } | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,19 +41,24 @@ export default function OrgPage() {
     const load = async () => {
       if (!handle) return;
       setLoading(true);
-      setError("");
+      setError(null);
       try {
         const res = await fetch(`/api/orgs/${handle}${tokenParam ? `?token=${encodeURIComponent(tokenParam)}` : ""}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           credentials: "include",
         });
-        if (!res.ok) throw new Error(await getApiErrorMessage(res));
+        if (!res.ok) {
+          const { message, requestId } = await getApiError(res, "Organization not found.");
+          const err = new Error(message);
+          (err as { requestId?: string | null }).requestId = requestId;
+          throw err;
+        }
         const json = await res.json();
         if (!active) return;
         setData(json.data as OrgSummary);
       } catch (e: any) {
         if (!active) return;
-        setError(e?.message || "Org not found");
+        setError({ message: e?.message || "Organization not found.", requestId: e?.requestId });
       } finally {
         if (active) setLoading(false);
       }
@@ -61,11 +70,21 @@ export default function OrgPage() {
   }, [handle, tokenParam, token]);
 
   if (loading) {
-    return <div className="text-sm text-textMuted">Loading organization...</div>;
+    return <LoadingState title="Loading organization" description="Fetching org profile and programs." />;
   }
 
-  if (error || !data) {
-    return <div className="text-sm text-textMuted">{error || "Organization not found."}</div>;
+  if (error) {
+    return <ErrorState message={error.message} requestId={error.requestId} />;
+  }
+
+  if (!data) {
+    return (
+      <EmptyState
+        title="Organization not found"
+        description="Double-check the handle or return to the org directory."
+        primaryAction={{ label: "Back to orgs", href: "/orgs" }}
+      />
+    );
   }
 
   const { org, membership, membersCount, programs } = data;
@@ -73,16 +92,26 @@ export default function OrgPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <ButtonLink href="/orgs" variant="secondary" size="sm">
-          Back to orgs
-        </ButtonLink>
-        {isAdmin && (
-          <ButtonLink href={`/orgs/${org.handle}/admin`} variant="primary" size="sm">
-            Manage org
-          </ButtonLink>
-        )}
-      </div>
+      <PageHeader
+        title={org.displayName}
+        description={org.description || "Organization workspace overview and programs."}
+        breadcrumbs={[
+          { label: "Organizations", href: "/orgs" },
+          { label: org.displayName },
+        ]}
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink href="/orgs" variant="secondary" size="sm">
+              Back to orgs
+            </ButtonLink>
+            {isAdmin ? (
+              <ButtonLink href={`/orgs/${org.handle}/admin`} variant="primary" size="sm">
+                Manage org
+              </ButtonLink>
+            ) : null}
+          </div>
+        }
+      />
 
       <Card>
         <CardBody className="space-y-3">

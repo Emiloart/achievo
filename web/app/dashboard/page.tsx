@@ -23,6 +23,9 @@ import { useBackendAuth } from "../../hooks/useBackendAuth";
 import { useProfessionalProfile } from "../../hooks/useProfessionalProfile";
 import { usePrivacySettings } from "../../hooks/usePrivacySettings";
 import { useRiskProfile } from "../../hooks/useRiskProfile";
+import { PageHeader } from "../../components/nav/PageHeader";
+import { AuthRequired } from "../../components/states/AuthRequired";
+import { ErrorState } from "../../components/states/ErrorState";
 
 type BadgeItem = {
   id: number;
@@ -527,9 +530,12 @@ export default function DashboardPage() {
 
   if (!address) {
     return (
-      <div className="max-w-5xl mx-auto space-y-4">
-        <h2 className="text-2xl font-semibold">Dashboard</h2>
-        <p className="text-gray-600">Connect your wallet to see your profile and goals.</p>
+      <div className="space-y-6">
+        <PageHeader title="Dashboard" description="Your profile, goals, and progress at a glance." />
+        <AuthRequired
+          title="Connect to view your dashboard"
+          description="Connect your wallet and sign in to view your profile, goals, and achievements."
+        />
       </div>
     );
   }
@@ -552,6 +558,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <PageHeader title="Dashboard" description="Your profile, goals, and progress at a glance." />
       <section className="grid gap-6 lg:grid-cols-3 items-start">
         <div className="lg:col-span-2 rounded-3xl border bg-white p-6 space-y-3 shadow-sm">
           <div className="flex items-start gap-4">
@@ -731,12 +738,10 @@ export default function DashboardPage() {
       )}
 
       {showError && (
-        <div className="rounded-xl border bg-red-50 text-red-800 p-4 flex items-center justify-between">
-          <div>{tasksError || badgeError || questsError}</div>
-          <button className="px-3 py-1 rounded-md border border-red-200 text-sm" onClick={handleRetry}>
-            Retry
-          </button>
-        </div>
+        <ErrorState
+          message={tasksError || badgeError || questsError || partyError || "Unable to load dashboard data."}
+          onRetry={handleRetry}
+        />
       )}
 
       <section className="grid gap-6 lg:grid-cols-3 items-start">

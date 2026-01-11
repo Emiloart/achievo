@@ -1,10 +1,13 @@
 "use client";
 
-import { getApiErrorMessage } from "../../../../lib/apiError";
+import { getApiError } from "../../../../lib/apiError";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import type { TrustCheck, TrustState } from "../../../../trust/types";
 import { TrustCard } from "../../../../components/trust/TrustCard";
+import { PageHeader } from "../../../../components/nav/PageHeader";
+import { VerifyResultCard } from "../../../../components/domain/verify/VerifyResultCard";
+import { LoadingState } from "../../../../components/states/LoadingState";
 import { Badge, Button, CopyField, HashDisplay, Section } from "../../../../components/ui";
 
 type VerifyAnchorResponse = {
@@ -49,22 +52,27 @@ export default function VerifyAnchorPage() {
   const hash = params.hash;
   const [data, setData] = useState<VerifyAnchorResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<{ message: string; requestId?: string | null } | null>(null);
 
   useEffect(() => {
     let active = true;
     const load = async () => {
       setLoading(true);
-      setError("");
+      setError(null);
       try {
         const res = await fetch(`/api/verify/anchor/${hash}`);
-        if (!res.ok) throw new Error(await getApiErrorMessage(res));
+        if (!res.ok) {
+          const { message, requestId } = await getApiError(res, "Verification failed.");
+          const err = new Error(message);
+          (err as { requestId?: string | null }).requestId = requestId;
+          throw err;
+        }
         const json = await res.json();
         if (!active) return;
         setData(json);
       } catch (e: any) {
         if (!active) return;
-        setError(e?.message || "Verification failed");
+        setError({ message: e?.message || "Verification failed", requestId: e?.requestId });
         setData(null);
       } finally {
         if (active) setLoading(false);
@@ -78,9 +86,40 @@ export default function VerifyAnchorPage() {
 
   const trust = useMemo(() => (data ? buildChecks(data.checks) : null), [data]);
 
-  if (loading) return <div className="text-sm text-textMuted">Checking anchor...</div>;
-  if (error) return <div className="text-sm text-danger">{error}</div>;
-  if (!data || !trust) return <div className="text-sm text-textMuted">No data.</div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Anchor verification" description="Validate hashes directly against the registry." />
+        <LoadingState title="Checking anchor" description="Querying anchor registry and receipts." />
+      </div>
+    );
+  }
+
+  if (error) {
+    const status = error.message.toLowerCase().includes("not found") ? "NOT_FOUND" : "ERROR";
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Anchor verification" description="Validate hashes directly against the registry." />
+        <VerifyResultCard
+          status={status}
+          title="Anchor verification"
+          idLabel="Anchor hash"
+          idValue={hash}
+          reason={error.message}
+          requestId={error.requestId || null}
+        />
+      </div>
+    );
+  }
+
+  if (!data || !trust) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Anchor verification" description="Validate hashes directly against the registry." />
+        <VerifyResultCard status="NOT_FOUND" title="Anchor verification" idLabel="Anchor hash" idValue={hash} />
+      </div>
+    );
+  }
 
   const chain = data.details || {};
   const anchor = {
@@ -89,9 +128,30 @@ export default function VerifyAnchorPage() {
     txHash: chain.txHash,
   };
 
+  const status = data.valid ? (data.checks.anchorVerified === "unknown" ? "UNKNOWN" : "VERIFIED") : "INVALID";
+  const unknownReason =
+    status === "UNKNOWN"
+      ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure."
+      : undefined;
+
   return (
     <div className="space-y-10">
-      <Section title="Anchor verification" description="Validate anchored hashes directly against the registry.">
+      <PageHeader title="Anchor verification" description="Validate hashes directly against the registry." />
+      <VerifyResultCard
+        status={status}
+        title="Anchor verification"
+        idLabel="Anchor hash"
+        idValue={data.hash}
+        source={chain.contract}
+        timestamp={chain.anchoredAt}
+        reason={unknownReason || (data.valid ? undefined : "Anchor record not found.")}
+        meta={[
+          { label: "Submitter", value: chain.submitter },
+          { label: "Kind", value: chain.kind },
+        ]}
+      />
+
+      <Section title="Anchor trust summary" description="Detailed checks for registry presence.">
         <div className="flex flex-wrap gap-3">
           <Badge variant={data.valid ? "verified" : "unverified"}>{data.valid ? "Anchored" : "Not found"}</Badge>
           {chain.kind && <Badge variant="neutral">{chain.kind}</Badge>}

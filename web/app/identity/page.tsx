@@ -3,6 +3,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { IdentityBadge } from "../../components/IdentityBadge";
 import { useIdentityRegistration } from "../../hooks/useIdentity";
+import { PageHeader } from "../../components/nav/PageHeader";
+import { TxStepper } from "../../components/tx/TxStepper";
 import { Badge, Button, Card, CardBody, Section } from "../../components/ui";
 
 const ConnectWallet = dynamic(() => import("../../components/ConnectWallet").then((m) => m.ConnectWallet), {
@@ -10,7 +12,8 @@ const ConnectWallet = dynamic(() => import("../../components/ConnectWallet").the
 });
 
 export default function IdentityPage() {
-  const { register, registering, userId, hasContract, address, isLoading, error } = useIdentityRegistration();
+  const { register, registering, userId, hasContract, address, isLoading, error, txState, txHash, txError } =
+    useIdentityRegistration();
 
   const hasId = Boolean(userId && userId > 0n);
   const canClaim = hasContract && address && !hasId;
@@ -26,6 +29,10 @@ export default function IdentityPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
+      <PageHeader
+        title="Identity"
+        description="Connect a wallet to sign in and claim the Achievo ID that anchors your activity."
+      />
       <Section
         title="Identity and sign in"
         description="Connect a wallet to sign in. The same action creates your Achievo identity."
@@ -82,16 +89,23 @@ export default function IdentityPage() {
                 <li>Wait for confirmation; your ID will appear above.</li>
               </ol>
             )}
+            <div className="text-xs text-textMuted">
+              Username claims are separate: check availability, submit the on-chain registry claim, then the backend
+              binds the handle to your profile.
+            </div>
             {registering && <div className="text-xs text-info">Waiting for transaction confirmation...</div>}
             {isLoading && <div className="text-xs text-textMuted">Fetching your current ID...</div>}
             {error && <div className="text-xs text-danger">{error}</div>}
+            {txState !== "idle" || txError ? (
+              <TxStepper state={txState} txHash={txHash} error={txError} />
+            ) : null}
           </CardBody>
         </Card>
       </Section>
 
       <Section
         title="Step 3 - Recovery and sub-wallets"
-        description="Assign a recovery wallet to rotate your primary wallet without losing your Achievo ID."
+        description="Recovery and sub-wallet management is available on-chain, but the UI is not yet implemented."
       >
         <Card>
           <CardBody className="space-y-2 text-sm text-textMuted">
@@ -101,9 +115,9 @@ export default function IdentityPage() {
               <li>All achievements stay bound to your ID.</li>
             </ul>
             <div className="text-xs text-warning">
-              UI controls coming soon; for now, call <code className="px-1">setRecoveryKey</code>,{" "}
-              <code className="px-1">addSubWallet</code>, and <code className="px-1">removeSubWallet</code> from the
-              console.
+              UI controls are not available yet. Use the on-chain functions <code className="px-1">setRecoveryKey</code>
+              , <code className="px-1">addSubWallet</code>, and <code className="px-1">removeSubWallet</code> via a
+              trusted wallet client if needed.
             </div>
           </CardBody>
         </Card>

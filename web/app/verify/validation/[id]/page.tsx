@@ -1,10 +1,13 @@
 "use client";
 
-import { getApiErrorMessage } from "../../../../lib/apiError";
+import { getApiError } from "../../../../lib/apiError";
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { computeValidationTrust } from "../../../../trust/compute";
 import { TrustCard } from "../../../../components/trust/TrustCard";
+import { PageHeader } from "../../../../components/nav/PageHeader";
+import { VerifyResultCard } from "../../../../components/domain/verify/VerifyResultCard";
+import { LoadingState } from "../../../../components/states/LoadingState";
 import { Badge, Button, CopyField, HashDisplay, Section } from "../../../../components/ui";
 
 type VerifyResponse = {
@@ -28,23 +31,28 @@ export default function VerifyValidationPage() {
   const token = searchParams.get("token") || "";
   const [data, setData] = useState<VerifyResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<{ message: string; requestId?: string | null } | null>(null);
 
   useEffect(() => {
     let active = true;
     const load = async () => {
       setLoading(true);
-      setError("");
+      setError(null);
       try {
         const query = token ? `?token=${encodeURIComponent(token)}` : "";
         const res = await fetch(`/api/verify/validation/${id}${query}`);
-        if (!res.ok) throw new Error(await getApiErrorMessage(res));
+        if (!res.ok) {
+          const { message, requestId } = await getApiError(res, "Verification failed.");
+          const err = new Error(message);
+          (err as { requestId?: string | null }).requestId = requestId;
+          throw err;
+        }
         const json = await res.json();
         if (!active) return;
         setData(json);
       } catch (e: any) {
         if (!active) return;
-        setError(e?.message || "Verification failed");
+        setError({ message: e?.message || "Verification failed", requestId: e?.requestId });
         setData(null);
       } finally {
         if (active) setLoading(false);
@@ -58,9 +66,40 @@ export default function VerifyValidationPage() {
 
   const trust = useMemo(() => computeValidationTrust(data || undefined), [data]);
 
-  if (loading) return <div className="text-sm text-textMuted">Checking validation...</div>;
-  if (error) return <div className="text-sm text-danger">{error}</div>;
-  if (!data) return <div className="text-sm text-textMuted">No data.</div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." />
+        <LoadingState title="Checking validation" description="Verifying signatures and anchoring metadata." />
+      </div>
+    );
+  }
+
+  if (error) {
+    const status = error.message.toLowerCase().includes("not found") ? "NOT_FOUND" : "ERROR";
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." />
+        <VerifyResultCard
+          status={status}
+          title="Validation verification"
+          idLabel="Validation ID"
+          idValue={id}
+          reason={error.message}
+          requestId={error.requestId || null}
+        />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." />
+        <VerifyResultCard status="NOT_FOUND" title="Validation verification" idLabel="Validation ID" idValue={id} />
+      </div>
+    );
+  }
 
   const chain = data.details?.chain;
   const anchor = chain
@@ -71,9 +110,31 @@ export default function VerifyValidationPage() {
       }
     : undefined;
 
+  const hasUnknown = Object.values(data.checks || {}).includes("unknown");
+  const status = data.valid ? (hasUnknown ? "UNKNOWN" : "VERIFIED") : hasUnknown ? "UNKNOWN" : "INVALID";
+  const unknownReason =
+    status === "UNKNOWN"
+      ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure."
+      : undefined;
+
   return (
     <div className="space-y-10">
-      <Section title="Validation verification" description="Confirm a validator signature and anchoring status.">
+      <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." />
+      <VerifyResultCard
+        status={status}
+        title="Validation verification"
+        idLabel="Validation ID"
+        idValue={data.id}
+        source={anchor?.contract}
+        timestamp={chain?.anchoredAt}
+        reason={unknownReason || (data.valid ? undefined : "Validator signature verification failed.")}
+        meta={[
+          { label: "Validator", value: data.details?.validatorWallet },
+          { label: "Attestation hash", value: data.details?.attestationHash },
+        ]}
+      />
+
+      <Section title="Validation trust summary" description="Detailed checks for signatures and anchors.">
         <div className="flex flex-wrap gap-3">
           <Badge variant={data.valid ? "verified" : "unverified"}>{data.valid ? "Signature verified" : "Failed"}</Badge>
           {data.redacted && <Badge variant="private">Redacted</Badge>}

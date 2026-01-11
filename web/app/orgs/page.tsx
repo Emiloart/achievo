@@ -6,10 +6,16 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useChainId, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
+import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
 import { useBackendAuth } from "../../hooks/useBackendAuth";
+import { PageHeader } from "../../components/nav/PageHeader";
+import { AuthRequired } from "../../components/states/AuthRequired";
+import { ChainRequired } from "../../components/states/ChainRequired";
+import { ErrorState } from "../../components/states/ErrorState";
+import { TxStepper } from "../../components/tx/TxStepper";
+import { useTxLifecycle } from "../../components/tx/useTxLifecycle";
 import { Badge, Button, ButtonLink, Card, CardBody, Section } from "../../components/ui";
-import { getApiErrorMessage } from "../../lib/apiError";
+import { getApiError } from "../../lib/apiError";
 import { orgRegistryAbi } from "../../lib/contracts";
 
 type OrgForm = {
@@ -39,15 +45,13 @@ type OrgFinalizePayload = {
   creationTxHash?: string;
 };
 
-type CreateStep = "idle" | "prepare" | "sign" | "confirm" | "finalize";
-
 export default function OrgsPage() {
   const { token } = useBackendAuth();
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
-  const publicClient = usePublicClient();
   const { chains = [], switchChainAsync, isPending: isSwitching } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
+  const tx = useTxLifecycle(1);
   const [searchHandle, setSearchHandle] = useState("");
   const [form, setForm] = useState<OrgForm>({
     handle: "",
@@ -56,21 +60,15 @@ export default function OrgsPage() {
     website: "",
     visibility: "PUBLIC",
   });
-  const [createStep, setCreateStep] = useState<CreateStep>("idle");
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const [finalizing, setFinalizing] = useState(false);
   const [retryPayload, setRetryPayload] = useState<OrgFinalizePayload | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<{ message: string; requestId?: string | null } | null>(null);
+  const [requiredChainId, setRequiredChainId] = useState<number | null>(null);
+  const [requiredChainLabel, setRequiredChainLabel] = useState<string | null>(null);
 
-  const statusLabel =
-    createStep === "prepare"
-      ? "Preparing..."
-      : createStep === "sign"
-        ? "Awaiting signature..."
-        : createStep === "confirm"
-          ? "Confirming on-chain transaction..."
-          : createStep === "finalize"
-            ? "Finalizing..."
-            : "";
+  const statusLabel = finalizing ? "Finalizing..." : "";
+  const txBusy = tx.state === "walletPrompt" || tx.state === "submitted" || tx.state === "confirming";
+  const isBusy = isSwitching || finalizing || txBusy;
 
   const finalizeOrg = async (payload: OrgFinalizePayload) => {
     const res = await fetch("/api/orgs", {
@@ -80,43 +78,39 @@ export default function OrgsPage() {
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
-      throw new Error(await getApiErrorMessage(res, "Unable to finalize the organization."));
+      const { message, requestId } = await getApiError(res, "Unable to finalize the organization.");
+      const err = new Error(message);
+      (err as { requestId?: string | null }).requestId = requestId;
+      throw err;
     }
     return res.json();
-  };
-
-  const handleWalletError = (err: any) => {
-    const message = (err?.shortMessage || err?.message || "").toString();
-    if (message.toLowerCase().includes("user rejected") || message.toLowerCase().includes("rejected")) {
-      return "Transaction cancelled.";
-    }
-    return message || "Transaction failed.";
   };
 
   const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!token) {
-      setError("Sign in to create an organization.");
+      setError({ message: "Sign in to create an organization." });
       return;
     }
     if (!form.handle.trim()) {
-      setError("Enter an org handle to continue.");
+      setError({ message: "Enter an org handle to continue." });
       return;
     }
     if (!form.displayName.trim()) {
-      setError("Enter a display name to continue.");
+      setError({ message: "Enter a display name to continue." });
       return;
     }
-    let submittedHash: string | null = null;
-    let step: CreateStep = "prepare";
-    const updateStep = (next: CreateStep) => {
-      step = next;
-      setCreateStep(next);
-    };
-    setError("");
-    updateStep("prepare");
-    setTxHash(null);
+
+    let normalizedHandle = form.handle;
+    let creationTxHash: string | undefined;
+
+    setError(null);
     setRetryPayload(null);
+    setFinalizing(false);
+    setRequiredChainId(null);
+    setRequiredChainLabel(null);
+    tx.reset();
+
     try {
       const prepareRes = await fetch("/api/orgs/prepare", {
         method: "POST",
@@ -126,19 +120,22 @@ export default function OrgsPage() {
           handle: form.handle,
         }),
       });
-      if (!prepareRes.ok) throw new Error(await getApiErrorMessage(prepareRes, "Unable to prepare org creation."));
+      if (!prepareRes.ok) {
+        const { message, requestId } = await getApiError(prepareRes, "Unable to prepare org creation.");
+        const err = new Error(message);
+        (err as { requestId?: string | null }).requestId = requestId;
+        throw err;
+      }
       const prepareJson = await prepareRes.json();
       const prepareData = (prepareJson?.data || {}) as OrgPreparePayload;
-      const normalizedHandle = prepareData.handle || form.handle;
+      normalizedHandle = prepareData.handle || form.handle;
       if (!normalizedHandle) {
-        throw new Error("Enter a valid handle before creating an organization.");
+          throw new Error("Enter a valid handle before creating an organization.");
       }
       setForm((prev) => ({ ...prev, handle: normalizedHandle }));
 
       const requiresOnchain = Boolean(prepareData.required);
-      let creationTxHash: string | undefined;
-      const requiredChainId = Number(prepareData.chainId || 0);
-
+      const requiredChain = Number(prepareData.chainId || 0);
       if (requiresOnchain) {
         if (!isConnected || !address) {
           throw new Error("Connect your wallet to create an organization.");
@@ -149,44 +146,49 @@ export default function OrgsPage() {
         if (prepareData.fee === null || prepareData.fee === undefined) {
           throw new Error("Unable to fetch the org creation fee. Please try again.");
         }
-        if (!Number.isFinite(requiredChainId) || requiredChainId <= 0) {
+        if (!Number.isFinite(requiredChain) || requiredChain <= 0) {
           throw new Error("Unable to determine the required network. Try again later.");
         }
 
-        if (chainId !== requiredChainId) {
-          const chainLabel = chains.find((chain) => chain.id === requiredChainId)?.name || "the required network";
+        const chainLabel = chains.find((chain) => chain.id === requiredChain)?.name || "the required network";
+        setRequiredChainId(requiredChain);
+        setRequiredChainLabel(chainLabel);
+
+        if (chainId !== requiredChain) {
           if (!switchChainAsync) {
             throw new Error(`Switch to ${chainLabel} to continue.`);
           }
-          updateStep("prepare");
-          await switchChainAsync({ chainId: requiredChainId });
+          await switchChainAsync({ chainId: requiredChain });
         }
 
-        updateStep("sign");
         const feeValue = BigInt(prepareData.fee);
-        const hash = await writeContractAsync({
-          address: prepareData.registry,
-          abi: orgRegistryAbi,
-          functionName: "createOrg",
-          args: [normalizedHandle],
-          value: feeValue,
-          chainId: requiredChainId,
-        });
-        creationTxHash = hash;
-        submittedHash = hash;
-        setTxHash(hash);
-
-        if (!publicClient) {
-          throw new Error("Wallet client not available. Please retry.");
+        const result = await tx.submit(() =>
+          writeContractAsync({
+            address: prepareData.registry,
+            abi: orgRegistryAbi,
+            functionName: "createOrg",
+            args: [normalizedHandle],
+            value: feeValue,
+            chainId: requiredChain,
+          }),
+        );
+        const submittedHash = result.txHash || null;
+        if (result.status !== "confirmed" || !submittedHash) {
+          if (result.status === "rejected") {
+          setError({ message: "Transaction cancelled." });
+          return;
         }
-        updateStep("confirm");
-        const receipt = await publicClient.waitForTransactionReceipt({ hash, confirmations: 1 });
-        if (!receipt || receipt.status !== "success") {
-          throw new Error("Transaction failed. Please try again.");
+        if (result.error?.message) {
+          setError({ message: result.error.message });
+          return;
         }
+        setError({ message: "Transaction failed." });
+        return;
+      }
+        creationTxHash = submittedHash;
       }
 
-      updateStep("finalize");
+      setFinalizing(true);
       const payload: OrgFinalizePayload = {
         handle: normalizedHandle,
         displayName: form.displayName,
@@ -199,44 +201,52 @@ export default function OrgsPage() {
       const handle = json?.data?.handle || normalizedHandle;
       window.location.href = `/orgs/${handle}`;
     } catch (e: any) {
-      if (step === "sign") {
-        setError(handleWalletError(e));
-      } else if (step === "finalize" && submittedHash) {
-        setError("Transaction confirmed, but syncing failed. Retry sync to finish.");
+      if (creationTxHash) {
+        setError({ message: "Transaction confirmed, but syncing failed. Retry sync to finish." });
         setRetryPayload({
           handle: form.handle,
           displayName: form.displayName,
           description: form.description || undefined,
           website: form.website || undefined,
           visibility: form.visibility,
-          creationTxHash: submittedHash,
+          creationTxHash: creationTxHash,
         });
       } else {
-        setError(e?.message || "Unable to create the organization.");
+        setError({ message: e?.message || "Unable to create the organization.", requestId: e?.requestId });
       }
     } finally {
-      updateStep("idle");
+      setFinalizing(false);
     }
   };
 
   const handleRetrySync = async () => {
     if (!retryPayload) return;
-    setError("");
-    setCreateStep("finalize");
+    setError(null);
+    setFinalizing(true);
     try {
       const json = await finalizeOrg(retryPayload);
       const handle = json?.data?.handle || retryPayload.handle;
       window.location.href = `/orgs/${handle}`;
     } catch (e: any) {
-      setError(e?.message || "Unable to sync the organization.");
+      setError({ message: e?.message || "Unable to sync the organization.", requestId: e?.requestId });
     } finally {
-      setCreateStep("idle");
+      setFinalizing(false);
     }
   };
 
   return (
     <div className="space-y-8">
-      <Section title="Organizations" description="Discover or create a workspace for your team, program, or community.">
+      <PageHeader
+        title="Organizations"
+        description="Discover or create a workspace for your team, program, or community."
+      />
+      {!token ? (
+        <AuthRequired
+          title="Sign in to create an organization"
+          description="Connect your wallet and sign in before submitting the on-chain transaction."
+        />
+      ) : null}
+      <Section title="Find or create" description="Look up an existing org or create a new workspace.">
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardBody className="space-y-4">
@@ -261,13 +271,24 @@ export default function OrgsPage() {
                 <div className="text-sm font-semibold">Create a new org</div>
                 {form.visibility && <Badge variant="neutral">{form.visibility}</Badge>}
               </div>
-              {error && <div className="text-xs text-danger">{error}</div>}
+              {requiredChainId ? (
+                <ChainRequired requiredChainId={requiredChainId} requiredChainLabel={requiredChainLabel || undefined} />
+              ) : null}
+              {error ? (
+                <ErrorState
+                  message={error.message}
+                  requestId={error.requestId}
+                  onRetry={retryPayload ? handleRetrySync : undefined}
+                  retryLabel={retryPayload ? "Retry sync" : undefined}
+                />
+              ) : null}
               {statusLabel && (
                 <div className="text-xs text-muted-foreground">
                   {statusLabel}
-                  {txHash ? ` (${txHash.slice(0, 10)}...)` : ""}
+                  {tx.txHash ? ` (${tx.txHash.slice(0, 10)}...)` : ""}
                 </div>
               )}
+              {tx.state !== "idle" || tx.error ? <TxStepper state={tx.state} txHash={tx.txHash} error={tx.error} /> : null}
               <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
                 <input
                   value={form.handle}
@@ -303,15 +324,10 @@ export default function OrgsPage() {
                   className="rounded-2xl border border-border bg-surface px-3 py-2 text-sm md:col-span-2"
                   rows={3}
                 />
-                <Button type="submit" disabled={createStep !== "idle" || isSwitching} className="md:col-span-2">
-                  {createStep !== "idle" || isSwitching ? "Creating..." : "Create org"}
+                <Button type="submit" disabled={isBusy || !token} className="md:col-span-2">
+                  {isBusy ? "Creating..." : "Create org"}
                 </Button>
               </form>
-              {retryPayload ? (
-                <Button variant="secondary" onClick={handleRetrySync} disabled={createStep !== "idle"}>
-                  Retry sync
-                </Button>
-              ) : null}
             </CardBody>
           </Card>
         </div>

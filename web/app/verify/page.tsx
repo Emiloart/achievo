@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { PageHeader } from "../../components/nav/PageHeader";
 import { Badge, Button, Card, CardBody } from "../../components/ui";
 
 type Kind = "EXPORT" | "PROOF" | "VALIDATION" | "ANCHOR" | "TX";
@@ -76,10 +77,10 @@ export default function VerifyPage() {
     <div className="space-y-10">
       <div className="space-y-3">
         <Badge variant="info">Verification portal</Badge>
-        <h1 className="text-3xl font-display text-text">Verify a claim</h1>
-        <p className="text-sm text-textMuted">
-          Paste an export link, proof id, validation id, anchor hash, or transaction hash to verify authenticity.
-        </p>
+        <PageHeader
+          title="Verify a claim"
+          description="Paste an export link, proof id, validation id, anchor hash, or transaction hash to verify authenticity."
+        />
       </div>
 
       <Card>

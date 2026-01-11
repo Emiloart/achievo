@@ -5,10 +5,14 @@
  */
 type ApiErrorPayload = {
   success?: boolean;
+  requestId?: string;
+  traceId?: string;
   error?: {
     code?: string;
     message?: string;
     statusCode?: number;
+    requestId?: string;
+    traceId?: string;
   };
 };
 
@@ -59,6 +63,11 @@ function extractMessage(payload: ApiErrorPayload | null, raw: string) {
   return raw;
 }
 
+function extractRequestId(payload: ApiErrorPayload | null) {
+  if (!payload) return null;
+  return payload.error?.requestId || payload.error?.traceId || payload.requestId || payload.traceId || null;
+}
+
 /** Formats API error payloads into a user-facing message. */
 export function formatApiError(raw: string, fallback = "We couldn't complete that request. Please try again.") {
   const text = String(raw || "").trim();
@@ -86,4 +95,22 @@ export async function getApiErrorMessage(
 ) {
   const text = await res.text();
   return formatApiError(text, fallback || res.statusText);
+}
+
+/** Extracts a user-facing message and request id from a backend error response. */
+export async function getApiError(
+  res: Response,
+  fallback = "We couldn't complete that request. Please try again.",
+): Promise<{ message: string; requestId: string | null }> {
+  const text = await res.text();
+  let payload: ApiErrorPayload | null = null;
+  try {
+    payload = JSON.parse(text) as ApiErrorPayload;
+  } catch {
+    payload = null;
+  }
+  return {
+    message: formatApiError(text, fallback || res.statusText),
+    requestId: extractRequestId(payload),
+  };
 }

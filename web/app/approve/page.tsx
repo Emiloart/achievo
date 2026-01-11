@@ -1,9 +1,13 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { coreAddress, coreAbi } from "../../lib/contracts";
 import toast from "react-hot-toast";
+import { PageHeader } from "../../components/nav/PageHeader";
+import { LoadingState } from "../../components/states/LoadingState";
+import { TxStepper } from "../../components/tx/TxStepper";
+import { useTxLifecycle } from "../../components/tx/useTxLifecycle";
 
 function ApproveClient() {
   const params = useSearchParams();
@@ -48,14 +52,25 @@ function ApproveClient() {
     query: { enabled: Boolean(goalId !== undefined && goalData && address) },
   });
 
-  const { writeContract, data: hash, isPending } = useWriteContract();
-  const receipt = useWaitForTransactionReceipt({ hash });
+  const { writeContractAsync, isPending } = useWriteContract();
+  const tx = useTxLifecycle(1);
 
   const approve = async () => {
     if (goalId === undefined) return toast.error("Enter a valid goal id");
     try {
-      writeContract({ address: coreAddress, abi: coreAbi, functionName: "approve", args: [goalId] });
-      toast.loading("Submitting approval...");
+      tx.reset();
+      const result = await tx.submit(() =>
+        writeContractAsync({ address: coreAddress, abi: coreAbi, functionName: "approve", args: [goalId] }),
+      );
+      if (result.status === "confirmed") {
+        toast.success("Approval confirmed");
+        return;
+      }
+      if (result.error?.message) {
+        toast.error(result.error.message);
+        return;
+      }
+      toast.error("Approval failed");
     } catch (e: any) {
       toast.error(e?.shortMessage || e?.message || "Failed");
     }
@@ -68,7 +83,7 @@ function ApproveClient() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Approve a Goal</h2>
+      <PageHeader title="Approve a goal" description="Review a goal and submit your on-chain approval." />
       <div className="flex items-center gap-2">
         <input
           value={goalIdInput}
@@ -79,10 +94,14 @@ function ApproveClient() {
         <button className="px-4 py-2 rounded-md border" onClick={() => refetch()}>
           Load
         </button>
-        {canApprove ? (
+          {canApprove ? (
           <>
-            <button disabled={isPending} className="px-4 py-2 rounded-md bg-brand-600 text-white" onClick={approve}>
-              Approve
+            <button
+              disabled={isPending || tx.state !== "idle"}
+              className="px-4 py-2 rounded-md bg-brand-600 text-white"
+              onClick={approve}
+            >
+              {tx.state !== "idle" ? "Submitting..." : "Approve"}
             </button>
             <button className="px-4 py-2 rounded-md border text-sm" onClick={() => setDismissed(true)}>
               Ignore
@@ -120,18 +139,19 @@ function ApproveClient() {
         </div>
       ) : null}
 
-      {receipt.data && (
+      {tx.state !== "idle" || tx.error ? <TxStepper state={tx.state} txHash={tx.txHash} error={tx.error} /> : null}
+      {tx.state === "finalized" && tx.txHash ? (
         <div className="rounded-md border bg-white p-4">
-          <div className="font-medium">Tx: {hash}</div>
+          <div className="font-medium">Tx: {tx.txHash}</div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
 export default function ApprovePage() {
   return (
-    <Suspense fallback={<div className="text-gray-500">Loading...</div>}>
+    <Suspense fallback={<LoadingState title="Loading approval flow" description="Preparing on-chain approval." />}>
       <ApproveClient />
     </Suspense>
   );

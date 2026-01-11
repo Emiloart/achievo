@@ -1,10 +1,13 @@
 "use client";
 import { useState } from "react";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useWriteContract } from "wagmi";
 import { coreAddress, coreAbi } from "../../../lib/contracts";
 import toast from "react-hot-toast";
 import { uploadFile, uploadJSON } from "../../../lib/ipfs";
 import { isAddress } from "viem";
+import { PageHeader } from "../../../components/nav/PageHeader";
+import { TxStepper } from "../../../components/tx/TxStepper";
+import { useTxLifecycle } from "../../../components/tx/useTxLifecycle";
 
 export default function CreateGoalPage() {
   const [title, setTitle] = useState("");
@@ -13,11 +16,12 @@ export default function CreateGoalPage() {
   const [peerInput, setPeerInput] = useState("");
   const [restrictPeers, setRestrictPeers] = useState(false);
   const [goalCID, setGoalCID] = useState("");
-  const { data: hash, writeContractAsync, isPending } = useWriteContract();
-  const receipt = useWaitForTransactionReceipt({ hash });
+  const { writeContractAsync, isPending } = useWriteContract();
+  const tx = useTxLifecycle(1);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    tx.reset();
     try {
       let imageUri: string | undefined;
       if (imageFile) {
@@ -45,25 +49,35 @@ export default function CreateGoalPage() {
       if (!restrictPeers && formattedPeers.length > 0) {
         throw new Error("Enable the restriction toggle to use a peer allow list");
       }
-      if (restrictPeers) {
-        if (formattedPeers.length === 0) {
-          throw new Error("Add at least one peer address when restricting approvals");
+      const submit = async () => {
+        if (restrictPeers) {
+          if (formattedPeers.length === 0) {
+            throw new Error("Add at least one peer address when restricting approvals");
+          }
+          return writeContractAsync({
+            address: coreAddress,
+            abi: coreAbi,
+            functionName: "createGoalWithPeers",
+            args: [upGoal.uri, formattedPeers, true],
+          });
         }
-        await writeContractAsync({
-          address: coreAddress,
-          abi: coreAbi,
-          functionName: "createGoalWithPeers",
-          args: [upGoal.uri, formattedPeers, true],
-        });
-      } else {
-        await writeContractAsync({
+        return writeContractAsync({
           address: coreAddress,
           abi: coreAbi,
           functionName: "createGoal",
           args: [upGoal.uri],
         });
+      };
+      const result = await tx.submit(submit);
+      if (result.status === "confirmed") {
+        toast.success("Goal confirmed on-chain");
+        return;
       }
-      toast.success("Goal transaction submitted");
+      if (result.error?.message) {
+        toast.error(result.error.message);
+        return;
+      }
+      toast.error("Transaction failed");
     } catch (e: any) {
       toast.error(e?.shortMessage || e?.message || "Failed");
     }
@@ -71,7 +85,7 @@ export default function CreateGoalPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Create Goal</h2>
+      <PageHeader title="Create goal" description="Anchor a new goal on-chain and invite peers to approve." />
       <form onSubmit={onSubmit} className="space-y-3 max-w-xl">
         <input
           value={title}
@@ -100,17 +114,18 @@ export default function CreateGoalPage() {
         <p className="text-xs text-gray-500">
           When enabled, only the specified peers will be able to approve this goal.
         </p>
-        <button disabled={isPending} className="px-4 py-2 rounded-md bg-brand-600 text-white">
-          {isPending ? "Submitting..." : "Create"}
+        <button disabled={isPending || tx.state !== "idle"} className="px-4 py-2 rounded-md bg-brand-600 text-white">
+          {isPending || tx.state !== "idle" ? "Submitting..." : "Create"}
         </button>
       </form>
-      {receipt.data && (
+      {tx.state !== "idle" || tx.error ? <TxStepper state={tx.state} txHash={tx.txHash} error={tx.error} /> : null}
+      {tx.state === "finalized" && tx.txHash ? (
         <div className="rounded-md border bg-white p-4">
-          <div className="font-medium">Tx: {hash}</div>
+          <div className="font-medium">Tx: {tx.txHash}</div>
           <div className="text-sm text-gray-600 break-all">Goal CID: {goalCID}</div>
           <div className="text-sm text-gray-600">Check your goal with the latest ID on the home page.</div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

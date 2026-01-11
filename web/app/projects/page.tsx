@@ -1,10 +1,15 @@
 "use client";
 import Link from "next/link";
 
-import { getApiErrorMessage } from "../../lib/apiError";
+import { getApiError } from "../../lib/apiError";
 import type { Route } from "next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useBackendAuth } from "../../hooks/useBackendAuth";
+import { PageHeader } from "../../components/nav/PageHeader";
+import { AuthRequired } from "../../components/states/AuthRequired";
+import { EmptyState } from "../../components/states/EmptyState";
+import { ErrorState } from "../../components/states/ErrorState";
+import { LoadingState } from "../../components/states/LoadingState";
 
 const API_BASE = "/api";
 
@@ -34,7 +39,7 @@ export default function ProjectsPage() {
   const { token } = useBackendAuth();
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<{ message: string; requestId?: string | null } | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
 
   const fetchProjects = useCallback(async () => {
@@ -43,18 +48,23 @@ export default function ProjectsPage() {
       return;
     }
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       const query = statusFilter ? `?status=${encodeURIComponent(statusFilter)}` : "";
       const res = await fetch(`${API_BASE}/projects${query}`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
-      if (!res.ok) throw new Error(await getApiErrorMessage(res));
+      if (!res.ok) {
+        const { message, requestId } = await getApiError(res, "Failed to load projects.");
+        const err = new Error(message);
+        (err as { requestId?: string | null }).requestId = requestId;
+        throw err;
+      }
       const json = await res.json();
       setProjects(Array.isArray(json.data) ? json.data : []);
     } catch (e: any) {
-      setError(e?.message || "Failed to load projects");
+      setError({ message: e?.message || "Failed to load projects", requestId: e?.requestId });
     } finally {
       setLoading(false);
     }
@@ -66,13 +76,22 @@ export default function ProjectsPage() {
 
   const content = useMemo(() => {
     if (!token) {
-      return <div className="text-sm text-gray-500">Sign in to view your projects.</div>;
+      return <AuthRequired title="Sign in to view projects" description="Connect your wallet to access projects." />;
     }
     if (loading) {
-      return <div className="text-sm text-gray-500">Loading projects...</div>;
+      return <LoadingState title="Loading projects" description="Fetching your workspaces and milestones." />;
     }
     if (!projects.length) {
-      return <div className="text-sm text-gray-500">You have no projects yet.</div>;
+    if (error) {
+      return <ErrorState message={error.message} requestId={error.requestId} onRetry={fetchProjects} />;
+    }
+      return (
+        <EmptyState
+          title="No projects yet"
+          description="Create your first project workspace to track goals and deliverables."
+          primaryAction={{ label: "Create project", href: "/projects/new" }}
+        />
+      );
     }
     return (
       <div className="grid gap-4 md:grid-cols-2">
@@ -81,19 +100,19 @@ export default function ProjectsPage() {
         ))}
       </div>
     );
-  }, [token, loading, projects]);
+  }, [token, loading, projects, error, fetchProjects]);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Projects</h2>
-          <p className="text-sm text-gray-500">Track client workspaces, goals, and progress in one place.</p>
-        </div>
-        <Link href="/projects/new" className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm">
-          Create Project
-        </Link>
-      </div>
+      <PageHeader
+        title="Projects"
+        description="Track client workspaces, goals, and progress in one place."
+        actions={
+          <Link href="/projects/new" className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm">
+            Create project
+          </Link>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <label className="text-gray-600">Status</label>
@@ -109,8 +128,9 @@ export default function ProjectsPage() {
         </select>
       </div>
 
-      {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-
+      {error && projects.length ? (
+        <ErrorState message={error.message} requestId={error.requestId} onRetry={fetchProjects} />
+      ) : null}
       {content}
     </div>
   );
