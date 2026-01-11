@@ -80,6 +80,8 @@ const legacy_module_1 = require("./legacy/legacy.module");
 const chain_actions_module_1 = require("./chain-actions/chain-actions.module");
 const governance_module_1 = require("./governance/governance.module");
 const admin_tools_module_1 = require("./admin-tools/admin-tools.module");
+const admin_auth_module_1 = require("./admin-auth/admin-auth.module");
+const admin_gateway_module_1 = require("./admin-gateway/admin-gateway.module");
 const monitoring_module_1 = require("./monitoring/monitoring.module");
 const ops_config_module_1 = require("./config/ops-config.module");
 const metrics_interceptor_1 = require("./common/interceptors/metrics.interceptor");
@@ -107,6 +109,7 @@ exports.AppModule = AppModule = __decorate([
                     AUTH_REFRESH_TTL_DAYS: Joi.number().integer().optional(),
                     AUTH_NONCE_TTL_MINUTES: Joi.number().integer().optional(),
                     COOKIE_SECURE: Joi.string().allow("").optional(),
+                    CORS_ORIGINS: Joi.string().allow("").optional(),
                     RPC_URL: Joi.string().required(),
                     BASE_SEPOLIA_RPC_URL: Joi.string().allow("").optional(),
                     BASE_SEPOLIA_RPC: Joi.string().allow("").optional(),
@@ -208,6 +211,14 @@ exports.AppModule = AppModule = __decorate([
                     ADMIN_API_KEY: Joi.string().allow("").optional(),
                     ADMIN_HMAC_SECRET: Joi.string().allow("").optional(),
                     ADMIN_TS_SKEW_SECONDS: Joi.number().integer().optional(),
+                    ADMIN_ACCESS_TTL_MIN: Joi.number().integer().optional(),
+                    ADMIN_REFRESH_TTL_DAYS: Joi.number().integer().optional(),
+                    ADMIN_LOCKOUT_ATTEMPTS: Joi.number().integer().optional(),
+                    ADMIN_LOCKOUT_WINDOW_MIN: Joi.number().integer().optional(),
+                    ADMIN_LOCKOUT_DURATION_MIN: Joi.number().integer().optional(),
+                    ADMIN_CSRF_TTL_MIN: Joi.number().integer().optional(),
+                    ADMIN_BOOTSTRAP_EMAIL: Joi.string().allow("").optional(),
+                    ADMIN_BOOTSTRAP_PASSWORD: Joi.string().allow("").optional(),
                     ADMIN_INDEXER_MAX_RANGE: Joi.number().integer().optional(),
                     ADMIN_REBUILD_BATCH_SIZE: Joi.number().integer().optional(),
                     ENDORSEMENTS_ENABLED: Joi.string().allow("").optional(),
@@ -295,6 +306,8 @@ exports.AppModule = AppModule = __decorate([
             chain_actions_module_1.ChainActionsModule,
             governance_module_1.GovernanceModule,
             admin_tools_module_1.AdminToolsModule,
+            admin_auth_module_1.AdminAuthModule,
+            admin_gateway_module_1.AdminGatewayModule,
             monitoring_module_1.MonitoringModule,
             ops_config_module_1.OpsConfigModule,
             indexer_module_1.IndexerModule,

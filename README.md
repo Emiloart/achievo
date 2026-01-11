@@ -138,6 +138,43 @@ Troubleshooting: You should only be asked to sign again when your session expire
 - Readiness endpoint: `GET /ready` (checks DB + required RPCs).
 - Admin tools require HMAC-signed requests (see `backend/scripts/sign-admin-request.js`).
 
+## Admin Console
+
+Admin Console is a separate Next.js app in `apps/admin` that uses session cookies and an admin gateway (no secrets in the browser).
+
+Local run:
+
+```bash
+npm --prefix apps/admin run dev
+```
+
+Set `NEXT_PUBLIC_ADMIN_API_BASE_URL` (see `apps/admin/.env.example`) to point at the backend (default: `http://localhost:4000`).
+
+Bootstrap the first SUPERADMIN:
+
+```bash
+ADMIN_BOOTSTRAP_EMAIL=admin@example.com \
+ADMIN_BOOTSTRAP_PASSWORD='replace-with-strong-password' \
+npx ts-node backend/scripts/admin-bootstrap-superadmin.ts
+```
+
+Security model:
+- Admin auth uses email/password with httpOnly cookies (`ach_admin_access`, `ach_admin_refresh`).
+- Mutations require CSRF protection via `x-ach-admin-csrf`.
+- Admin gateway executes operations server-side; API keys/HMAC secrets never leave the backend.
+- Dangerous mutations require dry-run + confirm phrase execution.
+
+Operational workflows (via Admin Console):
+- Retry chain action (dry-run -> execute).
+- Reverify org creation tx.
+- Backfill indexer and rebuild projections.
+- Retry anchoring jobs.
+
+Troubleshooting:
+- CSRF errors: reload to refresh the CSRF cookie and retry.
+- Lockout: SUPERADMIN can reset admin user status.
+- Session expiry: re-login after refresh token expiration.
+
 ## Observability (backend)
 
 - Logs: structured JSON with `requestId` and `x-request-id` response header.

@@ -113,6 +113,12 @@ function buildEnv(runtime: E2ERuntime, options?: { rpcFailMode?: boolean }) {
     ADMIN_API_KEY: runtime.admin.apiKey,
     ADMIN_HMAC_SECRET: runtime.admin.hmacSecret,
     ADMIN_TS_SKEW_SECONDS: "120",
+    ADMIN_ACCESS_TTL_MIN: "15",
+    ADMIN_REFRESH_TTL_DAYS: "30",
+    ADMIN_LOCKOUT_ATTEMPTS: "5",
+    ADMIN_LOCKOUT_WINDOW_MIN: "15",
+    ADMIN_LOCKOUT_DURATION_MIN: "15",
+    ADMIN_CSRF_TTL_MIN: "60",
     E2E_RPC_FAIL_MODE: options?.rpcFailMode ? "true" : "false",
   };
 }

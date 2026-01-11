@@ -1069,6 +1069,72 @@ model ChainActionReceipt {
   @@index([chainId, blockNumber])
 }
 
+enum AdminRole {
+  VIEWER
+  OPERATOR
+  ADMIN
+  SUPERADMIN
+}
+
+model AdminUser {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  passwordHash  String
+  role          AdminRole  @default(VIEWER)
+  isActive      Boolean    @default(true)
+  lockedUntil   DateTime?
+  failedCount   Int        @default(0)
+  lastFailedAt  DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  sessions      AdminSession[]
+  auditLogs     AdminAuditLog[]
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model AdminSession {
+  id               String   @id @default(cuid())
+  adminUserId      String
+  adminUser        AdminUser @relation(fields: [adminUserId], references: [id])
+  refreshTokenHash String
+  refreshFamilyId  String
+  createdAt        DateTime @default(now())
+  lastUsedAt       DateTime @default(now())
+  revokedAt        DateTime?
+  ip               String?
+  userAgent        String?
+
+  @@index([adminUserId])
+  @@index([refreshFamilyId])
+  @@unique([refreshTokenHash])
+}
+
+model AdminCsrfToken {
+  id        String   @id @default(cuid())
+  sessionId String
+  tokenHash String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([sessionId])
+}
+
+model AdminActionIntent {
+  id            String   @id @default(cuid())
+  adminUserId   String
+  action        String
+  payloadHash   String
+  confirmPhrase String
+  expiresAt     DateTime
+  usedAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([adminUserId, action, createdAt])
+}
+
 model AdminRequestNonce {
   id        String   @id @default(cuid())
   nonce     String   @unique
@@ -1083,12 +1149,22 @@ model AdminAuditLog {
   method       String?
   path         String?
   adminKeyHash String?
+  adminUserId  String?
+  adminUser    AdminUser? @relation(fields: [adminUserId], references: [id])
+  role         AdminRole?
+  targetType   String?
+  targetId     String?
   requestId    String?
+  ip           String?
+  userAgent    String?
   statusCode   Int?
+  params       Json?
+  result       Json?
   metadata     Json?
   createdAt    DateTime @default(now())
 
   @@index([action, createdAt])
+  @@index([adminUserId, createdAt])
   @@index([createdAt])
 }
 
@@ -1282,6 +1358,7 @@ enum OperationalAlertType {
   REORG_SPIKE
   RPC_DOWN
   CONFIG_MISMATCH
+  ADMIN_FLAG
 }
 
 enum ProjectionRebuildStatus {
