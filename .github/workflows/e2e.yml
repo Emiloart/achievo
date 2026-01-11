@@ -27,7 +27,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/achievo_e2e
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -56,7 +56,7 @@ jobs:
     if: github.event_name == 'schedule' && secrets.BASE_SEPOLIA_RPC_URL != '' && secrets.BASE_SEPOLIA_SMOKE_ENABLED == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: npm
