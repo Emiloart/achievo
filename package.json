@@ -1,7 +1,7 @@
 {
   "name": "achievo",
   "version": "1.0.0",
-  "description": "Achievo – proof-of-achievement protocol (MVP) using Hardhat 3 + Ethers v6",
+  "description": "Achievo – proof-of-achievement protocol monorepo using Hardhat 3 + Ethers v6",
   "type": "module",
   "main": "index.js",
   "scripts": {
