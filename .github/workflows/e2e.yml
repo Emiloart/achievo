@@ -26,7 +26,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/achievo_e2e
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' && secrets.BASE_SEPOLIA_RPC_URL != '' && secrets.BASE_SEPOLIA_SMOKE_ENABLED == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
