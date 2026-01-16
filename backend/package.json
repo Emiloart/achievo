@@ -26,7 +26,7 @@
     "@nestjs/platform-fastify": "^10.0.0",
     "@nestjs/swagger": "^7.4.2",
     "@nestjs/throttler": "^5.1.2",
-    "@prisma/client": "^5.20.0",
+    "@prisma/client": "^7.2.0",
     "achievo": "file:..",
     "argon2": "^0.31.2",
     "class-transformer": "^0.5.1",
