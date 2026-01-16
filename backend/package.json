@@ -24,7 +24,7 @@
     "@nestjs/jwt": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-fastify": "^10.0.0",
-    "@nestjs/swagger": "^7.4.2",
+    "@nestjs/swagger": "^11.2.5",
     "@nestjs/throttler": "^5.1.2",
     "@prisma/client": "^5.20.0",
     "achievo": "file:..",
