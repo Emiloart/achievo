@@ -20,7 +20,7 @@
     "framer-motion": "11.11.17",
     "next": "14.2.15",
     "qrcode.react": "^3.1.0",
-    "react": "18.3.1",
+    "react": "19.2.3",
     "react-dom": "18.3.1",
     "react-hook-form": "7.53.1",
     "react-hot-toast": "2.4.1",
@@ -31,7 +31,7 @@
   "devDependencies": {
     "@playwright/test": "1.48.2",
     "@types/node": "22.7.4",
-    "@types/react": "18.3.11",
+    "@types/react": "19.2.8",
     "@types/react-dom": "18.3.1",
     "autoprefixer": "10.4.20",
     "eslint": "8.57.1",
