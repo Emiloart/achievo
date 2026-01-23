@@ -1,27 +1,33 @@
 # Achievo Monorepo
 
-Achievo contains Solidity contracts, a NestJS backend, and a Next.js frontend.
+Achievo is a monorepo for smart contracts, a NestJS API, and Next.js apps that coordinate on-chain org registries, verifiable proofs, and user-facing credential workflows.
 
-## Requirements
+## Architecture
 
-- Node.js 20.x (see `.nvmrc`)
-- PostgreSQL (for backend)
+```mermaid
+flowchart LR
+  Web[web dApp] -->|HTTP| API[backend API]
+  Admin[admin console] -->|HTTP| API
+  API -->|SQL| DB[(Postgres)]
+  API -->|RPC| Chain[(EVM networks)]
+  API --> Indexer[Indexing workers]
+```
 
-## Setup
+## Monorepo layout
+
+- `web/` – public dApp (Next.js)
+- `apps/admin/` – admin console (Next.js)
+- `backend/` – API + workers (NestJS)
+- `contracts/` – Solidity contracts + scripts (Hardhat)
+- `packages/` – shared packages
+
+## Run locally
+
+Install deps:
 
 ```bash
 npm ci
-npm ci --prefix backend
-npm ci --prefix web
 ```
-
-Create backend env:
-
-```bash
-cp backend/.env.example backend/.env
-```
-
-## Local Development
 
 Backend:
 
@@ -29,163 +35,53 @@ Backend:
 npm --prefix backend run dev
 ```
 
-Frontend:
+Web:
 
 ```bash
 npm --prefix web run dev
 ```
 
-Contracts:
+Admin:
 
 ```bash
-npm run compile
-npm run test:contracts
+npm --prefix apps/admin run dev
 ```
 
-## Repo Commands (local + CI)
+Integration tests (dockerized Postgres):
+
+```bash
+npm --prefix backend run test:integration:db
+```
+
+## Quality gates
+
+Repo (CI order: lint -> typecheck -> test -> build):
 
 ```bash
 npm run lint
 npm run typecheck
 npm run test
 npm run build
-npm run format
 ```
 
-CI runs the same sequence: install -> lint -> typecheck -> test -> build.
-
-## Commit Standards
-
-This repository enforces Conventional Commits to keep history consistent and auditable.
-
-Format:
-
-```
-<type>(optional scope): <description>
-```
-
-Types: feat, fix, refactor, chore, docs, test, build, ci, perf, revert
-
-Commits that fail formatting, linting, or secret scanning are rejected by pre-commit hooks.
-
-## API Contracts
-
-- OpenAPI spec: `GET /openapi.json`
-- Swagger UI: `GET /docs` when `DOCS_ENABLED=true`
-- API versioning: optional `x-api-version` header (default `1`)
-
-Integration tests:
+Per-app:
 
 ```bash
-npm run test:integration
+npm --prefix web run lint
+npm --prefix web run typecheck
+npm --prefix web run build
+
+npm --prefix apps/admin run lint
+npm --prefix apps/admin run typecheck
+npm --prefix apps/admin run build
 ```
 
-Note: integration tests require `DATABASE_URL` to point to a test Postgres database.
+## Security model
 
-E2E tests:
+- dApp auth: wallet signature establishes a session; access/refresh cookies are httpOnly; CSRF protected.
+- Admin auth: email/password session with server-side HMAC gateway; secrets never leave the server.
+- Admin actions are gated via CSRF and audited; no admin secrets are exposed to the browser.
 
-```bash
-npm run test:e2e
-```
+## Docs
 
-Notes:
-- E2E spins up a deterministic local chain (anvil if available, otherwise hardhat node).
-- Contracts are deployed to `contracts/deployments/local/e2e.json`.
-- Requires `DATABASE_URL` pointing to a local Postgres instance; the harness creates an isolated schema.
-
-Optional nightly Base Sepolia smoke runs in CI when `BASE_SEPOLIA_SMOKE_ENABLED=true` and a `BASE_SEPOLIA_RPC_URL` secret is provided.
-
-## Governance & Deployments
-
-- `npm run deploy:governance:base-sepolia` deploys `TimelockController` with a multisig proposer/executor.
-- `npm run deploy:org-registry:base-sepolia` deploys the org registry (fee gate + treasury).
-- `npm run deploy:v11:base-sepolia` deploys Core + Badge (v1.2) and wires mint permissions.
-- Set contract admins/owners to the timelock; propose changes via multisig.
-- Deployment artifacts are written to `deployments/base-sepolia/*.json` and used by the backend when env vars are not set.
-
-## On-Chain Confirmations
-
-- Backend records org creation + anchoring txs as chain actions and confirms via finality depth.
-- Org creation flow: `POST /orgs/prepare` → wallet signs `createOrg(handle)` → wait 1+ confirmations → `POST /orgs` with `creationTxHash`.
-- Admin diagnostics endpoint: `GET /admin/chain-actions` (secured with `ADMIN_API_KEY`).
-
-Org creation envs:
-- `ORG_CREATE_REQUIRED=true|false`
-- `ORG_CREATE_CHAIN_ID=84532`
-- `ORG_REGISTRY_ADDRESS=0x...` (or deployment artifact)
-
-## Auth (Sign Once, still working on it)
-
-- Wallet signing is only required to start a session (login) or sign marketplace orders.
-- Backend issues short-lived access + long-lived refresh tokens via httpOnly cookies.
-- Refresh rotates tokens and revokes old sessions; CSRF protection uses `ach_csrf` cookie + `x-ach-csrf` header.
-- Frontend uses `/auth/me` + `/auth/refresh` on boot; navigation never triggers wallet signing.
-
-## Username Marketplace (Signed Orders + Finality)
-
-- Orders are EIP-712 signed by makers and stored off-chain with full audit data (typed data, signature, recovered signer).
-- Settlement modes:
-  - `USERNAME_SETTLEMENT_MODE=OPERATOR` (backend submits transfer when operator is configured).
-  - `USERNAME_SETTLEMENT_MODE=SELLER_TX` (seller submits tx; backend verifies receipt).
-- Every transfer is tracked via `ChainActionReceipt` with reorg-aware confirmation.
-- Availability checks use chain or projections depending on indexer lag.
-
-Troubleshooting: You should only be asked to sign again when your session expires or when creating/canceling orders.
-
-## Ops & Reliability
-
-- Health endpoints: `GET /health`, `/health/chain`, `/health/indexer`, `/health/anchoring`.
-- Readiness endpoint: `GET /ready` (checks DB + required RPCs).
-- Admin tools require HMAC-signed requests (see `backend/scripts/sign-admin-request.js`).
-
-## Admin Console
-
-Admin Console is a separate Next.js app in `apps/admin` that uses session cookies and an admin gateway (no secrets in the browser).
-
-Local run:
-
-```bash
-npm --prefix apps/admin run dev
-```
-
-Set `NEXT_PUBLIC_ADMIN_API_BASE_URL` (see `apps/admin/.env.example`) to point at the backend (default: `http://localhost:4000`).
-
-Bootstrap the first SUPERADMIN:
-
-```bash
-ADMIN_BOOTSTRAP_EMAIL=admin@example.com \
-ADMIN_BOOTSTRAP_PASSWORD='replace-with-strong-password' \
-npx ts-node backend/scripts/admin-bootstrap-superadmin.ts
-```
-
-Security model:
-- Admin auth uses email/password with httpOnly cookies (`ach_admin_access`, `ach_admin_refresh`).
-- Mutations require CSRF protection via `x-ach-admin-csrf`.
-- Admin gateway executes operations server-side; API keys/HMAC secrets never leave the backend.
-- Dangerous mutations require dry-run + confirm phrase execution.
-
-Operational workflows (via Admin Console):
-- Retry chain action (dry-run -> execute).
-- Reverify org creation tx.
-- Backfill indexer and rebuild projections.
-- Retry anchoring jobs.
-
-Troubleshooting:
-- CSRF errors: reload to refresh the CSRF cookie and retry.
-- Lockout: SUPERADMIN can reset admin user status.
-- Session expiry: re-login after refresh token expiration.
-
-## Observability (backend)
-
-- Logs: structured JSON with `requestId` and `x-request-id` response header.
-- Metrics: `GET /metrics` is disabled unless `METRICS_ENABLED=true`; expose only on trusted networks.
-
-## Ops & Runbooks
-
-See `ops/` for runbooks, outage handling, and the pre-launch checklist.
-
-## Smoke Test
-
-```bash
-BASE_URL=http://127.0.0.1:4000 npm run smoke:test
-```
+See `docs/README.md` for the documentation index.

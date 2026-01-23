@@ -3008,3 +3008,356 @@ Snapshots:   0 total
 Time:        74.087 s
 Ran all test suites matching /unit/i.
 ```
+
+## Pitch readiness pack verification (2026-01-24 00:18:57)
+
+### Command
+
+```
+npm --prefix web run lint
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 lint
+> next lint
+
+✔ No ESLint warnings or errors
+```
+
+### Command
+
+```
+npm --prefix web run typecheck
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 typecheck
+> tsc -p tsconfig.json --noEmit
+```
+
+### Command
+
+```
+npm --prefix web run build
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 build
+> next build
+
+ ⚠ Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+  ▲ Next.js 14.2.15
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · externalDir
+
+   Creating an optimized production build ...
+   Using tsconfig file: ./tsconfig.build.json
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18)
+   Generating static pages (8/18)
+   Generating static pages (13/18)
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                Size     First Load JS
+┌ ○ /                                      7.55 kB         190 kB
+├ ○ /_not-found                            880 B          88.4 kB
+├ ○ /about                                 143 B          87.6 kB
+├ ○ /admin                                 1.74 kB         108 kB
+├ ƒ /api/[...path]                         0 B                0 B
+├ ○ /approve                               5 kB            201 kB
+├ ○ /dashboard                             11.3 kB         217 kB
+├ ƒ /exports/[publicId]                    7.14 kB         119 kB
+├ ƒ /goals/[id]                            10.9 kB         223 kB
+├ ○ /goals/new                             7.14 kB         197 kB
+├ ○ /identity                              6.26 kB         202 kB
+├ ƒ /invoices/public/[slug]                4.15 kB        91.6 kB
+├ ○ /orgs                                  7.31 kB         209 kB
+├ ƒ /orgs/[handle]                         9.05 kB         145 kB
+├ ƒ /orgs/[handle]/admin                   10 kB           150 kB
+├ ƒ /orgs/[handle]/members                 6.12 kB         128 kB
+├ ƒ /orgs/[handle]/programs/[slug]         5.83 kB         128 kB
+├ ƒ /orgs/[handle]/programs/[slug]/submit  6.19 kB         128 kB
+├ ○ /parties                               5.76 kB         116 kB
+├ ƒ /parties/[slug]                        6.79 kB         117 kB
+├ ○ /parties/new                           5.8 kB          109 kB
+├ ƒ /profile/[address]                     14.9 kB         234 kB
+├ ƒ /profile/professional/[handle]         5.37 kB         112 kB
+├ ○ /projects                              4.72 kB         193 kB
+├ ƒ /projects/[slug]                       11.5 kB         217 kB
+├ ƒ /projects/[slug]/invoices/[invoiceId]  6.62 kB         117 kB
+├ ƒ /projects/[slug]/invoices/new          6.64 kB         117 kB
+├ ○ /projects/new                          6.17 kB         109 kB
+├ ƒ /projects/share/[slug]                 4.23 kB        91.7 kB
+├ ƒ /s/[slug]                              5.48 kB         112 kB
+├ ƒ /share/[publicId]                      5.43 kB         112 kB
+├ ○ /usernames/market                      7.14 kB         209 kB
+├ ○ /validators/inbox                      8.27 kB         214 kB
+├ ○ /verify                                3.89 kB         124 kB
+├ ƒ /verify/anchor/[hash]                  1.76 kB         115 kB
+├ ƒ /verify/export/[publicId]              2.24 kB         115 kB
+├ ƒ /verify/proof/[id]                     2.23 kB         115 kB
+├ ƒ /verify/tx/[txHash]                    1.79 kB         115 kB
+└ ƒ /verify/validation/[id]                2.26 kB         115 kB
++ First Load JS shared by all              87.5 kB
+  ├ chunks/2117-e340696670a44cf1.js        31.8 kB
+  ├ chunks/fd9d1056-7264e1b4e29d00f5.js    53.6 kB
+  └ other shared chunks (total)            2.1 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+```
+
+### Command
+
+```
+npm --prefix web run test:e2e
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 test:e2e
+> playwright test
+
+[WebServer] ⚠ Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+
+Running 18 tests using 1 worker
+
+[WebServer] [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+  ok 1 e2e.spec.ts:120:1 › verification page renders (44.5s)
+  ok 2 e2e.spec.ts:125:1 › projects page renders for mocked auth (17.1s)
+  ok 3 e2e.spec.ts:154:1 › navigation does not request auth nonce after session established (16.9s)
+  ok 4 e2e.spec.ts:168:1 › org creation requires on-chain tx before backend finalize (12.1s)
+  ok 5 e2e.spec.ts:207:1 › degraded banner appears when health is degraded (1.4s)
+  ok 6 e2e.spec.ts:220:1 › degraded banner stays hidden when health is ok (5.2s)
+  ok 7 e2e.spec.ts:225:1 › verification unknown state renders as non-failure (13.9s)
+  ok 8 e2e.spec.ts:244:1 › verification proof renders invalid and not found states (13.6s)
+  ok 9 e2e.spec.ts:272:1 › verification tx renders unknown, invalid, and not found states (26.6s)
+  ok 10 e2e.spec.ts:310:1 › policy gating disables verify portal and username market (18.6s)
+  ok 11 e2e.spec.ts:325:1 › session indicator shows sign in when signed out (2.6s)
+  ok 12 e2e.spec.ts:343:1 › org create page shows tx stepper and finality timeline when tx state is preset (9.2s)
+  ok 13 e2e.spec.ts:356:1 › org admin workbench renders tabs (17.5s)
+  ok 14 e2e.spec.ts:385:1 › validator inbox renders registration gate or inbox (13.9s)
+  ok 15 e2e.spec.ts:392:1 › project workbench renders tab shell (13.8s)
+  ok 16 e2e.spec.ts:464:1 › username market trade transitions from pending to confirmed (5.4s)
+  ok 17 e2e.spec.ts:517:1 › a11y: global nav keyboard access and modal focus trap (15.1s)
+  ok 18 e2e.spec.ts:552:1 › a11y snapshots include headings for key routes (22.8s)
+
+  Slow test file: e2e.spec.ts (4.5m)
+  Consider splitting slow test files to speed up parallel execution
+  18 passed (4.9m)
+```
+
+### Command
+
+```
+npm --prefix apps/admin run lint
+```
+
+### Output
+
+```
+> achievo-admin@0.1.0 lint
+> next lint
+
+✔ No ESLint warnings or errors
+```
+
+### Command
+
+```
+npm --prefix apps/admin run typecheck
+```
+
+### Output
+
+```
+> achievo-admin@0.1.0 typecheck
+> tsc -p tsconfig.json --noEmit
+```
+
+### Command
+
+```
+npm --prefix apps/admin run build
+```
+
+### Output
+
+```
+> achievo-admin@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.15
+  - Experiments (use with caution):
+    · externalDir
+    · typedRoutes
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/25) ...
+   Generating static pages (6/25)
+   Generating static pages (12/25)
+   Generating static pages (18/25)
+ ✓ Generating static pages (25/25)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    3.33 kB        90.4 kB
+├ ○ /_not-found                          873 B            88 kB
+├ ○ /alerts                              2.53 kB        89.7 kB
+├ ○ /anchoring                           3.16 kB        90.3 kB
+├ ƒ /api/admin/[...path]                 0 B                0 B
+├ ƒ /api/admin/actions/dry-run           0 B                0 B
+├ ƒ /api/admin/actions/execute           0 B                0 B
+├ ƒ /api/admin/actions/recent            0 B                0 B
+├ ƒ /api/admin/login                     0 B                0 B
+├ ƒ /api/admin/logout                    0 B                0 B
+├ ƒ /api/admin/me                        0 B                0 B
+├ ƒ /api/admin/policy                    0 B                0 B
+├ ƒ /api/admin/refresh                   0 B                0 B
+├ ○ /audit-logs                          3.12 kB        90.2 kB
+├ ○ /chain-actions                       3.73 kB        97.7 kB
+├ ƒ /chain-actions/[id]                  3.72 kB        90.8 kB
+├ ○ /health                              2.17 kB        89.3 kB
+├ ○ /indexer                             3.73 kB        90.8 kB
+├ ○ /login                               1.82 kB        88.9 kB
+├ ○ /orgs                                2.76 kB        89.9 kB
+├ ○ /policies                            1.93 kB          89 kB
+├ ○ /settings                            2.06 kB          96 kB
+├ ○ /settings/security                   2.97 kB        90.1 kB
+├ ○ /usernames                           2.01 kB        89.1 kB
+└ ○ /users                               2 kB           89.1 kB
++ First Load JS shared by all            87.1 kB
+  ├ chunks/117-022b78fc13771251.js       31.6 kB
+  ├ chunks/fd9d1056-fdc813d0a7d52d12.js  53.6 kB
+  └ other shared chunks (total)          1.89 kB
+
+
+ƒ Middleware                             26.7 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+```
+
+### Command
+
+```
+npm --prefix backend run test:unit
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 test:unit
+> jest -c jest.config.cjs --testPathPattern=unit
+
+PASS test/unit/adminSessionAuth.spec.ts (43.995 s)
+PASS test/unit/adminGateway.spec.ts (52.581 s)
+PASS test/unit/usernameMarket.spec.ts
+[Nest] 19740  - 01/23/2026, 11:33:48 PM     LOG [UsernamesMarketService] {"message":"username_trade_pending","tradeId":"trade-1","orderId":"order-3","txHash":"0xabc"}
+PASS test/unit/chainVerify.spec.ts
+PASS test/unit/throttle.spec.ts (15.662 s)
+PASS test/unit/health.spec.ts
+PASS test/unit/validationsService.spec.ts
+PASS test/unit/adminTools.spec.ts
+PASS test/unit/openapi.spec.ts (64.461 s)
+PASS test/unit/orgCreation.spec.ts
+[Nest] 22224  - 01/23/2026, 11:33:58 PM   ERROR [OpsConfigService] Deployment compatibility failed: Org registry RPC chainId mismatch; Org registry address has no code; Anchor registry RPC chainId mismatch; Anchor registry address has no code
+PASS test/unit/opsConfig.spec.ts
+[Nest] 22224  - 01/23/2026, 11:33:58 PM     LOG [OpsConfigService] {"message":"startup_config","report":{"service":"backend","chainId":84532,"features":{"orgCreateRequired":false,"anchoringEnabled":false,"indexerEnabled":false,"chainActionsEnabled":true,"monitoringEnabled":false,"governanceSanityCheck":false},"chain":{"orgRegistry":null,"anchorRegistry":null,"orgChainId":84532,"anchorChainId":84532},"confirmationsRequired":20,"indexer":{"startBlock":0,"batchSize":0},"secrets":{"adminKey":null,"adminHmac":null,"anchorOperator":null}}}
+[Nest] 22224  - 01/23/2026, 11:33:58 PM     LOG [OpsConfigService] {"message":"deployments_hash","hash":"9af70381323bb9456b310da493b5e342ba5f7887476760dcfa4b61e5dcfae7d4","path":"C:\\dev\\achievo\\backend\\deployments\\base-sepolia"}
+[Nest] 22224  - 01/23/2026, 11:33:58 PM     LOG [OpsConfigService] {"message":"startup_config","report":{"service":"backend","chainId":84532,"features":{"orgCreateRequired":false,"anchoringEnabled":false,"indexerEnabled":false,"chainActionsEnabled":true,"monitoringEnabled":false,"governanceSanityCheck":false},"chain":{"orgRegistry":"0xorg","anchorRegistry":"0xanchor","orgChainId":84532,"anchorChainId":84532},"confirmationsRequired":20,"indexer":{"startBlock":0,"batchSize":0},"secrets":{"adminKey":null,"adminHmac":null,"anchorOperator":null}}}
+[Nest] 22224  - 01/23/2026, 11:33:58 PM     LOG [OpsConfigService] {"message":"deployments_hash","hash":"9af70381323bb9456b310da493b5e342ba5f7887476760dcfa4b61e5dcfae7d4","path":"C:\\dev\\achievo\\backend\\deployments\\base-sepolia"}
+PASS test/unit/governanceSanity.spec.ts
+PASS test/unit/chainActionsWorker.spec.ts
+PASS test/unit/indexerPipeline.spec.ts
+PASS test/unit/adminCsrfGuard.spec.ts
+PASS test/unit/orgRbac.spec.ts
+PASS test/unit/adminAuth.spec.ts
+PASS test/unit/orgRegistry.spec.ts
+PASS test/unit/adminIntent.spec.ts
+PASS test/unit/usernameNormalize.spec.ts
+PASS test/unit/goalStatus.spec.ts
+PASS test/unit/consistencyScoring.spec.ts
+PASS test/unit/circuitBreaker.spec.ts
+PASS test/unit/indexerProjector.spec.ts
+PASS test/unit/monitoring.spec.ts
+
+Test Suites: 25 passed, 25 total
+Tests:       68 passed, 68 total
+Snapshots:   0 total
+Time:        74.087 s
+Ran all test suites matching /unit/i.
+```
+
+### Command
+
+```
+npm --prefix backend run test:integration:db
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 test:integration:db
+> node scripts/test-integration-db.cjs
+
+time="2026-01-24T00:17:36+01:00" level=warning msg="No services to build"
+ Container achievo_test_db Running
+Test database is ready.
+
+> achievo-backend@0.1.0 test:integration
+> cross-env NODE_ENV=test prisma migrate deploy && cross-env NODE_ENV=test jest -c jest.config.cjs --testPathPattern=integration --runInBand
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\\schema.prisma
+Datasource "db": PostgreSQL database "achievo_test", schema "public" at "localhost:54321"
+
+26 migrations found in prisma/migrations
+
+No pending migrations to apply.
+┌─────────────────────────────────────────────────────────┐
+│  Update available 5.22.0 -> 7.3.0                       │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i -g prisma@latest                               │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+PASS test/integration/orgs-onchain.spec.ts (29.658 s)
+PASS test/integration/auth-session.spec.ts (5.266 s)
+PASS test/integration/auth-proof-flow.spec.ts
+PASS test/integration/throttling.spec.ts
+
+Test Suites: 4 passed, 4 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        44.717 s, estimated 48 s
+Ran all test suites matching /integration/i.
+ Container achievo_test_db Stopping
+ Container achievo_test_db Stopped
+ Container achievo_test_db Removing
+ Container achievo_test_db Removed
+ Network backend_default Removing
+ Network backend_default Removed
+```
