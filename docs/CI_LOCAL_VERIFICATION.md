@@ -1127,9 +1127,9 @@ npm --prefix apps/admin run build
    Linting and checking validity of types ...
    Collecting page data ...
    Generating static pages (0/23) ...
-   Generating static pages (5/23) 
-   Generating static pages (11/23) 
-   Generating static pages (17/23) 
+   Generating static pages (5/23)
+   Generating static pages (11/23)
+   Generating static pages (17/23)
  ✓ Generating static pages (23/23)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -1220,9 +1220,9 @@ npm --prefix apps/admin run build
    Linting and checking validity of types ...
    Collecting page data ...
    Generating static pages (0/23) ...
-   Generating static pages (5/23) 
-   Generating static pages (11/23) 
-   Generating static pages (17/23) 
+   Generating static pages (5/23)
+   Generating static pages (11/23)
+   Generating static pages (17/23)
  ✓ Generating static pages (23/23)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -1313,9 +1313,9 @@ npm --prefix apps/admin run build
    Linting and checking validity of types ...
    Collecting page data ...
    Generating static pages (0/23) ...
-   Generating static pages (5/23) 
-   Generating static pages (11/23) 
-   Generating static pages (17/23) 
+   Generating static pages (5/23)
+   Generating static pages (11/23)
+   Generating static pages (17/23)
  ✓ Generating static pages (23/23)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -1406,9 +1406,9 @@ npm --prefix apps/admin run build
    Linting and checking validity of types ...
    Collecting page data ...
    Generating static pages (0/23) ...
-   Generating static pages (5/23) 
-   Generating static pages (11/23) 
-   Generating static pages (17/23) 
+   Generating static pages (5/23)
+   Generating static pages (11/23)
+   Generating static pages (17/23)
  ✓ Generating static pages (23/23)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -1502,9 +1502,9 @@ npm --prefix web run build
    Checking validity of types ...
    Collecting page data ...
    Generating static pages (0/18) ...
-   Generating static pages (4/18) 
-   Generating static pages (8/18) 
-   Generating static pages (13/18) 
+   Generating static pages (4/18)
+   Generating static pages (8/18)
+   Generating static pages (13/18)
  ✓ Generating static pages (18/18)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -1666,9 +1666,9 @@ npm --prefix web run build
    Checking validity of types ...
    Collecting page data ...
    Generating static pages (0/18) ...
-   Generating static pages (4/18) 
-   Generating static pages (8/18) 
-   Generating static pages (13/18) 
+   Generating static pages (4/18)
+   Generating static pages (8/18)
+   Generating static pages (13/18)
  ✓ Generating static pages (18/18)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -1812,9 +1812,9 @@ npm --prefix apps/admin run build
    Linting and checking validity of types ...
    Collecting page data ...
    Generating static pages (0/23) ...
-   Generating static pages (5/23) 
-   Generating static pages (11/23) 
-   Generating static pages (17/23) 
+   Generating static pages (5/23)
+   Generating static pages (11/23)
+   Generating static pages (17/23)
  ✓ Generating static pages (23/23)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -1906,9 +1906,9 @@ npm --prefix web run build
    Checking validity of types ...
    Collecting page data ...
    Generating static pages (0/18) ...
-   Generating static pages (4/18) 
-   Generating static pages (8/18) 
-   Generating static pages (13/18) 
+   Generating static pages (4/18)
+   Generating static pages (8/18)
+   Generating static pages (13/18)
  ✓ Generating static pages (18/18)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -2005,7 +2005,6 @@ Running 18 tests using 1 worker
   18 passed (4.3m)
 ```
 
-
 ## Admin P2 verification (2026-01-23 01:22:13)
 
 ### Command (initial attempt - failed)
@@ -2093,9 +2092,9 @@ npm --prefix apps/admin run build
    Linting and checking validity of types ...
    Collecting page data ...
    Generating static pages (0/25) ...
-   Generating static pages (6/25) 
-   Generating static pages (12/25) 
-   Generating static pages (18/25) 
+   Generating static pages (6/25)
+   Generating static pages (12/25)
+   Generating static pages (18/25)
  ✓ Generating static pages (25/25)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -2230,7 +2229,7 @@ migrations/
     └─ migration.sql
   └─ 20260111210516_admin_console/
     └─ migration.sql
-      
+
 All migrations have been successfully applied.
 FAIL test/integration/orgs-onchain.spec.ts (39.267 s)
   ● Org creation on-chain gating › rejects org creation without tx hash when on-chain is required
@@ -2374,6 +2373,7 @@ Snapshots:   0 total
 Time:        58.401 s
 Ran all test suites matching /integration/i.
 ```
+
 ## Admin lint re-run (2026-01-23 01:29:06)
 
 ### Command
@@ -2390,6 +2390,7 @@ npm --prefix apps/admin run lint
 
 ✔ No ESLint warnings or errors
 ```
+
 ## Integration DB harness verification (2026-01-23 18:31:27)
 
 ### Command
@@ -2519,4 +2520,491 @@ command timed out after 125076 milliseconds
  ✓ Compiled successfully
    Skipping linting
    Checking validity of types ...
+```
+
+## Web build timeout — P3 follow-up (2026-01-23 23:13:24)
+
+### Command
+
+```
+npm --prefix web run build
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 build
+> next build
+
+ ⚠ Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+  ▲ Next.js 14.2.15
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · externalDir
+
+   Creating an optimized production build ...
+   Using tsconfig file: ./tsconfig.build.json
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18)
+   Generating static pages (8/18)
+   Generating static pages (13/18)
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                Size     First Load JS
+┌ ○ /                                      7.55 kB         190 kB
+├ ○ /_not-found                            880 B          88.4 kB
+├ ○ /about                                 143 B          87.6 kB
+├ ○ /admin                                 1.74 kB         108 kB
+├ ƒ /api/[...path]                         0 B                0 B
+├ ○ /approve                               5 kB            201 kB
+├ ○ /dashboard                             11.3 kB         217 kB
+├ ƒ /exports/[publicId]                    7.14 kB         119 kB
+├ ƒ /goals/[id]                            10.9 kB         223 kB
+├ ○ /goals/new                             7.14 kB         197 kB
+├ ○ /identity                              6.26 kB         202 kB
+├ ƒ /invoices/public/[slug]                4.15 kB        91.6 kB
+├ ○ /orgs                                  7.31 kB         209 kB
+├ ƒ /orgs/[handle]                         9.05 kB         145 kB
+├ ƒ /orgs/[handle]/admin                   10 kB           150 kB
+├ ƒ /orgs/[handle]/members                 6.12 kB         128 kB
+├ ƒ /orgs/[handle]/programs/[slug]         5.83 kB         128 kB
+├ ƒ /orgs/[handle]/programs/[slug]/submit  6.19 kB         128 kB
+├ ○ /parties                               5.76 kB         116 kB
+├ ƒ /parties/[slug]                        6.79 kB         117 kB
+├ ○ /parties/new                           5.8 kB          109 kB
+├ ƒ /profile/[address]                     14.9 kB         234 kB
+├ ƒ /profile/professional/[handle]         5.37 kB         112 kB
+├ ○ /projects                              4.72 kB         193 kB
+├ ƒ /projects/[slug]                       11.5 kB         217 kB
+├ ƒ /projects/[slug]/invoices/[invoiceId]  6.62 kB         117 kB
+├ ƒ /projects/[slug]/invoices/new          6.64 kB         117 kB
+├ ○ /projects/new                          6.17 kB         109 kB
+├ ƒ /projects/share/[slug]                 4.23 kB        91.7 kB
+├ ƒ /s/[slug]                              5.48 kB         112 kB
+├ ƒ /share/[publicId]                      5.43 kB         112 kB
+├ ○ /usernames/market                      7.14 kB         209 kB
+├ ○ /validators/inbox                      8.27 kB         214 kB
+├ ○ /verify                                3.89 kB         124 kB
+├ ƒ /verify/anchor/[hash]                  1.76 kB         115 kB
+├ ƒ /verify/export/[publicId]              2.24 kB         115 kB
+├ ƒ /verify/proof/[id]                     2.23 kB         115 kB
+├ ƒ /verify/tx/[txHash]                    1.79 kB         115 kB
+└ ƒ /verify/validation/[id]                2.26 kB         115 kB
++ First Load JS shared by all              87.5 kB
+  ├ chunks/2117-e340696670a44cf1.js        31.8 kB
+  ├ chunks/fd9d1056-7264e1b4e29d00f5.js    53.6 kB
+  └ other shared chunks (total)            2.1 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+```
+
+### Command
+
+```
+npm --prefix web run lint
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 lint
+> next lint
+
+✔ No ESLint warnings or errors
+```
+
+### Command
+
+```
+npm --prefix web run typecheck
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 typecheck
+> tsc -p tsconfig.json --noEmit
+```
+
+## Backend integration DB harness — verification (2026-01-23 23:24:45)
+
+### Command
+
+```
+docker --version
+```
+
+### Output
+
+```
+Docker version 29.1.3, build f52814d
+```
+
+### Command
+
+```
+docker compose version
+```
+
+### Output
+
+```
+Docker Compose version v5.0.1
+```
+
+### Command
+
+```
+npm --prefix backend run testdb:reset
+```
+
+### Output (initial attempt timed out during image pull; reran after `docker pull postgres:15`)
+
+```
+> achievo-backend@0.1.0 testdb:reset
+> npm run testdb:down && npm run testdb:up
+
+
+> achievo-backend@0.1.0 testdb:down
+> docker compose -f docker-compose.test.yml down -v
+
+time="2026-01-23T23:19:33+01:00" level=warning msg="C:\\dev\\achievo\\backend\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Container achievo_test_db Stopping
+ Container achievo_test_db Stopped
+ Container achievo_test_db Removing
+ Container achievo_test_db Removed
+ Network backend_default Removing
+ Network backend_default Removed
+
+> achievo-backend@0.1.0 testdb:up
+> docker compose -f docker-compose.test.yml up -d
+
+time="2026-01-23T23:19:36+01:00" level=warning msg="C:\\dev\\achievo\\backend\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-01-23T23:19:36+01:00" level=warning msg="No services to build"
+ Network backend_default Creating
+ Network backend_default Created
+ Container achievo_test_db Creating
+ Container achievo_test_db Created
+ Container achievo_test_db Starting
+ Container achievo_test_db Started
+```
+
+### Command
+
+```
+npm --prefix backend run testdb:wait
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 testdb:wait
+> node scripts/wait-for-postgres.cjs
+
+Test database is ready.
+```
+
+### Command
+
+```
+npm --prefix backend run test:integration:db
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 test:integration:db
+> node scripts/test-integration-db.cjs
+
+time="2026-01-23T23:20:15+01:00" level=warning msg="C:\\dev\\achievo\\backend\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-01-23T23:20:15+01:00" level=warning msg="No services to build"
+ Container achievo_test_db Running
+Test database is ready.
+
+> achievo-backend@0.1.0 test:integration
+> cross-env NODE_ENV=test prisma migrate deploy && cross-env NODE_ENV=test jest -c jest.config.cjs --testPathPattern=integration --runInBand
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\\schema.prisma
+Datasource "db": PostgreSQL database "achievo_test", schema "public" at "localhost:54321"
+
+26 migrations found in prisma/migrations
+
+Applying migration `20251121134146_initial_schema`
+Applying migration `20251124094552_2ndmigration`
+Applying migration `20251220072439_add_username_orderbook`
+Applying migration `20251220095524_username_market_v1`
+Applying migration `20251220211044_quest_engine`
+Applying migration `20251220233206_parties_social_layer_v1`
+Applying migration `20251221123227_professional_profiles_share_links_pins`
+Applying migration `20251222000414_projects`
+Applying migration `20251222214352_time_tracking_billing_invoices`
+Applying migration `20251223091628_proof_artifacts`
+Applying migration `20251223121046_validations`
+Applying migration `20251223124256_profile_exports`
+Applying migration `20251223170753_consistency_scores`
+Applying migration `20251223215523_risk_engine`
+Applying migration `20251223231257_endorsements`
+Applying migration `20251223231918_endorsement_relations`
+Applying migration `20251224182843_orgs`
+Applying migration `20251225120000_anchor_registry_queue`
+Applying migration `20251230193412_indexer_org_chain_fields`
+Applying migration `20260104193000_chain_actions_org_onchain_status`
+Applying migration `20260104203000_ops_reliability_pack`
+Applying migration `20260105120000_auth_username_market_upgrade`
+Applying migration `20260108103000_add_username_transfer_chain_action`
+Applying migration `20260108150000_rc_invariants`
+Applying migration `20260108152000_admin_audit_log`
+Applying migration `20260111210516_admin_console`
+
+All migrations have been successfully applied.
+PASS test/integration/orgs-onchain.spec.ts (35.176 s)
+PASS test/integration/auth-proof-flow.spec.ts (6.795 s)
+PASS test/integration/auth-session.spec.ts
+PASS test/integration/throttling.spec.ts
+
+Test Suites: 4 passed, 4 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        51.801 s, estimated 58 s
+Ran all test suites matching /integration/i.
+time="2026-01-23T23:21:22+01:00" level=warning msg="C:\\dev\\achievo\\backend\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Container achievo_test_db Stopping
+ Container achievo_test_db Stopped
+ Container achievo_test_db Removing
+ Container achievo_test_db Removed
+ Network backend_default Removing
+ Network backend_default Removed
+```
+
+### Command
+
+```
+npm --prefix backend run test:unit
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 test:unit
+> jest -c jest.config.cjs --testPathPattern=unit
+
+PASS test/unit/adminSessionAuth.spec.ts (44.44 s)
+PASS test/unit/adminGateway.spec.ts (52.626 s)
+PASS test/unit/usernameMarket.spec.ts
+[Nest] 9820  - 01/23/2026, 11:22:44 PM     LOG [UsernamesMarketService] {"message":"username_trade_pending","tradeId":"trade-1","orderId":"order-3","txHash":"0xabc"}
+[Nest] 9820  - 01/23/2026, 11:22:47 PM   ERROR [OpsConfigService] Deployment compatibility failed: Org registry RPC chainId mismatch; Org registry address has no code; Anchor registry RPC chainId mismatch; Anchor registry address has no code
+PASS test/unit/opsConfig.spec.ts
+[Nest] 9820  - 01/23/2026, 11:22:47 PM     LOG [OpsConfigService] {"message":"startup_config","report":{"service":"backend","chainId":84532,"features":{"orgCreateRequired":false,"anchoringEnabled":false,"indexerEnabled":false,"chainActionsEnabled":true,"monitoringEnabled":false,"governanceSanityCheck":false},"chain":{"orgRegistry":null,"anchorRegistry":null,"orgChainId":84532,"anchorChainId":84532},"confirmationsRequired":20,"indexer":{"startBlock":0,"batchSize":0},"secrets":{"adminKey":null,"adminHmac":null,"anchorOperator":null}}}
+[Nest] 9820  - 01/23/2026, 11:22:47 PM     LOG [OpsConfigService] {"message":"deployments_hash","hash":"9af70381323bb9456b310da493b5e342ba5f7887476760dcfa4b61e5dcfae7d4","path":"C:\\dev\\achievo\\backend\\deployments\\base-sepolia"}
+[Nest] 9820  - 01/23/2026, 11:22:47 PM     LOG [OpsConfigService] {"message":"startup_config","report":{"service":"backend","chainId":84532,"features":{"orgCreateRequired":false,"anchoringEnabled":false,"indexerEnabled":false,"chainActionsEnabled":true,"monitoringEnabled":false,"governanceSanityCheck":false},"chain":{"orgRegistry":"0xorg","anchorRegistry":"0xanchor","orgChainId":84532,"anchorChainId":84532},"confirmationsRequired":20,"indexer":{"startBlock":0,"batchSize":0},"secrets":{"adminKey":null,"adminHmac":null,"anchorOperator":null}}}
+[Nest] 9820  - 01/23/2026, 11:22:47 PM     LOG [OpsConfigService] {"message":"deployments_hash","hash":"9af70381323bb9456b310da493b5e342ba5f7887476760dcfa4b61e5dcfae7d4","path":"C:\\dev\\achievo\\backend\\deployments\\base-sepolia"}
+PASS test/unit/throttle.spec.ts (17.345 s)
+PASS test/unit/adminTools.spec.ts
+PASS test/unit/validationsService.spec.ts
+PASS test/unit/orgCreation.spec.ts
+PASS test/unit/openapi.spec.ts (66.31 s)
+PASS test/unit/governanceSanity.spec.ts
+PASS test/unit/chainVerify.spec.ts
+PASS test/unit/health.spec.ts
+PASS test/unit/chainActionsWorker.spec.ts
+PASS test/unit/indexerPipeline.spec.ts
+PASS test/unit/adminCsrfGuard.spec.ts
+PASS test/unit/adminIntent.spec.ts
+PASS test/unit/orgRbac.spec.ts
+PASS test/unit/usernameNormalize.spec.ts
+PASS test/unit/monitoring.spec.ts
+PASS test/unit/adminAuth.spec.ts
+PASS test/unit/goalStatus.spec.ts
+PASS test/unit/consistencyScoring.spec.ts
+PASS test/unit/indexerProjector.spec.ts
+PASS test/unit/orgRegistry.spec.ts
+PASS test/unit/circuitBreaker.spec.ts
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+
+Test Suites: 25 passed, 25 total
+Tests:       68 passed, 68 total
+Snapshots:   0 total
+Time:        75.115 s
+Ran all test suites matching /unit/i.
+```
+
+## Backend integration DB harness — verification (2026-01-23 23:34:16)
+
+### Command
+
+```
+npm --prefix backend run testdb:reset
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 testdb:reset
+> npm run testdb:down && npm run testdb:up
+
+
+> achievo-backend@0.1.0 testdb:down
+> docker compose -f docker-compose.test.yml down -v
+
+time="2026-01-23T23:30:43+01:00" level=warning msg="C:\\dev\\achievo\\backend\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+
+> achievo-backend@0.1.0 testdb:up
+> docker compose -f docker-compose.test.yml up -d
+
+time="2026-01-23T23:30:45+01:00" level=warning msg="C:\\dev\\achievo\\backend\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-01-23T23:30:45+01:00" level=warning msg="No services to build"
+ Network backend_default Creating
+ Network backend_default Created
+ Container achievo_test_db Creating
+ Container achievo_test_db Created
+ Container achievo_test_db Starting
+ Container achievo_test_db Started
+```
+
+### Command
+
+```
+npm --prefix backend run testdb:wait
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 testdb:wait
+> node scripts/wait-for-postgres.cjs
+
+Test database is ready.
+```
+
+### Command
+
+```
+npm --prefix backend run test:integration:db
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 test:integration:db
+> node scripts/test-integration-db.cjs
+
+time="2026-01-23T23:31:17+01:00" level=warning msg="C:\\dev\\achievo\\backend\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-01-23T23:31:17+01:00" level=warning msg="No services to build"
+ Container achievo_test_db Running
+Test database is ready.
+
+> achievo-backend@0.1.0 test:integration
+> cross-env NODE_ENV=test prisma migrate deploy && cross-env NODE_ENV=test jest -c jest.config.cjs --testPathPattern=integration --runInBand
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\\schema.prisma
+Datasource "db": PostgreSQL database "achievo_test", schema "public" at "localhost:54321"
+
+26 migrations found in prisma/migrations
+
+Applying migration `20251121134146_initial_schema`
+Applying migration `20251124094552_2ndmigration`
+Applying migration `20251220072439_add_username_orderbook`
+Applying migration `20251220095524_username_market_v1`
+Applying migration `20251220211044_quest_engine`
+Applying migration `20251220233206_parties_social_layer_v1`
+Applying migration `20251221123227_professional_profiles_share_links_pins`
+Applying migration `20251222000414_projects`
+Applying migration `20251222214352_time_tracking_billing_invoices`
+Applying migration `20251223091628_proof_artifacts`
+Applying migration `20251223121046_validations`
+Applying migration `20251223124256_profile_exports`
+Applying migration `20251223170753_consistency_scores`
+Applying migration `20251223215523_risk_engine`
+Applying migration `20251223231257_endorsements`
+Applying migration `20251223231918_endorsement_relations`
+Applying migration `20251224182843_orgs`
+Applying migration `20251225120000_anchor_registry_queue`
+Applying migration `20251230193412_indexer_org_chain_fields`
+Applying migration `20260104193000_chain_actions_org_onchain_status`
+Applying migration `20260104203000_ops_reliability_pack`
+Applying migration `20260105120000_auth_username_market_upgrade`
+Applying migration `20260108103000_add_username_transfer_chain_action`
+Applying migration `20260108150000_rc_invariants`
+Applying migration `20260108152000_admin_audit_log`
+Applying migration `20260111210516_admin_console`
+
+All migrations have been successfully applied.
+PASS test/integration/orgs-onchain.spec.ts (30.545 s)
+PASS test/integration/auth-proof-flow.spec.ts (5.752 s)
+PASS test/integration/auth-session.spec.ts (6.907 s)
+PASS test/integration/throttling.spec.ts
+
+Test Suites: 4 passed, 4 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        48.197 s, estimated 51 s
+Ran all test suites matching /integration/i.
+time="2026-01-23T23:32:17+01:00" level=warning msg="C:\\dev\\achievo\\backend\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Container achievo_test_db Stopping
+ Container achievo_test_db Stopped
+ Container achievo_test_db Removing
+ Container achievo_test_db Removed
+ Network backend_default Removing
+ Network backend_default Removed
+```
+
+### Command
+
+```
+npm --prefix backend run test:unit
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 test:unit
+> jest -c jest.config.cjs --testPathPattern=unit
+
+PASS test/unit/adminSessionAuth.spec.ts (43.995 s)
+PASS test/unit/adminGateway.spec.ts (52.581 s)
+PASS test/unit/usernameMarket.spec.ts
+[Nest] 19740  - 01/23/2026, 11:33:48 PM     LOG [UsernamesMarketService] {"message":"username_trade_pending","tradeId":"trade-1","orderId":"order-3","txHash":"0xabc"}
+PASS test/unit/chainVerify.spec.ts
+PASS test/unit/throttle.spec.ts (15.662 s)
+PASS test/unit/health.spec.ts
+PASS test/unit/validationsService.spec.ts
+PASS test/unit/adminTools.spec.ts
+PASS test/unit/openapi.spec.ts (64.461 s)
+PASS test/unit/orgCreation.spec.ts
+[Nest] 22224  - 01/23/2026, 11:33:58 PM   ERROR [OpsConfigService] Deployment compatibility failed: Org registry RPC chainId mismatch; Org registry address has no code; Anchor registry RPC chainId mismatch; Anchor registry address has no code
+PASS test/unit/opsConfig.spec.ts
+[Nest] 22224  - 01/23/2026, 11:33:58 PM     LOG [OpsConfigService] {"message":"startup_config","report":{"service":"backend","chainId":84532,"features":{"orgCreateRequired":false,"anchoringEnabled":false,"indexerEnabled":false,"chainActionsEnabled":true,"monitoringEnabled":false,"governanceSanityCheck":false},"chain":{"orgRegistry":null,"anchorRegistry":null,"orgChainId":84532,"anchorChainId":84532},"confirmationsRequired":20,"indexer":{"startBlock":0,"batchSize":0},"secrets":{"adminKey":null,"adminHmac":null,"anchorOperator":null}}}
+[Nest] 22224  - 01/23/2026, 11:33:58 PM     LOG [OpsConfigService] {"message":"deployments_hash","hash":"9af70381323bb9456b310da493b5e342ba5f7887476760dcfa4b61e5dcfae7d4","path":"C:\\dev\\achievo\\backend\\deployments\\base-sepolia"}
+[Nest] 22224  - 01/23/2026, 11:33:58 PM     LOG [OpsConfigService] {"message":"startup_config","report":{"service":"backend","chainId":84532,"features":{"orgCreateRequired":false,"anchoringEnabled":false,"indexerEnabled":false,"chainActionsEnabled":true,"monitoringEnabled":false,"governanceSanityCheck":false},"chain":{"orgRegistry":"0xorg","anchorRegistry":"0xanchor","orgChainId":84532,"anchorChainId":84532},"confirmationsRequired":20,"indexer":{"startBlock":0,"batchSize":0},"secrets":{"adminKey":null,"adminHmac":null,"anchorOperator":null}}}
+[Nest] 22224  - 01/23/2026, 11:33:58 PM     LOG [OpsConfigService] {"message":"deployments_hash","hash":"9af70381323bb9456b310da493b5e342ba5f7887476760dcfa4b61e5dcfae7d4","path":"C:\\dev\\achievo\\backend\\deployments\\base-sepolia"}
+PASS test/unit/governanceSanity.spec.ts
+PASS test/unit/chainActionsWorker.spec.ts
+PASS test/unit/indexerPipeline.spec.ts
+PASS test/unit/adminCsrfGuard.spec.ts
+PASS test/unit/orgRbac.spec.ts
+PASS test/unit/adminAuth.spec.ts
+PASS test/unit/orgRegistry.spec.ts
+PASS test/unit/adminIntent.spec.ts
+PASS test/unit/usernameNormalize.spec.ts
+PASS test/unit/goalStatus.spec.ts
+PASS test/unit/consistencyScoring.spec.ts
+PASS test/unit/circuitBreaker.spec.ts
+PASS test/unit/indexerProjector.spec.ts
+PASS test/unit/monitoring.spec.ts
+
+Test Suites: 25 passed, 25 total
+Tests:       68 passed, 68 total
+Snapshots:   0 total
+Time:        74.087 s
+Ran all test suites matching /unit/i.
 ```

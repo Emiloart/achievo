@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: achievo_test_db
+    ports:
+      - "54321:5432"
+    environment:
+      POSTGRES_USER: achievo_test
+      POSTGRES_PASSWORD: achievo_test
+      POSTGRES_DB: achievo_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U achievo_test -d achievo_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
