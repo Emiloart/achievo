@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { getApiError, getApiErrorMessage } from "../../../lib/apiError";
 import toast from "react-hot-toast";
@@ -9,8 +9,12 @@ import { AuthRequired } from "../../../components/states/AuthRequired";
 import { EmptyState } from "../../../components/states/EmptyState";
 import { ErrorState } from "../../../components/states/ErrorState";
 import { LoadingState } from "../../../components/states/LoadingState";
-import { StatusPill } from "../../../components/StatusPill";
-import { Badge, Card, CardBody } from "../../../components/ui";
+import { PolicyMarkdown } from "../../../components/policy/PolicyMarkdown";
+import { FinalityTimeline } from "../../../components/tx/FinalityTimeline";
+import type { TxState } from "../../../components/tx/TxTypes";
+import { Alert, Badge, Button, Card, CardBody, CopyField, StatusBadge, StatusPill } from "../../../components/ui";
+import { usePolicy } from "../../../hooks/usePolicy";
+import { ERROR_COPY, UI_LABELS } from "../../../lib/uiCopy";
 
 type AskItem = {
   id: string;
@@ -32,6 +36,7 @@ type TradeItem = {
 
 export default function UsernameMarketPage() {
   const { user } = useBackendAuth();
+  const { isEnabled, getMessage, policy } = usePolicy();
   const [asks, setAsks] = useState<AskItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ message: string; requestId?: string | null } | null>(null);
@@ -51,7 +56,7 @@ export default function UsernameMarketPage() {
         ? "Sellers submit the on-chain transfer; the backend verifies and finalizes once confirmed. Payments are coordinated off-chain."
         : "Settlements are coordinated off-chain, with confirmations tracked once a transfer hash exists. Payments are not escrowed by the protocol.";
 
-  const fetchAsks = async () => {
+  const fetchAsks = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -69,11 +74,12 @@ export default function UsernameMarketPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    if (!isEnabled("usernameMarketEnabled")) return;
     void fetchAsks();
-  }, []);
+  }, [fetchAsks, isEnabled]);
 
   useEffect(() => {
     if (!pendingTrade || pendingTrade.status === "CONFIRMED" || pendingTrade.status === "FAILED") {
@@ -103,7 +109,7 @@ export default function UsernameMarketPage() {
 
   const buyUsername = async (askId: string) => {
     if (!user) {
-      toast.error("Sign in to buy a username");
+      toast.error(ERROR_COPY.auth);
       return;
     }
     const promise = fetch(`/api/usernames/orders/${askId}/accept`, {
@@ -146,12 +152,42 @@ export default function UsernameMarketPage() {
     return status;
   };
 
+  const tradeTxState = (trade: TradeItem): TxState => {
+    if (trade.status === "CONFIRMED") return "finalized";
+    if (trade.status === "FAILED") return "failed";
+    if (trade.status === "DROPPED_REORG") return "reorged";
+    if (trade.status === "UNKNOWN") return "unknown";
+    if (trade.status === "PENDING" && trade.txHash) return "confirming";
+    if (trade.status === "PENDING") return "submitted";
+    return "idle";
+  };
+
+  const chainActionStatus = (status: string) => {
+    if (status === "PENDING" || status === "CONFIRMED" || status === "FAILED" || status === "DROPPED_REORG") {
+      return status;
+    }
+    return undefined;
+  };
+
+  const notice = getMessage("usernameMarket");
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Username Market"
-        description="Browse open @username listings and claim via the registry."
-      />
+      <PageHeader title="Username Market" description="Browse open @username listings and claim via the registry." />
+
+      {!isEnabled("usernameMarketEnabled") ? (
+        <EmptyState
+          title="Username market disabled"
+          description={getMessage("usernameMarket") || "This feature is disabled by policy."}
+          primaryAction={{ label: "Return to identity", href: "/identity" }}
+        />
+      ) : null}
+
+      {notice && isEnabled("usernameMarketEnabled") ? (
+        <Alert tone="info" title="Market notice">
+          <PolicyMarkdown markdown={notice} />
+        </Alert>
+      ) : null}
 
       <Card>
         <CardBody className="space-y-2">
@@ -163,55 +199,68 @@ export default function UsernameMarketPage() {
         </CardBody>
       </Card>
 
-      {!user ? (
+      {!user && isEnabled("usernameMarketEnabled") ? (
         <AuthRequired title="Sign in to trade" description="Connect your wallet to accept an order." />
       ) : null}
 
-      {error ? <ErrorState message={error.message} requestId={error.requestId} onRetry={fetchAsks} /> : null}
+      {error && isEnabled("usernameMarketEnabled") ? (
+        <ErrorState message={error.message} requestId={error.requestId} onRetry={fetchAsks} />
+      ) : null}
 
-      {loading ? (
+      {isEnabled("usernameMarketEnabled") && loading ? (
         <LoadingState title="Loading listings" description="Fetching open username asks." />
-      ) : asks.length ? (
+      ) : isEnabled("usernameMarketEnabled") && asks.length ? (
         <div className="grid gap-4 md:grid-cols-2">
           {asks.map((ask) => (
-            <div key={ask.id} className="rounded-xl border bg-white p-5 space-y-2 shadow-sm">
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-lg font-semibold">@{ask.normalized}</div>
-                <StatusPill status={ask.status} />
-              </div>
-              <div className="text-xs text-textMuted">{renderOrderStatus(ask.status)}</div>
-              <div className="text-sm text-gray-600">Seller: {ask.makerAchusrId || ask.makerAddress}</div>
-              <div className="text-sm text-gray-600">
-                Price: {ask.priceWei} {ask.currency}
-              </div>
-              <button
-                className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm"
-                onClick={() => buyUsername(ask.id)}
-              >
-                Buy
-              </button>
-            </div>
+            <Card key={ask.id}>
+              <CardBody className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-lg font-semibold">@{ask.normalized}</div>
+                  <StatusPill status={ask.status} />
+                </div>
+                <div className="text-xs text-textMuted">{renderOrderStatus(ask.status)}</div>
+                <div className="text-sm text-textMuted">
+                  Seller:{" "}
+                  {policy.displayPolicies.anonymizeUsernameOwner ? "Private" : ask.makerAchusrId || ask.makerAddress}
+                </div>
+                <div className="text-sm text-textMuted">
+                  Price: {ask.priceWei} {ask.currency}
+                </div>
+                <Button size="sm" onClick={() => buyUsername(ask.id)}>
+                  {UI_LABELS.buy}
+                </Button>
+              </CardBody>
+            </Card>
           ))}
         </div>
-      ) : (
+      ) : isEnabled("usernameMarketEnabled") ? (
         <EmptyState
           title="No open listings"
           description="Check back later or create an order from your identity profile."
           primaryAction={{ label: "Go to identity", href: "/identity" }}
         />
-      )}
-      {pendingTrade && (
+      ) : null}
+      {isEnabled("usernameMarketEnabled") && pendingTrade ? (
         <Card>
-          <CardBody className="space-y-2 text-sm text-gray-600">
+          <CardBody className="space-y-2 text-sm text-textMuted">
             <div className="flex items-center justify-between">
               <div>Transfer for @{pendingTrade.normalized}</div>
               <StatusPill status={pendingTrade.status} />
             </div>
             <div>{renderTradeStatus(pendingTrade)}</div>
-            {pendingTrade.txHash ? <div className="text-xs text-textMuted">{pendingTrade.txHash}</div> : null}
+            {pendingTrade.txHash ? (
+              <CopyField label="Transaction hash" value={pendingTrade.txHash} />
+            ) : (
+              <StatusBadge tone="warning">Awaiting transaction hash</StatusBadge>
+            )}
+            <FinalityTimeline
+              state={tradeTxState(pendingTrade)}
+              txHash={pendingTrade.txHash || undefined}
+              chainActionStatus={chainActionStatus(pendingTrade.status)}
+            />
           </CardBody>
         </Card>
-      )}
+      ) : null}
     </div>
   );
 }

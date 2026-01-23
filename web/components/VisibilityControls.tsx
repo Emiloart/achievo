@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePrivacyOverrides, type RedactionMode, type VisibilityLevel } from "../hooks/usePrivacySettings";
-import { Button, Badge } from "./ui";
-import { uiToast } from "./ui/toast";
+import { Button, CopyableText, Select, StatusBadge, uiToast } from "./ui";
 
 const VISIBILITY_OPTIONS: { value: VisibilityLevel; label: string }[] = [
   { value: "PUBLIC", label: "Public" },
@@ -95,10 +94,10 @@ export function VisibilityControls({
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
       <label className="text-textMuted">Visibility</label>
-      <select
+      <Select
         value={localVisibility}
         disabled={saving}
-        className="rounded-full border border-border bg-surface2 px-3 py-1 text-xs"
+        className="w-fit text-xs"
         onChange={(e) => handleUpdate(e.target.value as VisibilityLevel, localRedaction)}
       >
         {VISIBILITY_OPTIONS.map((option) => (
@@ -106,14 +105,19 @@ export function VisibilityControls({
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
+      <StatusBadge
+        tone={localVisibility === "PUBLIC" ? "success" : localVisibility === "UNLISTED" ? "warning" : "neutral"}
+      >
+        {localVisibility.toLowerCase()}
+      </StatusBadge>
       {showRedaction && (
         <>
           <label className="text-textMuted">Redaction</label>
-          <select
+          <Select
             value={localRedaction}
             disabled={saving}
-            className="rounded-full border border-border bg-surface2 px-3 py-1 text-xs"
+            className="w-fit text-xs"
             onChange={(e) => handleUpdate(localVisibility, e.target.value as RedactionMode)}
           >
             {REDACTION_OPTIONS.map((option) => (
@@ -121,24 +125,11 @@ export function VisibilityControls({
                 {option.label}
               </option>
             ))}
-          </select>
+          </Select>
         </>
       )}
-      {localVisibility === "UNLISTED" && localToken && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            if (typeof navigator === "undefined") return;
-            navigator.clipboard.writeText(shareLink);
-            uiToast.success("Share link copied");
-          }}
-        >
-          Copy share link
-        </Button>
-      )}
-      {saving && <Badge variant="neutral">Saving...</Badge>}
+      {localVisibility === "UNLISTED" && localToken && <CopyableText label="Share link" value={shareLink} />}
+      {saving && <StatusBadge tone="neutral">Saving...</StatusBadge>}
     </div>
   );
 }

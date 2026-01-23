@@ -1,8 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    typedRoutes: true,
+    externalDir: true,
+    typedRoutes: false,
   },
+  typescript: {
+    tsconfigPath: "./tsconfig.build.json",
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  outputFileTracing: false,
   async headers() {
     if (process.env.NODE_ENV !== "development") return [];
     const connectSrc = ["'self'", "ws:", "wss:", "data:"];

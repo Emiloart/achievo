@@ -6,8 +6,9 @@
 "use client";
 
 import { getApiErrorMessage } from "../lib/apiError";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useBackendAuth } from "./useBackendAuth";
+import { asyncConfirmed, asyncFailed, asyncIdle, asyncLoading, type AsyncState } from "../types/asyncState";
 
 /** Public export bundle metadata returned by the backend. */
 export type ExportBundle = {
@@ -19,7 +20,7 @@ export type ExportBundle = {
   signatureType: string;
   signerAddress: string;
   issuedAt?: number;
-  anchor?: { chainId?: number; contract?: string; txHash?: string } | null;
+  anchor?: { chainId?: number; contract?: string; txHash?: string; anchoredAt?: string | null } | null;
   downloadUrl?: string | null;
   jsonld?: any;
 };
@@ -31,6 +32,7 @@ export function useProfileExportActions() {
   const { token } = useBackendAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [lastExport, setLastExport] = useState<ExportBundle | null>(null);
 
   const createExport = useCallback(
     async (format: "JSON" | "JSONLD" | "PDF", anchor: boolean) => {
@@ -49,7 +51,9 @@ export function useProfileExportActions() {
         });
         if (!res.ok) throw new Error(await getApiErrorMessage(res));
         const json = await res.json();
-        return json.data as ExportBundle;
+        const payload = json.data as ExportBundle;
+        setLastExport(payload);
+        return payload;
       } catch (e: any) {
         const message = e?.message || "Failed to create export";
         setError(message);
@@ -61,5 +65,12 @@ export function useProfileExportActions() {
     [token],
   );
 
-  return { createExport, loading, error };
+  const state: AsyncState<ExportBundle | null> = useMemo(() => {
+    if (loading) return asyncLoading(lastExport);
+    if (error) return asyncFailed(error, lastExport);
+    if (lastExport) return asyncConfirmed(lastExport);
+    return asyncIdle(null);
+  }, [error, lastExport, loading]);
+
+  return { createExport, loading, error, state, lastExport };
 }

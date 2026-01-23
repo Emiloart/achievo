@@ -140,7 +140,7 @@ export default function NewInvoicePage() {
         </Link>
       </div>
 
-      {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-md border border-danger/20 bg-danger/10 p-3 text-sm text-danger">{error}</div>}
 
       <div className="rounded-2xl border bg-white p-5 space-y-4">
         <div className="text-sm font-semibold">Client</div>
@@ -227,7 +227,7 @@ export default function NewInvoicePage() {
                 className="border rounded-md px-2 py-2 text-sm md:col-span-2"
               />
               <div className="text-sm md:col-span-1">{formatCurrency(item.quantity * item.unitAmount, currency)}</div>
-              <button onClick={() => removeLineItem(item.id)} className="text-xs text-red-600 md:col-span-1">
+              <button onClick={() => removeLineItem(item.id)} className="text-xs text-danger md:col-span-1">
                 Remove
               </button>
             </div>

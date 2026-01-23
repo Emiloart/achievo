@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import type { ReactNode } from "react";
 
 export type Breadcrumb = {
@@ -22,7 +23,7 @@ export function PageHeader({ title, description, breadcrumbs, actions }: PageHea
             {breadcrumbs.map((crumb, idx) => (
               <span key={`${crumb.label}-${idx}`} className="inline-flex items-center gap-2">
                 {crumb.href ? (
-                  <Link href={crumb.href} className="hover:text-text">
+                  <Link href={crumb.href as Route} className="hover:text-text">
                     {crumb.label}
                   </Link>
                 ) : (

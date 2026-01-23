@@ -31,11 +31,26 @@ export type TxLifecycleResult = {
   setState: (state: TxState) => void;
 };
 
+type TxLifecycleOverride = {
+  state: TxState;
+  txHash?: `0x${string}` | null;
+  error?: TxError | null;
+};
+
+function resolveE2EOverride(): TxLifecycleOverride | null {
+  if (process.env.NODE_ENV === "production") return null;
+  if (typeof window === "undefined") return null;
+  const override = (globalThis as { __ACHIEVO_E2E_TX_STATE__?: unknown }).__ACHIEVO_E2E_TX_STATE__;
+  if (!override || typeof override !== "object") return null;
+  return override as TxLifecycleOverride;
+}
+
 export function useTxLifecycle(defaultConfirmations = 1): TxLifecycleResult {
   const publicClient = usePublicClient();
-  const [state, setState] = useState<TxState>("idle");
-  const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
-  const [error, setError] = useState<TxError | null>(null);
+  const override = resolveE2EOverride();
+  const [state, setState] = useState<TxState>(override?.state ?? "idle");
+  const [txHash, setTxHash] = useState<`0x${string}` | null>(override?.txHash ?? null);
+  const [error, setError] = useState<TxError | null>(override?.error ?? null);
 
   const reset = useCallback(() => {
     setState("idle");
@@ -73,6 +88,11 @@ export function useTxLifecycle(defaultConfirmations = 1): TxLifecycleResult {
         return { status: "confirmed", txHash: hash };
       } catch (err: any) {
         const normalized = normalizeTxError(err);
+        if (normalized.type === "unknown") {
+          setState("unknown");
+          setError(normalized);
+          return { status: "unknown", error: normalized };
+        }
         setState("failed");
         setError(normalized);
         const status = normalized.type === "rejected" ? "rejected" : "failed";

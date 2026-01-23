@@ -6,7 +6,9 @@ import { useParams } from "next/navigation";
 import type { TrustCheck, TrustState } from "../../../../trust/types";
 import { TrustCard } from "../../../../components/trust/TrustCard";
 import { PageHeader } from "../../../../components/nav/PageHeader";
+import { verifyBreadcrumbs } from "../../../../components/nav/breadcrumbs";
 import { VerifyResultCard } from "../../../../components/domain/verify/VerifyResultCard";
+import type { VerificationCheck } from "../../../../components/domain/verify/types";
 import { LoadingState } from "../../../../components/states/LoadingState";
 import { Badge, Button, CopyField, HashDisplay, Section } from "../../../../components/ui";
 
@@ -89,7 +91,11 @@ export default function VerifyAnchorPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Anchor verification" description="Validate hashes directly against the registry." />
+        <PageHeader
+          title="Anchor verification"
+          description="Validate hashes directly against the registry."
+          breadcrumbs={verifyBreadcrumbs("Anchor")}
+        />
         <LoadingState title="Checking anchor" description="Querying anchor registry and receipts." />
       </div>
     );
@@ -99,7 +105,11 @@ export default function VerifyAnchorPage() {
     const status = error.message.toLowerCase().includes("not found") ? "NOT_FOUND" : "ERROR";
     return (
       <div className="space-y-6">
-        <PageHeader title="Anchor verification" description="Validate hashes directly against the registry." />
+        <PageHeader
+          title="Anchor verification"
+          description="Validate hashes directly against the registry."
+          breadcrumbs={verifyBreadcrumbs("Anchor")}
+        />
         <VerifyResultCard
           status={status}
           title="Anchor verification"
@@ -115,7 +125,11 @@ export default function VerifyAnchorPage() {
   if (!data || !trust) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Anchor verification" description="Validate hashes directly against the registry." />
+        <PageHeader
+          title="Anchor verification"
+          description="Validate hashes directly against the registry."
+          breadcrumbs={verifyBreadcrumbs("Anchor")}
+        />
         <VerifyResultCard status="NOT_FOUND" title="Anchor verification" idLabel="Anchor hash" idValue={hash} />
       </div>
     );
@@ -130,21 +144,32 @@ export default function VerifyAnchorPage() {
 
   const status = data.valid ? (data.checks.anchorVerified === "unknown" ? "UNKNOWN" : "VERIFIED") : "INVALID";
   const unknownReason =
-    status === "UNKNOWN"
-      ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure."
-      : undefined;
+    status === "UNKNOWN" ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure." : undefined;
+  const inspectorChecks: VerificationCheck[] = [
+    { name: "anchor_present", status: data.checks.anchorPresent ? "pass" : "fail" },
+    {
+      name: "anchor_verified",
+      status: data.checks.anchorVerified === "unknown" ? "unknown" : data.checks.anchorVerified ? "pass" : "fail",
+    },
+  ];
 
   return (
     <div className="space-y-10">
-      <PageHeader title="Anchor verification" description="Validate hashes directly against the registry." />
+      <PageHeader
+        title="Anchor verification"
+        description="Validate hashes directly against the registry."
+        breadcrumbs={verifyBreadcrumbs("Anchor")}
+      />
       <VerifyResultCard
         status={status}
         title="Anchor verification"
         idLabel="Anchor hash"
         idValue={data.hash}
-        source={chain.contract}
+        source={chain.contract ?? undefined}
         timestamp={chain.anchoredAt}
         reason={unknownReason || (data.valid ? undefined : "Anchor record not found.")}
+        checks={inspectorChecks}
+        details={data.details}
         meta={[
           { label: "Submitter", value: chain.submitter },
           { label: "Kind", value: chain.kind },

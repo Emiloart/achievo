@@ -15,7 +15,8 @@ import { ShareLinksManager } from "../../components/ShareLinksManager";
 import { PrivacySettingsEditor } from "../../components/PrivacySettingsEditor";
 import { VisibilityControls } from "../../components/VisibilityControls";
 import { ipfsToHttp } from "../../lib/ipfs";
-import { StatusPill } from "../../components/StatusPill";
+import { ButtonLink, StatusPill } from "../../components/ui";
+import { UI_LABELS } from "../../lib/uiCopy";
 import { useUserTasks, type GoalWithStatus } from "../../hooks/useUserTasks";
 import { shortAchievoId } from "../../lib/achievo";
 import { useQuests, type QuestRow } from "../../hooks/useQuests";
@@ -84,7 +85,7 @@ function GoalListCard({ goal }: { goal: GoalWithStatus }) {
           <div className="text-xs text-gray-500">Level {goal.level}</div>
           <div className="text-xs text-gray-500">Created {formatDate(goal.createdAt)}</div>
           {goal.isMigrated && (
-            <span className="text-[11px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">Imported</span>
+            <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">Imported</span>
           )}
         </div>
         <StatusPill status={goal.status} />
@@ -113,7 +114,7 @@ function BadgeGrid({
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {badges.map((b) => (
         <div key={b.id} className="rounded-xl border bg-white p-4 space-y-2 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-200 to-blue-200 flex items-center justify-center text-sm font-semibold text-purple-800">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-200 to-brand-100 flex items-center justify-center text-sm font-semibold text-brand-800">
             #{b.id}
           </div>
           <div className="text-sm font-semibold">Badge #{b.id}</div>
@@ -140,15 +141,15 @@ function SkeletonCard({ className = "" }: { className?: string }) {
 
 const QUEST_STATUS_STYLES: Record<string, string> = {
   ACTIVE: "bg-gray-100 text-gray-700",
-  COMPLETED: "bg-amber-100 text-amber-800",
-  CLAIMED: "bg-green-100 text-green-700",
+  COMPLETED: "bg-warning/10 text-warning",
+  CLAIMED: "bg-success/10 text-success",
   EXPIRED: "bg-slate-100 text-slate-600",
 };
 
 function QuestStatusPill({ status }: { status: string }) {
   const className = QUEST_STATUS_STYLES[status] || QUEST_STATUS_STYLES.ACTIVE;
   const label = status === "COMPLETED" ? "Ready" : status.charAt(0) + status.slice(1).toLowerCase();
-  return <span className={`px-2 py-1 rounded-full text-[11px] font-medium ${className}`}>{label}</span>;
+  return <span className={`px-2 py-1 rounded-full text-xs font-medium ${className}`}>{label}</span>;
 }
 
 function QuestItem({
@@ -189,7 +190,7 @@ function QuestItem({
             Claim XP
           </button>
         ) : quest.status === "CLAIMED" ? (
-          <span className="text-green-700">Done</span>
+          <span className="text-success">Done</span>
         ) : null}
       </div>
     </div>
@@ -611,9 +612,9 @@ export default function DashboardPage() {
             <button className="text-xs text-brand-600 hover:underline" onClick={() => setEditing((v) => !v)}>
               {editing ? "Close editor" : "Edit profile"}
             </button>
-            <Link href="/goals/new" className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm">
-              Create new goal
-            </Link>
+            <ButtonLink href="/goals/new" size="sm" variant="primary">
+              {UI_LABELS.create} goal
+            </ButtonLink>
           </div>
         </div>
 
@@ -711,7 +712,7 @@ export default function DashboardPage() {
             ) : riskLoading ? (
               <div className="text-sm text-gray-500">Loading risk profile...</div>
             ) : riskError ? (
-              <div className="text-sm text-red-600">{riskError}</div>
+              <div className="text-sm text-danger">{riskError}</div>
             ) : !riskProfile ? (
               <div className="text-sm text-gray-500">Risk profile not available yet.</div>
             ) : !riskProfile.engineEnabled ? (

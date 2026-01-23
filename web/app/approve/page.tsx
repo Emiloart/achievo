@@ -1,13 +1,15 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useChainId, useReadContract, useWriteContract } from "wagmi";
 import { coreAddress, coreAbi } from "../../lib/contracts";
 import toast from "react-hot-toast";
 import { PageHeader } from "../../components/nav/PageHeader";
 import { LoadingState } from "../../components/states/LoadingState";
 import { TxStepper } from "../../components/tx/TxStepper";
+import { FinalityTimeline } from "../../components/tx/FinalityTimeline";
 import { useTxLifecycle } from "../../components/tx/useTxLifecycle";
+import { Button, Card, CardBody, Input } from "../../components/ui";
 
 function ApproveClient() {
   const params = useSearchParams();
@@ -53,6 +55,7 @@ function ApproveClient() {
   });
 
   const { writeContractAsync, isPending } = useWriteContract();
+  const chainId = useChainId();
   const tx = useTxLifecycle(1);
 
   const approve = async () => {
@@ -84,66 +87,66 @@ function ApproveClient() {
   return (
     <div className="space-y-6">
       <PageHeader title="Approve a goal" description="Review a goal and submit your on-chain approval." />
-      <div className="flex items-center gap-2">
-        <input
-          value={goalIdInput}
-          onChange={(e) => setGoalIdInput(e.target.value)}
-          placeholder="Goal ID"
-          className="rounded-md border px-3 py-2"
-        />
-        <button className="px-4 py-2 rounded-md border" onClick={() => refetch()}>
+      <div className="flex flex-wrap items-center gap-2">
+        <Input value={goalIdInput} onChange={(e) => setGoalIdInput(e.target.value)} placeholder="Goal ID" />
+        <Button type="button" variant="secondary" onClick={() => refetch()}>
           Load
-        </button>
-          {canApprove ? (
+        </Button>
+        {canApprove ? (
           <>
-            <button
-              disabled={isPending || tx.state !== "idle"}
-              className="px-4 py-2 rounded-md bg-brand-600 text-white"
-              onClick={approve}
-            >
+            <Button disabled={isPending || tx.state !== "idle"} onClick={approve}>
               {tx.state !== "idle" ? "Submitting..." : "Approve"}
-            </button>
-            <button className="px-4 py-2 rounded-md border text-sm" onClick={() => setDismissed(true)}>
+            </Button>
+            <Button variant="ghost" type="button" onClick={() => setDismissed(true)}>
               Ignore
-            </button>
+            </Button>
           </>
         ) : null}
       </div>
 
       {goalData ? (
-        <div className="rounded-xl border bg-white p-5 space-y-2">
-          <div className="text-sm text-gray-600">Creator</div>
-          <div className="font-mono text-sm">{goalData.creator}</div>
-          <div className="text-sm text-gray-600">Approvals</div>
-          <div className="flex items-center gap-3">
-            <div className="w-40 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-brand-600"
-                style={{
-                  width: `${Math.min(100, Math.floor((Number(goalData.approvals) / Math.max(1, Number(threshold || 1))) * 100))}%`,
-                }}
-              />
+        <Card>
+          <CardBody className="space-y-2">
+            <div className="text-sm text-textMuted">Creator</div>
+            <div className="font-mono text-sm">{goalData.creator}</div>
+            <div className="text-sm text-textMuted">Approvals</div>
+            <div className="flex items-center gap-3">
+              <div className="w-40 h-2 bg-surface2 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-brand-600"
+                  style={{
+                    width: `${Math.min(100, Math.floor((Number(goalData.approvals) / Math.max(1, Number(threshold || 1))) * 100))}%`,
+                  }}
+                />
+              </div>
+              <div className="text-sm">
+                {Number(goalData.approvals)}/{Number(threshold || 0)}
+              </div>
             </div>
-            <div className="text-sm">
-              {Number(goalData.approvals)}/{Number(threshold || 0)}
-            </div>
-          </div>
-          <div className="text-sm text-gray-600">Level</div>
-          <div className="font-semibold">{["NONE", "SELF", "PEER", "AUTO"][goalData.level]}</div>
-          <div className="text-sm text-gray-600">Verified</div>
-          <div>{goalData.verified ? "Yes" : "No"}</div>
-          {restricted && !isAllowed && (
-            <div className="text-xs text-red-500">You are not on the peer allowlist for this goal.</div>
-          )}
-          {isCreator && <div className="text-xs text-gray-500">Creators should self-approve from the dashboard.</div>}
-        </div>
+            <div className="text-sm text-textMuted">Level</div>
+            <div className="font-semibold">{["NONE", "SELF", "PEER", "AUTO"][goalData.level]}</div>
+            <div className="text-sm text-textMuted">Verified</div>
+            <div>{goalData.verified ? "Yes" : "No"}</div>
+            {restricted && !isAllowed && (
+              <div className="text-xs text-danger">You are not on the peer allowlist for this goal.</div>
+            )}
+            {isCreator && (
+              <div className="text-xs text-textMuted">Creators should self-approve from the dashboard.</div>
+            )}
+          </CardBody>
+        </Card>
       ) : null}
 
       {tx.state !== "idle" || tx.error ? <TxStepper state={tx.state} txHash={tx.txHash} error={tx.error} /> : null}
+      {tx.state !== "idle" || tx.error ? (
+        <FinalityTimeline state={tx.state} txHash={tx.txHash} chainId={chainId || undefined} />
+      ) : null}
       {tx.state === "finalized" && tx.txHash ? (
-        <div className="rounded-md border bg-white p-4">
-          <div className="font-medium">Tx: {tx.txHash}</div>
-        </div>
+        <Card>
+          <CardBody className="text-sm">
+            <div className="font-medium">Tx: {tx.txHash}</div>
+          </CardBody>
+        </Card>
       ) : null}
     </div>
   );

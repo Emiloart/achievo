@@ -10,6 +10,8 @@ import { AuthRequired } from "../../components/states/AuthRequired";
 import { EmptyState } from "../../components/states/EmptyState";
 import { ErrorState } from "../../components/states/ErrorState";
 import { LoadingState } from "../../components/states/LoadingState";
+import { ButtonLink, Select, StatusPill, TableFilters } from "../../components/ui";
+import { UI_LABELS } from "../../lib/uiCopy";
 
 const API_BASE = "/api";
 
@@ -89,7 +91,7 @@ export default function ProjectsPage() {
         <EmptyState
           title="No projects yet"
           description="Create your first project workspace to track goals and deliverables."
-          primaryAction={{ label: "Create project", href: "/projects/new" }}
+          primaryAction={{ label: UI_LABELS.createProject, href: "/projects/new" }}
         />
       );
     }
@@ -108,25 +110,23 @@ export default function ProjectsPage() {
         title="Projects"
         description="Track client workspaces, goals, and progress in one place."
         actions={
-          <Link href="/projects/new" className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm">
-            Create project
-          </Link>
+          <ButtonLink href="/projects/new" variant="primary" size="sm">
+            {UI_LABELS.createProject}
+          </ButtonLink>
         }
       />
 
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <label className="text-gray-600">Status</label>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="border rounded-md px-2 py-1 text-sm"
-        >
-          <option value="">All</option>
-          <option value="ACTIVE">Active</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="ARCHIVED">Archived</option>
-        </select>
-      </div>
+      <TableFilters>
+        <div className="space-y-1">
+          <label className="text-xs text-textMuted">Status</label>
+          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="">All</option>
+            <option value="ACTIVE">Active</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="ARCHIVED">Archived</option>
+          </Select>
+        </div>
+      </TableFilters>
 
       {error && projects.length ? (
         <ErrorState message={error.message} requestId={error.requestId} onRetry={fetchProjects} />
@@ -142,7 +142,7 @@ function ProjectCard({ item }: { item: ProjectSummary }) {
     <div className="rounded-2xl border bg-white p-5 space-y-2 shadow-sm">
       <div className="flex items-center justify-between gap-2">
         <div className="font-semibold">{item.project.name}</div>
-        <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600">{item.project.status}</span>
+        <StatusPill status={item.project.status} />
       </div>
       <div className="text-xs text-gray-500">@{item.project.slug}</div>
       {item.project.description && <div className="text-sm text-gray-600">{item.project.description}</div>}

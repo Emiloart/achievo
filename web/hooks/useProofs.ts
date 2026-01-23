@@ -4,10 +4,11 @@
  * Manages proof submission and retrieval with optional anchoring flags.
  */
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getApiErrorMessage } from "../lib/apiError";
 import { useBackendAuth } from "./useBackendAuth";
+import { asyncConfirmed, asyncFailed, asyncIdle, asyncLoading, type AsyncState } from "../types/asyncState";
 
 /** Proof record returned by the backend. */
 export type ProofArtifact = {
@@ -146,5 +147,12 @@ export function useProofs(params: { userId?: string; achievementId?: string; bad
     [token, fetchProofs],
   );
 
-  return { proofs, loading, error, refetch: fetchProofs, uploadFile, addUrlProof, anchorProof };
+  const state: AsyncState<ProofArtifact[]> = useMemo(() => {
+    if (!params.userId) return asyncIdle<ProofArtifact[]>([]);
+    if (loading) return asyncLoading<ProofArtifact[]>(proofs);
+    if (error) return asyncFailed<ProofArtifact[]>(error, proofs);
+    return asyncConfirmed<ProofArtifact[]>(proofs);
+  }, [error, loading, params.userId, proofs]);
+
+  return { proofs, loading, error, state, refetch: fetchProofs, uploadFile, addUrlProof, anchorProof };
 }

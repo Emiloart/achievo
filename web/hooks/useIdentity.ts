@@ -8,6 +8,8 @@ import { useMemo, useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { identityAddress, identityAbi } from "../lib/contracts";
 import { useTxLifecycle } from "../components/tx/useTxLifecycle";
+import { asyncConfirmed, asyncFailed, asyncIdle, asyncLoading, asyncPending, asyncUnknown } from "../types/asyncState";
+import type { AsyncState } from "../types/asyncState";
 
 /** Reads the on-chain identity ID for a given wallet address. */
 export function useIdentityId(targetAddress?: `0x${string}`) {
@@ -24,6 +26,12 @@ export function useIdentityId(targetAddress?: `0x${string}`) {
     userId: (result.data as bigint | undefined) ?? 0n,
     isLoading: result.isFetching,
     refetch: result.refetch,
+    state: (() => {
+      if (!enabled) return asyncIdle<bigint>();
+      if (result.isFetching) return asyncLoading<bigint>();
+      if (result.error) return asyncFailed<bigint>("Unable to load identity.");
+      return asyncConfirmed<bigint>(((result.data as bigint | undefined) ?? 0n) as bigint);
+    })() as AsyncState<bigint>,
   };
 }
 
@@ -62,6 +70,21 @@ export function useIdentityRegistration() {
   };
 
   const formattedId = useMemo(() => (currentId && currentId > 0n ? currentId : 0n), [currentId]);
+  const registrationState: AsyncState<null> = useMemo(() => {
+    if (tx.state === "walletPrompt" || tx.state === "submitted" || tx.state === "confirming") {
+      return asyncPending(null);
+    }
+    if (tx.state === "finalized") {
+      return asyncConfirmed(null);
+    }
+    if (tx.state === "failed") {
+      return asyncFailed(tx.error?.message || "Transaction failed.");
+    }
+    if (tx.state === "unknown") {
+      return asyncUnknown(tx.error?.message);
+    }
+    return asyncIdle(null);
+  }, [tx.error?.message, tx.state]);
 
   return {
     address,
@@ -74,5 +97,6 @@ export function useIdentityRegistration() {
     txState: tx.state,
     txHash: tx.txHash,
     txError: tx.error,
+    registrationState,
   };
 }

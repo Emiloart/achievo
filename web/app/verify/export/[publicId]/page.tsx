@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { computeExportTrust } from "../../../../trust/compute";
 import { TrustCard } from "../../../../components/trust/TrustCard";
 import { PageHeader } from "../../../../components/nav/PageHeader";
+import { verifyBreadcrumbs } from "../../../../components/nav/breadcrumbs";
 import { VerifyResultCard } from "../../../../components/domain/verify/VerifyResultCard";
 import { LoadingState } from "../../../../components/states/LoadingState";
 import { Badge, Button, CopyField, HashDisplay, Section } from "../../../../components/ui";
@@ -16,6 +17,7 @@ type VerifyResponse = {
   valid: boolean;
   redacted?: boolean;
   checks: Record<string, boolean | "unknown">;
+  checksDetailed?: Array<{ name: string; status: "pass" | "fail" | "warn" | "unknown"; details?: any }>;
   details: any;
 };
 
@@ -72,6 +74,7 @@ export default function VerifyExportPage() {
         <PageHeader
           title="Export verification"
           description="Independent verification of signed and anchored exports."
+          breadcrumbs={verifyBreadcrumbs("Export")}
         />
         <LoadingState title="Checking export" description="Verifying export signatures and anchor status." />
       </div>
@@ -85,6 +88,7 @@ export default function VerifyExportPage() {
         <PageHeader
           title="Export verification"
           description="Independent verification of signed and anchored exports."
+          breadcrumbs={verifyBreadcrumbs("Export")}
         />
         <VerifyResultCard
           status={status}
@@ -104,6 +108,7 @@ export default function VerifyExportPage() {
         <PageHeader
           title="Export verification"
           description="Independent verification of signed and anchored exports."
+          breadcrumbs={verifyBreadcrumbs("Export")}
         />
         <VerifyResultCard status="NOT_FOUND" title="Export verification" idLabel="Export ID" idValue={publicId} />
       </div>
@@ -122,13 +127,15 @@ export default function VerifyExportPage() {
   const hasUnknown = Object.values(data.checks || {}).includes("unknown");
   const status = data.valid ? (hasUnknown ? "UNKNOWN" : "VERIFIED") : hasUnknown ? "UNKNOWN" : "INVALID";
   const unknownReason =
-    status === "UNKNOWN"
-      ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure."
-      : undefined;
+    status === "UNKNOWN" ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure." : undefined;
 
   return (
     <div className="space-y-10">
-      <PageHeader title="Export verification" description="Independent verification of signed exports." />
+      <PageHeader
+        title="Export verification"
+        description="Independent verification of signed exports."
+        breadcrumbs={verifyBreadcrumbs("Export")}
+      />
       <VerifyResultCard
         status={status}
         title="Export verification"
@@ -137,6 +144,8 @@ export default function VerifyExportPage() {
         source={anchor?.contract}
         timestamp={chain?.anchoredAt}
         reason={unknownReason || (data.valid ? undefined : "Export verification failed.")}
+        checks={data.checksDetailed}
+        details={data.details}
         meta={[
           { label: "Snapshot hash", value: data.details?.snapshotHash },
           { label: "Signer", value: data.details?.signerAddress },

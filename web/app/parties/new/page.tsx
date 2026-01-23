@@ -96,7 +96,7 @@ export default function CreatePartyPage() {
             ))}
           </select>
         </div>
-        {error && <div className="text-sm text-red-600">{error}</div>}
+        {error && <div className="text-sm text-danger">{error}</div>}
         <button type="submit" disabled={loading} className="px-4 py-2 rounded-md bg-brand-600 text-white text-sm">
           {loading ? "Creating..." : "Create party"}
         </button>

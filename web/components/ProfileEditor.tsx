@@ -2,8 +2,9 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ProfileInfo } from "../hooks/useProfileInfo";
 import { uploadFile, ipfsToHttp } from "../lib/ipfs";
-import { Badge, Button, Card, CardBody, Section } from "./ui";
-import { uiToast } from "./ui/toast";
+import { Button, Card, CardBody, Input, Section, StatusBadge, Textarea } from "./ui";
+import { uiToast } from "./ui";
+import { normalizeUsername, USERNAME_RULES, validateUsername } from "../lib/username";
 
 interface Props {
   profile: ProfileInfo;
@@ -14,11 +15,7 @@ interface Props {
   savingDisplayName?: boolean;
 }
 
-const USERNAME_RULES = "3-32 chars, a-z, 0-9, ., _, -, no leading/trailing ., _, -, no repeats.";
-
-function normalizeUsernameInput(input: string) {
-  return input.trim().toLowerCase();
-}
+const USERNAME_RULES_COPY = `Use ${USERNAME_RULES.minLength}-${USERNAME_RULES.maxLength} characters, lowercase a-z, 0-9, and dashes only. No leading, trailing, or consecutive dashes.`;
 
 export function ProfileEditor({
   profile,
@@ -31,7 +28,9 @@ export function ProfileEditor({
   const [form, setForm] = useState(profile);
   const [uploading, setUploading] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
-  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
+  const [usernameStatus, setUsernameStatus] = useState<
+    "idle" | "checking" | "available" | "taken" | "invalid" | "unknown" | "current"
+  >("idle");
   const [usernameMessage, setUsernameMessage] = useState("");
   const [claiming, setClaiming] = useState(false);
 
@@ -68,15 +67,23 @@ export function ProfileEditor({
     }
   };
 
+  const normalizedInput = useMemo(() => normalizeUsername(form.username || "").normalized, [form.username]);
+  const normalizedCurrent = useMemo(() => normalizeUsername(profile.username || "").normalized, [profile.username]);
+  const usernameValidation = useMemo(() => validateUsername(normalizedInput), [normalizedInput]);
+
   useEffect(() => {
-    const value = normalizeUsernameInput(form.username || "");
-    if (!value) {
+    if (!normalizedInput) {
       setUsernameStatus("idle");
       setUsernameMessage("");
       return;
     }
-    if (value === normalizeUsernameInput(profile.username || "")) {
-      setUsernameStatus("available");
+    if (!usernameValidation.valid) {
+      setUsernameStatus("invalid");
+      setUsernameMessage("Invalid username format");
+      return;
+    }
+    if (normalizedInput === normalizedCurrent) {
+      setUsernameStatus("current");
       setUsernameMessage("Current username");
       return;
     }
@@ -84,38 +91,54 @@ export function ProfileEditor({
     setUsernameStatus("checking");
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/identity/username/availability?username=${encodeURIComponent(value)}`);
+        const res = await fetch(`/api/identity/username/availability?username=${encodeURIComponent(normalizedInput)}`);
         const json = await res.json();
         if (!alive) return;
         if (json.available) {
           setUsernameStatus("available");
           setUsernameMessage("Available");
-        } else {
-          setUsernameStatus(json.reason === "TAKEN" ? "taken" : "invalid");
-          setUsernameMessage(json.reason === "TAKEN" ? "Already taken" : "Not allowed");
+          return;
         }
+        if (json.reason === "TAKEN") {
+          setUsernameStatus("taken");
+          setUsernameMessage("Owned");
+          return;
+        }
+        if (json.reason === "RESERVED") {
+          setUsernameStatus("taken");
+          setUsernameMessage("Reserved");
+          return;
+        }
+        setUsernameStatus("invalid");
+        setUsernameMessage("Not allowed");
       } catch {
         if (!alive) return;
-        setUsernameStatus("invalid");
-        setUsernameMessage("Unable to check");
+        setUsernameStatus("unknown");
+        setUsernameMessage("Unable to confirm right now");
       }
     }, 400);
     return () => {
       alive = false;
       clearTimeout(timer);
     };
-  }, [form.username, profile.username]);
+  }, [normalizedCurrent, normalizedInput, usernameValidation.valid]);
 
-  const usernameChanged = useMemo(() => {
-    return normalizeUsernameInput(form.username || "") !== normalizeUsernameInput(profile.username || "");
-  }, [form.username, profile.username]);
+  const usernameChanged = useMemo(() => normalizedInput !== normalizedCurrent, [normalizedCurrent, normalizedInput]);
 
   const handleClaimUsername = async () => {
     if (!form.username.trim()) {
       uiToast.error("Enter a username");
       return;
     }
-    if (usernameStatus === "taken" || usernameStatus === "invalid") {
+    if (usernameStatus === "checking") {
+      uiToast.error("Checking availability. Please wait.");
+      return;
+    }
+    if (usernameStatus === "current") {
+      uiToast.success("Username already set");
+      return;
+    }
+    if (usernameStatus === "taken" || usernameStatus === "invalid" || usernameStatus === "unknown") {
       uiToast.error("Choose a valid username");
       return;
     }
@@ -164,7 +187,7 @@ export function ProfileEditor({
             </div>
             <div className="space-y-2 text-sm">
               <label className="text-textMuted">Profile Picture (IPFS)</label>
-              <input type="file" accept="image/*" onChange={handleAvatar} disabled={uploading} />
+              <Input type="file" accept="image/*" onChange={handleAvatar} disabled={uploading} />
               {form.avatar && <code className="text-xs break-all">{form.avatar}</code>}
             </div>
           </CardBody>
@@ -177,12 +200,7 @@ export function ProfileEditor({
             <form onSubmit={handleSaveDisplayName} className="space-y-3">
               <div>
                 <label className="text-sm text-textMuted">Display Name</label>
-                <input
-                  value={form.displayName}
-                  onChange={handleChange("displayName")}
-                  className="mt-1 w-full rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
-                  placeholder="e.g. Emeka"
-                />
+                <Input value={form.displayName} onChange={handleChange("displayName")} placeholder="e.g. Emeka" />
                 <p className="text-xs text-textMuted mt-1">Display name is cosmetic and can be changed anytime.</p>
               </div>
               <Button type="submit" variant="secondary" disabled={savingDisplayName}>
@@ -193,18 +211,26 @@ export function ProfileEditor({
         </Card>
       </Section>
 
-      <Section title="Username" description={USERNAME_RULES}>
+      <Section title="Username" description={USERNAME_RULES_COPY}>
         <Card>
           <CardBody className="space-y-3">
-            <input
-              value={form.username}
-              onChange={handleChange("username")}
-              className="w-full rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
-              placeholder="@achvhero"
-            />
+            <Input value={form.username} onChange={handleChange("username")} placeholder="@achvhero" />
             {usernameStatus !== "idle" && (
-              <Badge variant={usernameStatus === "available" ? "success" : "danger"}>{usernameMessage}</Badge>
+              <StatusBadge
+                tone={
+                  usernameStatus === "available" || usernameStatus === "current"
+                    ? "success"
+                    : usernameStatus === "checking"
+                      ? "info"
+                      : usernameStatus === "unknown"
+                        ? "warning"
+                        : "danger"
+                }
+              >
+                {usernameMessage}
+              </StatusBadge>
             )}
+            {normalizedInput && <div className="text-xs text-textMuted">Normalized: @{normalizedInput}</div>}
             <Button type="button" disabled={claiming || savingProfile} onClick={handleClaimUsername}>
               {claiming || savingProfile ? "Claiming..." : "Claim / Update username"}
             </Button>
@@ -213,20 +239,13 @@ export function ProfileEditor({
       </Section>
 
       <Section title="Bio">
-        <textarea
-          value={form.bio}
-          onChange={handleChange("bio")}
-          className="w-full rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
-          rows={3}
-          placeholder="Short punchy summary"
-        />
+        <Textarea value={form.bio} onChange={handleChange("bio")} rows={3} placeholder="Short punchy summary" />
       </Section>
 
       <Section title="About">
-        <textarea
+        <Textarea
           value={form.about}
           onChange={handleChange("about")}
-          className="w-full rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
           rows={5}
           placeholder="Long-form story, milestones, favorite achievements"
         />

@@ -1,7 +1,9 @@
 "use client";
 import type { ProofArtifact } from "../hooks/useProofs";
+import { usePolicy } from "../hooks/usePolicy";
 import { Badge, Button, Card, CardBody, HashDisplay } from "./ui";
 import { VisibilityControls } from "./VisibilityControls";
+import { AnchorStatusBadge, AnchorTimeline } from "./domain/AnchorStatus";
 
 function formatDate(iso?: string | null) {
   if (!iso) return "";
@@ -31,6 +33,7 @@ export function ProofList({
   showControls?: boolean;
   onRefresh?: () => void;
 }) {
+  const { isEnabled, getMessage } = usePolicy();
   if (!proofs.length) {
     return <div className="text-sm text-textMuted">No proofs added yet.</div>;
   }
@@ -44,6 +47,8 @@ export function ProofList({
           proof.title || (proof.kind === "URL" ? "Link proof" : proof.kind === "FILE" ? "File proof" : "Proof");
         const displayTitle = showMetadata ? title : "Proof (redacted)";
         const anchorUrl = explorerLink(proof.chainId, proof.anchorTxHash);
+        const isSubmitting = anchoringId === proof.id;
+
         return (
           <Card key={proof.id}>
             <CardBody className="space-y-3">
@@ -56,7 +61,16 @@ export function ProofList({
                     {proof.badgeTokenId && <span> - Badge #{proof.badgeTokenId}</span>}
                   </div>
                 </div>
-                <Badge variant="neutral">{proof.kind}</Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="neutral">{proof.kind}</Badge>
+                  {(proof.anchorTxHash || isSubmitting) && (
+                    <AnchorStatusBadge
+                      txHash={proof.anchorTxHash}
+                      anchoredAt={proof.anchoredAt}
+                      submitting={isSubmitting}
+                    />
+                  )}
+                </div>
               </div>
 
               {showMetadata && proof.description && (
@@ -95,12 +109,20 @@ export function ProofList({
                     variant="secondary"
                     size="sm"
                     onClick={() => onAnchor(proof.id)}
-                    disabled={anchoringId === proof.id}
+                    disabled={anchoringId === proof.id || !isEnabled("anchoringEnabled")}
                   >
                     {anchoringId === proof.id ? "Anchoring..." : "Anchor hash"}
                   </Button>
                 ) : null}
+                {showAnchor && !isEnabled("anchoringEnabled") ? (
+                  <span className="text-xs text-warning">
+                    {getMessage("anchoring") || "Anchoring is disabled by policy."}
+                  </span>
+                ) : null}
               </div>
+              {(proof.anchorTxHash || isSubmitting) && (
+                <AnchorTimeline txHash={proof.anchorTxHash} anchoredAt={proof.anchoredAt} submitting={isSubmitting} />
+              )}
 
               {showControls && (
                 <VisibilityControls

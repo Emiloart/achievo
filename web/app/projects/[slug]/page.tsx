@@ -1,12 +1,29 @@
 "use client";
 import Link from "next/link";
-
-import { getApiErrorMessage } from "../../../lib/apiError";
 import type { Route } from "next";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { getApiErrorMessage } from "../../../lib/apiError";
 import { useBackendAuth } from "../../../hooks/useBackendAuth";
 import { useUserTasks } from "../../../hooks/useUserTasks";
+import { PageHeader } from "../../../components/nav/PageHeader";
+import { projectBreadcrumbs } from "../../../components/nav/breadcrumbs";
+import { DegradedHint } from "../../../components/states/DegradedHint";
+import { EmptyState } from "../../../components/states/EmptyState";
+import { ErrorState } from "../../../components/states/ErrorState";
+import { LoadingState } from "../../../components/states/LoadingState";
+import { AuthRequired } from "../../../components/states/AuthRequired";
+import { ProjectTabs } from "../../../components/domain/projects/ProjectTabs";
+import { InvoiceTable, type InvoiceItem as InvoiceRow } from "../../../components/domain/projects/InvoiceTable";
+import {
+  ProjectShareLinksManager,
+  type ProjectShareLink,
+  type ShareLinkPayload,
+} from "../../../components/domain/projects/ProjectShareLinksManager";
+import { TimeEntryTable, type TimeEntryItem as TimeEntryRow } from "../../../components/domain/projects/TimeEntryTable";
+import { Button, Card, CardBody, Input, Select, Section, StatusPill, TableFilters, Textarea, uiToast } from "../../../components/ui";
+import { UI_LABELS } from "../../../lib/uiCopy";
 
 const API_BASE = "/api";
 
@@ -40,19 +57,6 @@ type ProjectGoal = {
   status: string;
 };
 
-type TimeEntryItem = {
-  id: string;
-  projectId: string;
-  achusrId: string;
-  goalId?: string | null;
-  startedAt: string;
-  endedAt?: string | null;
-  durationMinutes?: number | null;
-  note?: string | null;
-  billable: boolean;
-  invoiceId?: string | null;
-};
-
 type TimeSummary = {
   totalMinutes: number;
   billableMinutes: number;
@@ -67,20 +71,6 @@ type BillingSettings = {
   taxPercent: number | null;
   defaultDueDays: number | null;
   notes: string;
-};
-
-type InvoiceItem = {
-  id: string;
-  number?: string;
-  clientName: string;
-  currency: string;
-  issueDate: string;
-  dueDate?: string | null;
-  status: string;
-  subtotalAmount: number;
-  taxAmount: number;
-  totalAmount: number;
-  publicSlug?: string | null;
 };
 
 type MemberItem = {
@@ -101,29 +91,9 @@ type ActivityItem = {
   actor?: { displayName?: string; username?: string; avatar?: string };
 };
 
-type ShareLink = {
-  id: string;
-  slug: string;
-  title: string;
-  description?: string | null;
-  visibility: string;
-  theme: string;
-  sections: Record<string, boolean>;
-  isPrimary: boolean;
-};
-
-const TAB_LIST = ["overview", "goals", "activity", "team", "time", "settings"] as const;
+const TAB_LIST = ["overview", "time", "invoices", "share"] as const;
 
 type TabKey = (typeof TAB_LIST)[number];
-
-const TAB_LABELS: Record<TabKey, string> = {
-  overview: "Overview",
-  goals: "Goals",
-  activity: "Activity",
-  team: "Team",
-  time: "Time & Billing",
-  settings: "Settings",
-};
 
 function formatDate(value?: string | null) {
   if (!value) return "";
@@ -166,24 +136,26 @@ export default function ProjectDetailPage() {
   const [goals, setGoals] = useState<ProjectGoal[]>([]);
   const [members, setMembers] = useState<MemberItem[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
-  const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
+  const [shareLinks, setShareLinks] = useState<ProjectShareLink[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [selectedGoalIds, setSelectedGoalIds] = useState<string[]>([]);
-  const [timeEntries, setTimeEntries] = useState<TimeEntryItem[]>([]);
+  const [timeEntries, setTimeEntries] = useState<TimeEntryRow[]>([]);
   const [timeSummary, setTimeSummary] = useState<TimeSummary>({
     totalMinutes: 0,
     billableMinutes: 0,
     nonBillableMinutes: 0,
   });
   const [timeLoading, setTimeLoading] = useState(false);
+  const [busyEntryId, setBusyEntryId] = useState<string | null>(null);
   const [billingSettings, setBillingSettings] = useState<BillingSettings | null>(null);
   const [billingSaving, setBillingSaving] = useState(false);
-  const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [invoiceLoading, setInvoiceLoading] = useState(false);
   const [invoiceError, setInvoiceError] = useState("");
+  const [busyInvoiceId, setBusyInvoiceId] = useState<string | null>(null);
   const [timeFilters, setTimeFilters] = useState({
     from: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
     to: new Date().toISOString().slice(0, 10),
@@ -218,22 +190,7 @@ export default function ProjectDetailPage() {
     dueDate: "",
   });
 
-  const [shareForm, setShareForm] = useState({
-    slug: "",
-    title: "",
-    description: "",
-    visibility: "UNLISTED",
-    theme: "AUTO",
-    isPrimary: false,
-    sections: {
-      summary: true,
-      goals: true,
-      activity: true,
-      team: true,
-      clientNotes: true,
-    },
-  });
-  const [editingShare, setEditingShare] = useState<ShareLink | null>(null);
+  const [shareActionError, setShareActionError] = useState("");
   const [memberHandle, setMemberHandle] = useState("");
   const [memberRole, setMemberRole] = useState("COLLABORATOR");
 
@@ -311,6 +268,7 @@ export default function ProjectDetailPage() {
   const fetchShareLinks = useCallback(async () => {
     if (!token) return;
     try {
+      setShareActionError("");
       const res = await fetch(`${API_BASE}/projects/${slug}/share-links`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
@@ -320,6 +278,7 @@ export default function ProjectDetailPage() {
       setShareLinks(Array.isArray(json.data) ? json.data : []);
     } catch {
       setShareLinks([]);
+      setShareActionError("Unable to load share links.");
     }
   }, [slug, token]);
 
@@ -414,6 +373,7 @@ export default function ProjectDetailPage() {
   const stopTimer = async (entryId: string) => {
     if (!token) return;
     setSaving(true);
+    setBusyEntryId(entryId);
     setError("");
     try {
       const res = await fetch(`${API_BASE}/projects/${slug}/time-entries/${entryId}/stop`, {
@@ -427,10 +387,11 @@ export default function ProjectDetailPage() {
       setError(e?.message || "Failed to stop timer");
     } finally {
       setSaving(false);
+      setBusyEntryId(null);
     }
   };
 
-  const openManualForm = (entry?: TimeEntryItem) => {
+  const openManualForm = (entry?: TimeEntryRow) => {
     if (entry) {
       setManualForm({
         id: entry.id,
@@ -493,6 +454,7 @@ export default function ProjectDetailPage() {
   const deleteTimeEntry = async (entryId: string) => {
     if (!token) return;
     setSaving(true);
+    setBusyEntryId(entryId);
     setError("");
     try {
       const res = await fetch(`${API_BASE}/projects/${slug}/time-entries/${entryId}`, {
@@ -506,6 +468,7 @@ export default function ProjectDetailPage() {
       setError(e?.message || "Failed to delete time entry");
     } finally {
       setSaving(false);
+      setBusyEntryId(null);
     }
   };
 
@@ -572,6 +535,7 @@ export default function ProjectDetailPage() {
   const updateInvoiceStatus = async (invoiceId: string, status: "SENT" | "PAID") => {
     if (!token) return;
     setSaving(true);
+    setBusyInvoiceId(invoiceId);
     setInvoiceError("");
     try {
       const res = await fetch(`${API_BASE}/projects/${slug}/invoices/${invoiceId}`, {
@@ -586,6 +550,7 @@ export default function ProjectDetailPage() {
       setInvoiceError(e?.message || "Failed to update invoice status");
     } finally {
       setSaving(false);
+      setBusyInvoiceId(null);
     }
   };
 
@@ -594,18 +559,23 @@ export default function ProjectDetailPage() {
   }, [fetchProject, slug]);
 
   useEffect(() => {
-    if (activeTab === "goals" || activeTab === "time") void fetchGoals();
-    if (activeTab === "team") void fetchMembers();
-    if (activeTab === "activity") void fetchActivity();
-    if (activeTab === "settings" && isOwner) void fetchShareLinks();
     if (activeTab === "overview") {
+      void fetchGoals();
+      void fetchMembers();
+      void fetchActivity();
       void fetchInvoices();
       void fetchTimeEntries();
     }
     if (activeTab === "time") {
+      void fetchGoals();
       void fetchTimeEntries();
       void fetchBillingSettings();
+    }
+    if (activeTab === "invoices") {
       void fetchInvoices();
+    }
+    if (activeTab === "share" && isOwner) {
+      void fetchShareLinks();
     }
   }, [
     activeTab,
@@ -620,16 +590,8 @@ export default function ProjectDetailPage() {
   ]);
 
   useEffect(() => {
-    if (activeTab === "time") {
-      void fetchTimeEntries();
-    }
+    if (activeTab === "time") void fetchTimeEntries();
   }, [activeTab, fetchTimeEntries]);
-
-  useEffect(() => {
-    if (!isOwner && activeTab === "settings") {
-      setActiveTab("overview");
-    }
-  }, [isOwner, activeTab]);
 
   const toggleGoal = (goalId: string) => {
     setSelectedGoalIds((prev) => (prev.includes(goalId) ? prev.filter((id) => id !== goalId) : [...prev, goalId]));
@@ -765,50 +727,45 @@ export default function ProjectDetailPage() {
     }
   };
 
-  const saveShareLink = async () => {
+  const createShareLink = async (payload: ShareLinkPayload) => {
     if (!token) return;
     setSaving(true);
-    setError("");
+    setShareActionError("");
     try {
-      const payload = {
-        slug: shareForm.slug,
-        title: shareForm.title,
-        description: shareForm.description || null,
-        visibility: shareForm.visibility,
-        theme: shareForm.theme,
-        isPrimary: shareForm.isPrimary,
-        sections: shareForm.sections,
-      };
-      const endpoint = editingShare
-        ? `${API_BASE}/projects/${slug}/share-links/${editingShare.id}`
-        : `${API_BASE}/projects/${slug}/share-links`;
-      const method = editingShare ? "PATCH" : "POST";
-      const res = await fetch(endpoint, {
-        method,
+      const res = await fetch(`${API_BASE}/projects/${slug}/share-links`, {
+        method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(await getApiErrorMessage(res));
-      setEditingShare(null);
-      setShareForm({
-        slug: "",
-        title: "",
-        description: "",
-        visibility: "UNLISTED",
-        theme: "AUTO",
-        isPrimary: false,
-        sections: {
-          summary: true,
-          goals: true,
-          activity: true,
-          team: true,
-          clientNotes: true,
-        },
-      });
+      uiToast.success("Share link created");
       await fetchShareLinks();
     } catch (e: any) {
-      setError(e?.message || "Failed to save share link");
+      setShareActionError(e?.message || "Failed to create share link");
+      uiToast.error(e?.message || "Failed to create share link");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateShareLink = async (id: string, payload: ShareLinkPayload) => {
+    if (!token) return;
+    setSaving(true);
+    setShareActionError("");
+    try {
+      const res = await fetch(`${API_BASE}/projects/${slug}/share-links/${id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await getApiErrorMessage(res));
+      uiToast.success("Share link updated");
+      await fetchShareLinks();
+    } catch (e: any) {
+      setShareActionError(e?.message || "Failed to update share link");
+      uiToast.error(e?.message || "Failed to update share link");
     } finally {
       setSaving(false);
     }
@@ -817,7 +774,7 @@ export default function ProjectDetailPage() {
   const deleteShareLink = async (id: string) => {
     if (!token) return;
     setSaving(true);
-    setError("");
+    setShareActionError("");
     try {
       const res = await fetch(`${API_BASE}/projects/${slug}/share-links/${id}`, {
         method: "DELETE",
@@ -825,103 +782,87 @@ export default function ProjectDetailPage() {
         credentials: "include",
       });
       if (!res.ok) throw new Error(await getApiErrorMessage(res));
+      uiToast.success("Share link revoked");
       await fetchShareLinks();
     } catch (e: any) {
-      setError(e?.message || "Failed to delete share link");
+      setShareActionError(e?.message || "Failed to delete share link");
+      uiToast.error(e?.message || "Failed to delete share link");
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return <div className="text-sm text-gray-500">Loading project...</div>;
+    return <LoadingState title="Loading project" description="Fetching project workspace." />;
   }
 
   if (!projectData) {
-    return <div className="text-sm text-gray-500">Project not found.</div>;
+    return (
+      <EmptyState
+        title="Project not found"
+        description="We couldn't find that project. Double-check the slug."
+        primaryAction={{ label: "Back to projects", href: "/projects" }}
+      />
+    );
   }
 
   const { project, stats, membership } = projectData;
-  const isClient = membership?.role === "CLIENT";
   const linkedGoalSet = new Set(goals.map((goal) => goal.goalId));
   const availableGoals = tasks.filter((task) => !linkedGoalSet.has(String(task.id)));
   const openInvoices = invoices.filter((inv) => inv.status !== "PAID" && inv.status !== "CANCELLED");
   const openInvoiceTotal = openInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
 
-  const tabs = isOwner ? TAB_LIST : TAB_LIST.filter((tab) => tab !== "settings" && (!isClient || tab !== "time"));
-
-  return (
+  const overviewContent = (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-xs text-gray-500">@{project.slug}</div>
-          <h2 className="text-2xl font-semibold">{project.name}</h2>
-          {project.description && <p className="text-sm text-gray-600">{project.description}</p>}
-        </div>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <span className="px-2 py-1 rounded-full bg-slate-100 text-slate-600">{project.status}</span>
-          <span className="px-2 py-1 rounded-full bg-slate-100 text-slate-600">{project.visibility}</span>
-          {membership?.role && (
-            <span className="px-2 py-1 rounded-full bg-slate-100 text-slate-600">{membership.role}</span>
-          )}
-        </div>
+      {error ? <ErrorState message={error} onRetry={fetchProject} /> : null}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardBody className="space-y-1">
+            <div className="text-xs text-textMuted">Goals verified</div>
+            <div className="text-lg font-semibold">
+              {stats.goalsVerified}/{stats.goalsTotal}
+            </div>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardBody className="space-y-1">
+            <div className="text-xs text-textMuted">Completion</div>
+            <div className="text-lg font-semibold">{stats.completionPercent}%</div>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardBody className="space-y-1">
+            <div className="text-xs text-textMuted">Members</div>
+            <div className="text-lg font-semibold">{stats.membersCount ?? 0}</div>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardBody className="space-y-1">
+            <div className="text-xs text-textMuted">Billing snapshot</div>
+            <div className="text-sm font-semibold">{formatMinutes(timeSummary.billableMinutes)} billable</div>
+            <div className="text-xs text-textMuted">
+              {openInvoices.length} open - {formatCurrency(openInvoiceTotal, billingSettings?.currency || "USD")}
+            </div>
+          </CardBody>
+        </Card>
       </div>
 
-      {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-
-      <div className="flex flex-wrap gap-2 text-sm">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1 rounded-full border ${activeTab === tab ? "bg-gray-900 text-white" : "bg-white text-gray-700"}`}
-          >
-            {TAB_LABELS[tab]}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === "overview" && (
-        <div className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-2xl border bg-white p-4">
-              <div className="text-xs text-gray-500">Goals verified</div>
-              <div className="text-lg font-semibold">
-                {stats.goalsVerified}/{stats.goalsTotal}
-              </div>
-            </div>
-            <div className="rounded-2xl border bg-white p-4">
-              <div className="text-xs text-gray-500">Completion</div>
-              <div className="text-lg font-semibold">{stats.completionPercent}%</div>
-            </div>
-            <div className="rounded-2xl border bg-white p-4">
-              <div className="text-xs text-gray-500">Members</div>
-              <div className="text-lg font-semibold">{stats.membersCount ?? 0}</div>
-            </div>
-            <div className="rounded-2xl border bg-white p-4">
-              <div className="text-xs text-gray-500">Billing snapshot</div>
-              <div className="text-sm font-semibold">{formatMinutes(timeSummary.billableMinutes)} billable</div>
-              <div className="text-xs text-gray-500">
-                {openInvoices.length} open - {formatCurrency(openInvoiceTotal, billingSettings?.currency || "USD")}
-              </div>
-            </div>
+      <Card>
+        <CardBody className="space-y-2">
+          <div className="text-sm font-semibold">Client summary</div>
+          <div className="text-sm text-textMuted space-y-1">
+            {project.clientName ? <div>Client: {project.clientName}</div> : null}
+            {project.clientReference ? <div>Reference: {project.clientReference}</div> : null}
+            {project.dueDate ? <div>Due: {formatDate(project.dueDate)}</div> : null}
           </div>
-          <div className="rounded-2xl border bg-white p-4 space-y-2">
-            <div className="text-sm font-semibold">Client summary</div>
-            <div className="text-sm text-gray-600 space-y-1">
-              {project.clientName && <div>Client: {project.clientName}</div>}
-              {project.clientReference && <div>Reference: {project.clientReference}</div>}
-              {project.dueDate && <div>Due: {formatDate(project.dueDate)}</div>}
-            </div>
-            <div className="text-sm text-gray-500">Manage share links in the Settings tab.</div>
-          </div>
-        </div>
-      )}
+          <div className="text-xs text-textMuted">Share links are managed in the Share links tab.</div>
+        </CardBody>
+      </Card>
 
-      {activeTab === "goals" && (
-        <div className="space-y-4">
-          {canEditGoals && (
-            <div className="rounded-2xl border bg-white p-4 space-y-3">
+      <Section title="Goals">
+        {canEditGoals ? (
+          <Card>
+            <CardBody className="space-y-3">
               <div className="text-sm font-semibold">Attach goals</div>
               {availableGoals.length ? (
                 <div className="grid gap-2">
@@ -932,831 +873,507 @@ export default function ProjectDetailPage() {
                         checked={selectedGoalIds.includes(String(goal.id))}
                         onChange={() => toggleGoal(String(goal.id))}
                       />
-                      <span>{goal.goalCID || `Goal #${goal.id}`}</span>
+                      {goal.goalCID || String(goal.id)}
                     </label>
                   ))}
                 </div>
               ) : (
-                <div className="text-sm text-gray-500">No available goals to attach.</div>
+                <div className="text-sm text-textMuted">No available goals found.</div>
               )}
-              <button
-                onClick={attachSelectedGoals}
-                disabled={!selectedGoalIds.length || saving}
-                className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm"
-              >
+              <Button onClick={attachSelectedGoals} disabled={!selectedGoalIds.length || saving}>
                 Attach selected goals
-              </button>
-            </div>
-          )}
+              </Button>
+            </CardBody>
+          </Card>
+        ) : null}
 
+        {goals.length ? (
           <div className="space-y-3">
-            {goals.length ? (
-              goals.map((goal) => (
-                <div
-                  key={goal.goalId}
-                  className="rounded-2xl border bg-white p-4 flex flex-wrap items-center justify-between gap-3"
-                >
+            {goals.map((goal) => (
+              <Card key={goal.goalId}>
+                <CardBody className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <div className="font-semibold">{goal.goalCID || `Goal #${goal.goalId}`}</div>
-                    <div className="text-xs text-gray-500">
-                      Level {goal.level} ? {goal.status}
-                    </div>
-                    <div className="text-xs text-gray-500">Created {formatTimestamp(goal.createdAt)}</div>
+                    <div className="text-sm font-semibold">{goal.goalCID}</div>
+                    <div className="text-xs text-textMuted">{goal.status}</div>
+                    <div className="text-xs text-textMuted">Created {formatTimestamp(goal.createdAt)}</div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Link href={`/goals/${goal.goalId}` as Route} className="text-sm text-brand-600 hover:underline">
-                      View goal
-                    </Link>
-                    {canEditGoals && (
-                      <button onClick={() => detachGoal(goal.goalId)} className="text-sm text-red-600">
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-sm text-gray-500">No goals attached yet.</div>
-            )}
+                  {canEditGoals ? (
+                    <Button variant="ghost" size="sm" onClick={() => detachGoal(goal.goalId)} disabled={saving}>
+                      Remove
+                    </Button>
+                  ) : null}
+                </CardBody>
+              </Card>
+            ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <EmptyState title="No goals attached" description="Attach goals to track progress." />
+        )}
+      </Section>
 
-      {activeTab === "activity" && (
-        <div className="space-y-3">
-          {activity.length ? (
-            activity.map((item) => (
-              <div key={item.id} className="rounded-2xl border bg-white p-4">
-                <div className="text-sm font-semibold">{item.summary}</div>
-                <div className="text-xs text-gray-500">
-                  {item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-sm text-gray-500">No activity yet.</div>
-          )}
-        </div>
-      )}
+      <Section title="Activity">
+        {activity.length ? (
+          <div className="space-y-3">
+            {activity.map((item) => (
+              <Card key={item.id}>
+                <CardBody className="space-y-1">
+                  <div className="text-sm font-semibold">{item.summary}</div>
+                  <div className="text-xs text-textMuted">{formatDate(item.createdAt)}</div>
+                </CardBody>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="No activity yet" description="Activity will appear as members log work." />
+        )}
+      </Section>
 
-      {activeTab === "team" && (
-        <div className="space-y-4">
-          {isOwner && (
-            <div className="rounded-2xl border bg-white p-4 space-y-2">
+      <Section title="Team">
+        {isOwner ? (
+          <Card>
+            <CardBody className="space-y-3">
               <div className="text-sm font-semibold">Add member</div>
               <div className="flex flex-wrap gap-2">
-                <input
+                <Input
                   value={memberHandle}
                   onChange={(e) => setMemberHandle(e.target.value)}
-                  placeholder="@username or ACHUSR"
-                  className="border rounded-md px-3 py-2 text-sm flex-1"
+                  placeholder="@username or Achievo ID"
                 />
-                <select
-                  value={memberRole}
-                  onChange={(e) => setMemberRole(e.target.value)}
-                  className="border rounded-md px-2 py-2 text-sm"
-                >
+                <Select value={memberRole} onChange={(e) => setMemberRole(e.target.value)}>
                   <option value="COLLABORATOR">Collaborator</option>
                   <option value="VIEWER">Viewer</option>
                   <option value="CLIENT">Client</option>
-                  <option value="OWNER">Owner</option>
-                </select>
-                <button
+                </Select>
+                <Button
                   onClick={() => {
                     if (memberHandle.trim()) void addMember(memberHandle.trim(), memberRole);
                   }}
-                  className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm"
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-          )}
-
-          {members.length ? (
-            members.map((member) => (
-              <div
-                key={member.achusrId}
-                className="rounded-2xl border bg-white p-4 flex flex-wrap items-center justify-between gap-3"
-              >
-                <div>
-                  <div className="font-semibold">{member.displayName || member.achusrId}</div>
-                  <div className="text-xs text-gray-500">@{member.username || member.achusrId}</div>
-                  <div className="text-xs text-gray-500">
-                    XP {member.xpTotal ?? 0} ? Streak {member.currentStreak ?? 0}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {isOwner ? (
-                    <select
-                      value={member.role}
-                      onChange={(e) => updateMemberRole(member.achusrId, e.target.value)}
-                      className="border rounded-md px-2 py-1 text-sm"
-                    >
-                      <option value="OWNER">Owner</option>
-                      <option value="COLLABORATOR">Collaborator</option>
-                      <option value="VIEWER">Viewer</option>
-                      <option value="CLIENT">Client</option>
-                    </select>
-                  ) : (
-                    <span className="text-xs text-gray-500">{member.role}</span>
-                  )}
-                  {isOwner && (
-                    <button onClick={() => removeMember(member.achusrId)} className="text-sm text-red-600">
-                      Remove
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-sm text-gray-500">No members yet.</div>
-          )}
-        </div>
-      )}
-
-      {activeTab === "time" && (
-        <div className="space-y-6">
-          <div className="grid gap-4 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-4">
-              <div className="rounded-2xl border bg-white p-4 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="text-sm font-semibold">Time tracking</div>
-                  <div className="flex flex-wrap gap-2 text-xs text-gray-500">
-                    <span>Total {formatMinutes(timeSummary.totalMinutes)}</span>
-                    <span>Billable {formatMinutes(timeSummary.billableMinutes)}</span>
-                    <span>Non-billable {formatMinutes(timeSummary.nonBillableMinutes)}</span>
-                  </div>
-                </div>
-
-                {timeLoading ? (
-                  <div className="text-sm text-gray-500">Loading time entries...</div>
-                ) : (
-                  <>
-                    <div className="rounded-xl border bg-gray-50 p-3 space-y-2">
-                      <div className="text-xs text-gray-500">Current timer</div>
-                      {timeEntries.find((entry) => !entry.endedAt) ? (
-                        (() => {
-                          const running = timeEntries.find((entry) => !entry.endedAt);
-                          if (!running) return null;
-                          const elapsed = Math.max(
-                            0,
-                            Math.round((Date.now() - new Date(running.startedAt).getTime()) / 60000),
-                          );
-                          return (
-                            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                              <div>
-                                <div className="font-semibold">Running {formatMinutes(elapsed)}</div>
-                                <div className="text-xs text-gray-500">
-                                  {running.goalId ? `Goal #${running.goalId}` : "General"}
-                                  {running.note ? ` - ${running.note}` : ""}
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => stopTimer(running.id)}
-                                className="px-3 py-1 rounded-md bg-gray-900 text-white text-xs"
-                              >
-                                Stop
-                              </button>
-                            </div>
-                          );
-                        })()
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="grid gap-2 md:grid-cols-3">
-                            <select
-                              value={timerForm.goalId}
-                              onChange={(e) => setTimerForm({ ...timerForm, goalId: e.target.value })}
-                              className="border rounded-md px-2 py-2 text-sm"
-                            >
-                              <option value="">No goal</option>
-                              {goals.map((goal) => (
-                                <option key={goal.goalId} value={goal.goalId}>
-                                  Goal #{goal.goalId}
-                                </option>
-                              ))}
-                            </select>
-                            <input
-                              value={timerForm.note}
-                              onChange={(e) => setTimerForm({ ...timerForm, note: e.target.value })}
-                              placeholder="What are you working on?"
-                              className="border rounded-md px-2 py-2 text-sm md:col-span-2"
-                            />
-                          </div>
-                          <div className="flex flex-wrap items-center gap-3">
-                            <label className="flex items-center gap-2 text-xs text-gray-600">
-                              <input
-                                type="checkbox"
-                                checked={timerForm.billable}
-                                onChange={(e) => setTimerForm({ ...timerForm, billable: e.target.checked })}
-                              />
-                              Billable
-                            </label>
-                            <button
-                              onClick={startTimer}
-                              className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm"
-                            >
-                              Start timer
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="rounded-xl border bg-white p-3 space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="text-sm font-semibold">Recent entries</div>
-                        <button onClick={() => openManualForm()} className="px-3 py-1 rounded-md border text-xs">
-                          Log time manually
-                        </button>
-                      </div>
-                      <div className="grid gap-2 md:grid-cols-4">
-                        <input
-                          type="date"
-                          value={timeFilters.from}
-                          onChange={(e) => setTimeFilters({ ...timeFilters, from: e.target.value })}
-                          className="border rounded-md px-2 py-1 text-xs"
-                        />
-                        <input
-                          type="date"
-                          value={timeFilters.to}
-                          onChange={(e) => setTimeFilters({ ...timeFilters, to: e.target.value })}
-                          className="border rounded-md px-2 py-1 text-xs"
-                        />
-                        <select
-                          value={String(timeFilters.mine)}
-                          onChange={(e) => setTimeFilters({ ...timeFilters, mine: e.target.value === "true" })}
-                          className="border rounded-md px-2 py-1 text-xs"
-                          disabled={membership?.role === "VIEWER"}
-                        >
-                          <option value="true">Mine only</option>
-                          <option value="false">All members</option>
-                        </select>
-                        <select
-                          value={timeFilters.billable}
-                          onChange={(e) => setTimeFilters({ ...timeFilters, billable: e.target.value })}
-                          className="border rounded-md px-2 py-1 text-xs"
-                        >
-                          <option value="">All entries</option>
-                          <option value="true">Billable</option>
-                          <option value="false">Non-billable</option>
-                        </select>
-                      </div>
-
-                      {showManualForm && (
-                        <div className="rounded-xl border bg-gray-50 p-3 space-y-2">
-                          <div className="text-xs text-gray-500">
-                            {manualForm.id ? "Edit entry" : "New manual entry"}
-                          </div>
-                          <div className="grid gap-2 md:grid-cols-2">
-                            <input
-                              type="datetime-local"
-                              value={manualForm.startedAt}
-                              onChange={(e) => setManualForm({ ...manualForm, startedAt: e.target.value })}
-                              className="border rounded-md px-2 py-1 text-xs"
-                            />
-                            <input
-                              type="datetime-local"
-                              value={manualForm.endedAt}
-                              onChange={(e) => setManualForm({ ...manualForm, endedAt: e.target.value })}
-                              className="border rounded-md px-2 py-1 text-xs"
-                            />
-                          </div>
-                          <div className="grid gap-2 md:grid-cols-3">
-                            <select
-                              value={manualForm.goalId}
-                              onChange={(e) => setManualForm({ ...manualForm, goalId: e.target.value })}
-                              className="border rounded-md px-2 py-1 text-xs"
-                            >
-                              <option value="">No goal</option>
-                              {goals.map((goal) => (
-                                <option key={goal.goalId} value={goal.goalId}>
-                                  Goal #{goal.goalId}
-                                </option>
-                              ))}
-                            </select>
-                            <input
-                              value={manualForm.note}
-                              onChange={(e) => setManualForm({ ...manualForm, note: e.target.value })}
-                              placeholder="Session note"
-                              className="border rounded-md px-2 py-1 text-xs md:col-span-2"
-                            />
-                          </div>
-                          <div className="flex flex-wrap items-center gap-3">
-                            <label className="flex items-center gap-2 text-xs text-gray-600">
-                              <input
-                                type="checkbox"
-                                checked={manualForm.billable}
-                                onChange={(e) => setManualForm({ ...manualForm, billable: e.target.checked })}
-                              />
-                              Billable
-                            </label>
-                            <button
-                              onClick={saveManualEntry}
-                              className="px-3 py-1 rounded-md bg-gray-900 text-white text-xs"
-                            >
-                              Save entry
-                            </button>
-                            <button onClick={() => setShowManualForm(false)} className="text-xs text-gray-500">
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {!timeEntries.length ? (
-                        <div className="text-xs text-gray-500">No time entries yet.</div>
-                      ) : (
-                        <div className="space-y-2 text-xs">
-                          {timeEntries.map((entry) => (
-                            <div
-                              key={entry.id}
-                              className="rounded-lg border bg-white px-3 py-2 flex flex-wrap items-center justify-between gap-2"
-                            >
-                              <div>
-                                <div className="font-semibold">
-                                  {entry.goalId ? `Goal #${entry.goalId}` : "General"} -{" "}
-                                  {formatMinutes(entry.durationMinutes)}
-                                </div>
-                                <div className="text-gray-500">
-                                  {new Date(entry.startedAt).toLocaleString()}
-                                  {entry.endedAt ? ` - ${new Date(entry.endedAt).toLocaleString()}` : ""}
-                                </div>
-                                {entry.note && <div className="text-gray-500">{entry.note}</div>}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-500">{entry.billable ? "Billable" : "Non-billable"}</span>
-                                {entry.invoiceId ? (
-                                  <span className="text-gray-400">Invoiced</span>
-                                ) : (
-                                  <>
-                                    <button onClick={() => openManualForm(entry)} className="text-xs text-brand-600">
-                                      Edit
-                                    </button>
-                                    <button onClick={() => deleteTimeEntry(entry.id)} className="text-xs text-red-600">
-                                      Delete
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-2xl border bg-white p-4 space-y-3">
-                <div className="text-sm font-semibold">Billing settings</div>
-                {billingSettings ? (
-                  <div className="grid gap-3 text-sm">
-                    <select
-                      value={billingSettings.billingModel}
-                      onChange={(e) => setBillingSettings({ ...billingSettings, billingModel: e.target.value })}
-                      className="border rounded-md px-2 py-2 text-sm"
-                      disabled={!isOwner}
-                    >
-                      <option value="HOURLY">Hourly</option>
-                      <option value="FIXED_FEE">Fixed fee</option>
-                      <option value="HYBRID">Hybrid</option>
-                    </select>
-                    <input
-                      value={billingSettings.currency}
-                      onChange={(e) => setBillingSettings({ ...billingSettings, currency: e.target.value })}
-                      className="border rounded-md px-2 py-2 text-sm"
-                      placeholder="Currency"
-                      disabled={!isOwner}
-                    />
-                    <input
-                      value={billingSettings.hourlyRateAmount ?? ""}
-                      onChange={(e) =>
-                        setBillingSettings({
-                          ...billingSettings,
-                          hourlyRateAmount: e.target.value ? Number(e.target.value) : null,
-                        })
-                      }
-                      className="border rounded-md px-2 py-2 text-sm"
-                      placeholder="Hourly rate"
-                      disabled={!isOwner}
-                    />
-                    <input
-                      value={billingSettings.fixedFeeAmount ?? ""}
-                      onChange={(e) =>
-                        setBillingSettings({
-                          ...billingSettings,
-                          fixedFeeAmount: e.target.value ? Number(e.target.value) : null,
-                        })
-                      }
-                      className="border rounded-md px-2 py-2 text-sm"
-                      placeholder="Fixed fee"
-                      disabled={!isOwner}
-                    />
-                    <input
-                      value={billingSettings.taxPercent ?? ""}
-                      onChange={(e) =>
-                        setBillingSettings({
-                          ...billingSettings,
-                          taxPercent: e.target.value ? Number(e.target.value) : null,
-                        })
-                      }
-                      className="border rounded-md px-2 py-2 text-sm"
-                      placeholder="Tax percent"
-                      disabled={!isOwner}
-                    />
-                    <input
-                      value={billingSettings.defaultDueDays ?? ""}
-                      onChange={(e) =>
-                        setBillingSettings({
-                          ...billingSettings,
-                          defaultDueDays: e.target.value ? Number(e.target.value) : null,
-                        })
-                      }
-                      className="border rounded-md px-2 py-2 text-sm"
-                      placeholder="Default due days"
-                      disabled={!isOwner}
-                    />
-                    <textarea
-                      value={billingSettings.notes}
-                      onChange={(e) => setBillingSettings({ ...billingSettings, notes: e.target.value })}
-                      className="border rounded-md px-2 py-2 text-sm"
-                      placeholder="Internal notes"
-                      disabled={!isOwner}
-                    />
-                    {isOwner && (
-                      <button
-                        onClick={saveBillingSettings}
-                        disabled={billingSaving}
-                        className="px-3 py-2 rounded-md bg-gray-900 text-white text-sm"
-                      >
-                        Save billing settings
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-xs text-gray-500">Billing settings not available.</div>
-                )}
-              </div>
-
-              {(membership?.role === "OWNER" || membership?.role === "COLLABORATOR") && (
-                <div className="rounded-2xl border bg-white p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold">Invoices</div>
-                    <div className="flex gap-2">
-                      <Link
-                        href={`/projects/${slug}/invoices/new` as Route}
-                        className="text-xs px-2 py-1 rounded-md border"
-                      >
-                        Create invoice
-                      </Link>
-                    </div>
-                  </div>
-
-                  {invoiceError && <div className="text-xs text-red-600">{invoiceError}</div>}
-                  {invoiceLoading ? (
-                    <div className="text-xs text-gray-500">Loading invoices...</div>
-                  ) : invoices.length ? (
-                    <div className="space-y-2 text-xs">
-                      {invoices.map((invoice) => (
-                        <div
-                          key={invoice.id}
-                          className="rounded-lg border bg-white px-3 py-2 flex flex-wrap items-center justify-between gap-2"
-                        >
-                          <div>
-                            <div className="font-semibold">{invoice.number || invoice.clientName}</div>
-                            <div className="text-gray-500">{invoice.clientName}</div>
-                            <div className="text-gray-500">
-                              {formatDate(invoice.issueDate)} - {invoice.status}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-semibold">{formatCurrency(invoice.totalAmount, invoice.currency)}</div>
-                            <div className="flex items-center gap-2 justify-end">
-                              <Link
-                                href={`/projects/${slug}/invoices/${invoice.id}` as Route}
-                                className="text-brand-600"
-                              >
-                                View
-                              </Link>
-                              {invoice.publicSlug && (
-                                <button
-                                  onClick={() => {
-                                    if (typeof window !== "undefined") {
-                                      void navigator.clipboard.writeText(
-                                        `${window.location.origin}/invoices/public/${invoice.publicSlug}`,
-                                      );
-                                    }
-                                  }}
-                                  className="text-xs text-gray-500"
-                                >
-                                  Copy link
-                                </button>
-                              )}
-                              {invoice.status === "DRAFT" && (
-                                <button
-                                  onClick={() => updateInvoiceStatus(invoice.id, "SENT")}
-                                  className="text-xs text-gray-600"
-                                >
-                                  Mark sent
-                                </button>
-                              )}
-                              {invoice.status === "SENT" && (
-                                <button
-                                  onClick={() => updateInvoiceStatus(invoice.id, "PAID")}
-                                  className="text-xs text-green-700"
-                                >
-                                  Mark paid
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-xs text-gray-500">No invoices yet.</div>
-                  )}
-
-                  <div className="rounded-xl border bg-gray-50 p-3 space-y-2">
-                    <div className="text-xs font-semibold">Generate from time</div>
-                    <div className="grid gap-2 md:grid-cols-2">
-                      <input
-                        type="date"
-                        value={generateForm.from}
-                        onChange={(e) => setGenerateForm({ ...generateForm, from: e.target.value })}
-                        className="border rounded-md px-2 py-1 text-xs"
-                      />
-                      <input
-                        type="date"
-                        value={generateForm.to}
-                        onChange={(e) => setGenerateForm({ ...generateForm, to: e.target.value })}
-                        className="border rounded-md px-2 py-1 text-xs"
-                      />
-                    </div>
-                    <div className="grid gap-2 md:grid-cols-2">
-                      <select
-                        value={generateForm.grouping}
-                        onChange={(e) => setGenerateForm({ ...generateForm, grouping: e.target.value })}
-                        className="border rounded-md px-2 py-1 text-xs"
-                      >
-                        <option value="SINGLE_LINE">Single line</option>
-                        <option value="BY_DAY">By day</option>
-                        <option value="BY_GOAL">By goal</option>
-                      </select>
-                      <label className="flex items-center gap-2 text-xs text-gray-600">
-                        <input
-                          type="checkbox"
-                          checked={generateForm.onlyBillable}
-                          onChange={(e) => setGenerateForm({ ...generateForm, onlyBillable: e.target.checked })}
-                        />
-                        Billable only
-                      </label>
-                    </div>
-                    <button
-                      onClick={generateInvoice}
-                      disabled={generatingInvoice}
-                      className="px-3 py-2 rounded-md bg-gray-900 text-white text-xs"
-                    >
-                      Generate invoice
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "settings" && isOwner && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border bg-white p-4 space-y-3">
-            <div className="text-sm font-semibold">Project settings</div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <input
-                value={settingsForm.name}
-                onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
-                placeholder="Name"
-                className="border rounded-md px-3 py-2 text-sm"
-              />
-              <input
-                value={settingsForm.description}
-                onChange={(e) => setSettingsForm({ ...settingsForm, description: e.target.value })}
-                placeholder="Description"
-                className="border rounded-md px-3 py-2 text-sm"
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <select
-                value={settingsForm.status}
-                onChange={(e) => setSettingsForm({ ...settingsForm, status: e.target.value })}
-                className="border rounded-md px-3 py-2 text-sm"
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="ARCHIVED">Archived</option>
-              </select>
-              <select
-                value={settingsForm.visibility}
-                onChange={(e) => setSettingsForm({ ...settingsForm, visibility: e.target.value })}
-                className="border rounded-md px-3 py-2 text-sm"
-              >
-                <option value="PRIVATE">Private</option>
-                <option value="INVITE_ONLY">Invite only</option>
-                <option value="PUBLIC">Public</option>
-              </select>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <input
-                value={settingsForm.clientName}
-                onChange={(e) => setSettingsForm({ ...settingsForm, clientName: e.target.value })}
-                placeholder="Client name"
-                className="border rounded-md px-3 py-2 text-sm"
-              />
-              <input
-                value={settingsForm.clientReference}
-                onChange={(e) => setSettingsForm({ ...settingsForm, clientReference: e.target.value })}
-                placeholder="Client reference"
-                className="border rounded-md px-3 py-2 text-sm"
-              />
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <input
-                type="date"
-                value={settingsForm.dueDate}
-                onChange={(e) => setSettingsForm({ ...settingsForm, dueDate: e.target.value })}
-                className="border rounded-md px-3 py-2 text-sm"
-              />
-              <button
-                onClick={updateProject}
-                className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm"
-                disabled={saving}
-              >
-                Save changes
-              </button>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border bg-white p-4 space-y-4">
-            <div className="text-sm font-semibold">Share links</div>
-            <div className="grid gap-3">
-              {shareLinks.map((link) => (
-                <div key={link.id} className="border rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <div className="text-sm font-semibold">{link.title}</div>
-                    <div className="text-xs text-gray-500">/{link.slug}</div>
-                    <div className="text-xs text-gray-500">{link.visibility}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        if (typeof window !== "undefined") {
-                          void navigator.clipboard.writeText(`${window.location.origin}/projects/share/${link.slug}`);
-                        }
-                      }}
-                      className="text-sm text-gray-600"
-                    >
-                      Copy link
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingShare(link);
-                        setShareForm({
-                          slug: link.slug,
-                          title: link.title,
-                          description: link.description || "",
-                          visibility: link.visibility,
-                          theme: link.theme,
-                          isPrimary: link.isPrimary,
-                          sections: {
-                            summary: Boolean(link.sections?.summary),
-                            goals: Boolean(link.sections?.goals),
-                            activity: Boolean(link.sections?.activity),
-                            team: Boolean(link.sections?.team),
-                            clientNotes: Boolean(link.sections?.clientNotes),
-                          },
-                        });
-                      }}
-                      className="text-sm text-brand-600"
-                    >
-                      Edit
-                    </button>
-                    <button onClick={() => deleteShareLink(link.id)} className="text-sm text-red-600">
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {!shareLinks.length && <div className="text-sm text-gray-500">No share links yet.</div>}
-            </div>
-
-            <div className="border-t pt-4 space-y-3">
-              <div className="text-sm font-semibold">{editingShare ? "Edit share link" : "Create share link"}</div>
-              <div className="grid gap-3 md:grid-cols-2">
-                <input
-                  value={shareForm.slug}
-                  onChange={(e) => setShareForm({ ...shareForm, slug: e.target.value })}
-                  placeholder="Slug"
-                  className="border rounded-md px-3 py-2 text-sm"
-                />
-                <input
-                  value={shareForm.title}
-                  onChange={(e) => setShareForm({ ...shareForm, title: e.target.value })}
-                  placeholder="Title"
-                  className="border rounded-md px-3 py-2 text-sm"
-                />
-              </div>
-              <input
-                value={shareForm.description}
-                onChange={(e) => setShareForm({ ...shareForm, description: e.target.value })}
-                placeholder="Description"
-                className="border rounded-md px-3 py-2 text-sm"
-              />
-              <div className="grid gap-3 md:grid-cols-3">
-                <select
-                  value={shareForm.visibility}
-                  onChange={(e) => setShareForm({ ...shareForm, visibility: e.target.value })}
-                  className="border rounded-md px-3 py-2 text-sm"
-                >
-                  <option value="PUBLIC">Public</option>
-                  <option value="UNLISTED">Unlisted</option>
-                  <option value="DISABLED">Disabled</option>
-                </select>
-                <select
-                  value={shareForm.theme}
-                  onChange={(e) => setShareForm({ ...shareForm, theme: e.target.value })}
-                  className="border rounded-md px-3 py-2 text-sm"
-                >
-                  <option value="AUTO">Auto</option>
-                  <option value="LIGHT">Light</option>
-                  <option value="DARK">Dark</option>
-                </select>
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={shareForm.isPrimary}
-                    onChange={(e) => setShareForm({ ...shareForm, isPrimary: e.target.checked })}
-                  />
-                  Primary
-                </label>
-              </div>
-              <div className="flex flex-wrap gap-3 text-sm">
-                {Object.entries(shareForm.sections).map(([key, value]) => (
-                  <label key={key} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={value}
-                      onChange={(e) =>
-                        setShareForm({
-                          ...shareForm,
-                          sections: { ...shareForm.sections, [key]: e.target.checked },
-                        })
-                      }
-                    />
-                    {key}
-                  </label>
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={saveShareLink}
-                  className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm"
                   disabled={saving}
                 >
-                  {editingShare ? "Update" : "Create"}
-                </button>
-                {editingShare && (
-                  <button
-                    onClick={() => {
-                      setEditingShare(null);
-                      setShareForm({
-                        slug: "",
-                        title: "",
-                        description: "",
-                        visibility: "UNLISTED",
-                        theme: "AUTO",
-                        isPrimary: false,
-                        sections: {
-                          summary: true,
-                          goals: true,
-                          activity: true,
-                          team: true,
-                          clientNotes: true,
-                        },
-                      });
-                    }}
-                    className="text-sm text-gray-600"
-                  >
-                    Cancel
-                  </button>
-                )}
+                  Add member
+                </Button>
               </div>
-            </div>
+            </CardBody>
+          </Card>
+        ) : null}
+
+        {members.length ? (
+          <div className="space-y-3">
+            {members.map((member) => (
+              <Card key={member.achusrId}>
+                <CardBody className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="font-semibold">{member.displayName || member.achusrId}</div>
+                    <div className="text-xs text-textMuted">@{member.username || member.achusrId}</div>
+                    <div className="text-xs text-textMuted">
+                      XP {member.xpTotal ?? 0} · Streak {member.currentStreak ?? 0}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {isOwner ? (
+                      <Select value={member.role} onChange={(e) => updateMemberRole(member.achusrId, e.target.value)}>
+                        <option value="OWNER">Owner</option>
+                        <option value="COLLABORATOR">Collaborator</option>
+                        <option value="VIEWER">Viewer</option>
+                        <option value="CLIENT">Client</option>
+                      </Select>
+                    ) : (
+                      <span className="text-xs text-textMuted">{member.role}</span>
+                    )}
+                    {isOwner ? (
+                      <Button variant="ghost" size="sm" onClick={() => removeMember(member.achusrId)}>
+                        Remove
+                      </Button>
+                    ) : null}
+                  </div>
+                </CardBody>
+              </Card>
+            ))}
           </div>
-        </div>
+        ) : (
+          <EmptyState title="No members yet" description="Invite collaborators to get started." />
+        )}
+      </Section>
+
+      {isOwner ? (
+        <Section title="Project settings">
+          <Card>
+            <CardBody className="space-y-3">
+              <div className="grid gap-4 md:grid-cols-2">
+                <Input
+                  value={settingsForm.name}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
+                  placeholder="Name"
+                />
+                <Input
+                  value={settingsForm.description}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, description: e.target.value })}
+                  placeholder="Description"
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Select
+                  value={settingsForm.status}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, status: e.target.value })}
+                >
+                  <option value="ACTIVE">Active</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="ARCHIVED">Archived</option>
+                </Select>
+                <Select
+                  value={settingsForm.visibility}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, visibility: e.target.value })}
+                >
+                  <option value="PRIVATE">Private</option>
+                  <option value="INVITE_ONLY">Invite only</option>
+                  <option value="PUBLIC">Public</option>
+                </Select>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Input
+                  value={settingsForm.clientName}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, clientName: e.target.value })}
+                  placeholder="Client name"
+                />
+                <Input
+                  value={settingsForm.clientReference}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, clientReference: e.target.value })}
+                  placeholder="Client reference"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Input
+                  type="date"
+                  value={settingsForm.dueDate}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, dueDate: e.target.value })}
+                />
+                <Button onClick={updateProject} disabled={saving}>
+                  {UI_LABELS.saveChanges}
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
+        </Section>
+      ) : null}
+    </div>
+  );
+
+  const timeContent = (
+    <div className="space-y-6">
+      {error ? <ErrorState message={error} /> : null}
+      <Card>
+        <CardBody className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-semibold">Time entries</div>
+            <div className="text-xs text-textMuted">{formatMinutes(timeSummary.totalMinutes)} total</div>
+          </div>
+          <TableFilters>
+            <Input
+              type="date"
+              value={timeFilters.from}
+              onChange={(e) => setTimeFilters({ ...timeFilters, from: e.target.value })}
+            />
+            <Input
+              type="date"
+              value={timeFilters.to}
+              onChange={(e) => setTimeFilters({ ...timeFilters, to: e.target.value })}
+            />
+            <Select
+              value={timeFilters.mine ? "true" : "false"}
+              onChange={(e) => setTimeFilters({ ...timeFilters, mine: e.target.value === "true" })}
+              disabled={membership?.role === "VIEWER"}
+            >
+              <option value="true">Mine only</option>
+              <option value="false">All members</option>
+            </Select>
+            <Select
+              value={timeFilters.billable}
+              onChange={(e) => setTimeFilters({ ...timeFilters, billable: e.target.value })}
+            >
+              <option value="">All</option>
+              <option value="true">Billable</option>
+              <option value="false">Non billable</option>
+            </Select>
+          </TableFilters>
+          <TimeEntryTable
+            entries={timeEntries}
+            loading={timeLoading}
+            error={invoiceError || undefined}
+            onRetry={fetchTimeEntries}
+            onStop={stopTimer}
+            onEdit={openManualForm}
+            onDelete={deleteTimeEntry}
+            busyId={busyEntryId}
+            busy={saving}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowManualForm(true)}
+            disabled={membership?.role === "VIEWER"}
+          >
+            {UI_LABELS.addManualEntry}
+          </Button>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardBody className="space-y-3">
+          <div className="text-sm font-semibold">Start timer</div>
+          <Select value={timerForm.goalId} onChange={(e) => setTimerForm({ ...timerForm, goalId: e.target.value })}>
+            <option value="">No goal</option>
+            {goals.map((goal) => (
+              <option key={goal.goalId} value={goal.goalId}>
+                {goal.goalCID}
+              </option>
+            ))}
+          </Select>
+          <Textarea
+            value={timerForm.note}
+            onChange={(e) => setTimerForm({ ...timerForm, note: e.target.value })}
+            placeholder="What are you working on?"
+          />
+          <label className="flex items-center gap-2 text-xs text-textMuted">
+            <input
+              type="checkbox"
+              checked={timerForm.billable}
+              onChange={(e) => setTimerForm({ ...timerForm, billable: e.target.checked })}
+            />
+            Billable
+          </label>
+          <Button onClick={startTimer} disabled={saving}>
+            {UI_LABELS.start} timer
+          </Button>
+        </CardBody>
+      </Card>
+
+      {showManualForm ? (
+        <Card>
+          <CardBody className="space-y-3">
+            <div className="text-sm font-semibold">{manualForm.id ? "Edit time entry" : "Manual time entry"}</div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <Input
+                type="datetime-local"
+                value={manualForm.startedAt}
+                onChange={(e) => setManualForm({ ...manualForm, startedAt: e.target.value })}
+              />
+              <Input
+                type="datetime-local"
+                value={manualForm.endedAt}
+                onChange={(e) => setManualForm({ ...manualForm, endedAt: e.target.value })}
+              />
+            </div>
+            <Input
+              value={manualForm.goalId}
+              onChange={(e) => setManualForm({ ...manualForm, goalId: e.target.value })}
+              placeholder="Goal ID (optional)"
+            />
+            <Textarea
+              value={manualForm.note}
+              onChange={(e) => setManualForm({ ...manualForm, note: e.target.value })}
+              placeholder="Note"
+            />
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={manualForm.billable}
+                onChange={(e) => setManualForm({ ...manualForm, billable: e.target.checked })}
+              />
+              Billable
+            </label>
+            <div className="flex items-center gap-2">
+              <Button onClick={saveManualEntry} disabled={saving}>
+                {manualForm.id ? UI_LABELS.saveChanges : UI_LABELS.create}
+              </Button>
+              <Button variant="ghost" onClick={() => setShowManualForm(false)}>
+                Cancel
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      {billingSettings ? (
+        <Card>
+          <CardBody className="space-y-3">
+            <div className="text-sm font-semibold">Billing settings</div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Input
+                value={billingSettings.billingModel}
+                onChange={(e) => setBillingSettings({ ...billingSettings, billingModel: e.target.value })}
+                placeholder="Billing model"
+                disabled={!isOwner}
+              />
+              <Input
+                value={billingSettings.currency}
+                onChange={(e) => setBillingSettings({ ...billingSettings, currency: e.target.value })}
+                placeholder="Currency"
+                disabled={!isOwner}
+              />
+              <Input
+                value={billingSettings.hourlyRateAmount ?? ""}
+                onChange={(e) =>
+                  setBillingSettings({
+                    ...billingSettings,
+                    hourlyRateAmount: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+                placeholder="Hourly rate"
+                disabled={!isOwner}
+              />
+              <Input
+                value={billingSettings.fixedFeeAmount ?? ""}
+                onChange={(e) =>
+                  setBillingSettings({
+                    ...billingSettings,
+                    fixedFeeAmount: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+                placeholder="Fixed fee"
+                disabled={!isOwner}
+              />
+              <Input
+                value={billingSettings.taxPercent ?? ""}
+                onChange={(e) =>
+                  setBillingSettings({
+                    ...billingSettings,
+                    taxPercent: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+                placeholder="Tax percent"
+                disabled={!isOwner}
+              />
+              <Input
+                value={billingSettings.defaultDueDays ?? ""}
+                onChange={(e) =>
+                  setBillingSettings({
+                    ...billingSettings,
+                    defaultDueDays: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+                placeholder="Default due days"
+                disabled={!isOwner}
+              />
+              <Textarea
+                value={billingSettings.notes}
+                onChange={(e) => setBillingSettings({ ...billingSettings, notes: e.target.value })}
+                placeholder="Internal notes"
+                disabled={!isOwner}
+              />
+              {isOwner ? (
+                <Button onClick={saveBillingSettings} disabled={billingSaving}>
+                  Save billing settings
+                </Button>
+              ) : null}
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
+    </div>
+  );
+
+  const invoicesContent = (
+    <div className="space-y-6">
+      {invoiceError ? <ErrorState message={invoiceError} onRetry={fetchInvoices} /> : null}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-sm font-semibold">Invoices</div>
+        <Button variant="secondary" size="sm" onClick={() => (window.location.href = `/projects/${slug}/invoices/new`)}>
+          {UI_LABELS.createInvoice}
+        </Button>
+      </div>
+      <InvoiceTable
+        projectSlug={slug}
+        invoices={invoices}
+        loading={invoiceLoading}
+        error={invoiceError || undefined}
+        onRetry={fetchInvoices}
+        onMarkSent={(id) => updateInvoiceStatus(id, "SENT")}
+        onMarkPaid={(id) => updateInvoiceStatus(id, "PAID")}
+        busyId={busyInvoiceId}
+      />
+      <Card>
+        <CardBody className="space-y-3">
+          <div className="text-sm font-semibold">Generate from time</div>
+          <div className="grid gap-2 md:grid-cols-2">
+            <Input
+              type="date"
+              value={generateForm.from}
+              onChange={(e) => setGenerateForm({ ...generateForm, from: e.target.value })}
+            />
+            <Input
+              type="date"
+              value={generateForm.to}
+              onChange={(e) => setGenerateForm({ ...generateForm, to: e.target.value })}
+            />
+          </div>
+          <div className="grid gap-2 md:grid-cols-2">
+            <Select
+              value={generateForm.grouping}
+              onChange={(e) => setGenerateForm({ ...generateForm, grouping: e.target.value })}
+            >
+              <option value="SINGLE_LINE">Single line</option>
+              <option value="BY_DAY">By day</option>
+              <option value="BY_GOAL">By goal</option>
+            </Select>
+            <label className="flex items-center gap-2 text-xs text-textMuted">
+              <input
+                type="checkbox"
+                checked={generateForm.onlyBillable}
+                onChange={(e) => setGenerateForm({ ...generateForm, onlyBillable: e.target.checked })}
+              />
+              Billable only
+            </label>
+          </div>
+          <Button onClick={generateInvoice} disabled={generatingInvoice}>
+            {generatingInvoice ? "Generating..." : UI_LABELS.generateInvoice}
+          </Button>
+        </CardBody>
+      </Card>
+    </div>
+  );
+
+  const shareContent = (
+    <div className="space-y-6">
+      {shareActionError ? <ErrorState message={shareActionError} /> : null}
+      {!token ? (
+        <AuthRequired title="Sign in required" description="Sign in to manage project share links." />
+      ) : !isOwner ? (
+        <EmptyState title="Owner access required" description="Only project owners can manage share links." />
+      ) : (
+        <ProjectShareLinksManager
+          links={shareLinks}
+          onCreate={createShareLink}
+          onUpdate={updateShareLink}
+          onDelete={deleteShareLink}
+        />
       )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={project.name}
+        description={project.description || "Project workspace overview."}
+        breadcrumbs={projectBreadcrumbs(project.slug, project.name)}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusPill status={project.status} />
+            <StatusPill status={project.visibility} />
+            {membership?.role ? <StatusPill status={membership.role} /> : null}
+          </div>
+        }
+      />
+      <DegradedHint />
+
+      <ProjectTabs
+        overview={overviewContent}
+        timeTracking={timeContent}
+        invoices={invoicesContent}
+        shareLinks={shareContent}
+        initialId={activeTab}
+        onTabChange={(id) => setActiveTab(id)}
+      />
     </div>
   );
 }

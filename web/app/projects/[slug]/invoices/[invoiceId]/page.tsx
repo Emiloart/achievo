@@ -183,7 +183,7 @@ export default function InvoiceDetailPage() {
           {invoice.status === "SENT" && (
             <button
               onClick={() => updateStatus("PAID")}
-              className="px-3 py-2 rounded-md bg-green-600 text-white text-sm"
+              className="px-3 py-2 rounded-md bg-success text-onAccent text-sm"
             >
               Mark paid
             </button>
@@ -191,7 +191,7 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-      {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-md border border-danger/20 bg-danger/10 p-3 text-sm text-danger">{error}</div>}
 
       <div className="rounded-2xl border bg-white p-5 space-y-3">
         <div className="text-sm font-semibold">Client</div>

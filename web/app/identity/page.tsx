@@ -1,17 +1,21 @@
 "use client";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useChainId } from "wagmi";
 import { IdentityBadge } from "../../components/IdentityBadge";
 import { useIdentityRegistration } from "../../hooks/useIdentity";
 import { PageHeader } from "../../components/nav/PageHeader";
 import { TxStepper } from "../../components/tx/TxStepper";
+import { FinalityTimeline } from "../../components/tx/FinalityTimeline";
 import { Badge, Button, Card, CardBody, Section } from "../../components/ui";
+import { UI_LABELS } from "../../lib/uiCopy";
 
 const ConnectWallet = dynamic(() => import("../../components/ConnectWallet").then((m) => m.ConnectWallet), {
   ssr: false,
 });
 
 export default function IdentityPage() {
+  const chainId = useChainId();
   const { register, registering, userId, hasContract, address, isLoading, error, txState, txHash, txError } =
     useIdentityRegistration();
 
@@ -25,7 +29,7 @@ export default function IdentityPage() {
         ? "ID already claimed"
         : registering
           ? "Claiming..."
-          : "Claim Achievo ID";
+          : `${UI_LABELS.create} Achievo ID`;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -96,8 +100,9 @@ export default function IdentityPage() {
             {registering && <div className="text-xs text-info">Waiting for transaction confirmation...</div>}
             {isLoading && <div className="text-xs text-textMuted">Fetching your current ID...</div>}
             {error && <div className="text-xs text-danger">{error}</div>}
+            {txState !== "idle" || txError ? <TxStepper state={txState} txHash={txHash} error={txError} /> : null}
             {txState !== "idle" || txError ? (
-              <TxStepper state={txState} txHash={txHash} error={txError} />
+              <FinalityTimeline state={txState} txHash={txHash} chainId={chainId || undefined} />
             ) : null}
           </CardBody>
         </Card>

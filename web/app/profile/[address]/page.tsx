@@ -1,10 +1,12 @@
 "use client";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 
 import { getApiErrorMessage } from "../../../lib/apiError";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useAccount, useChainId, useReadContract, useSignTypedData } from "wagmi";
+import { hashTypedData } from "viem";
 import { shortAchievoId } from "../../../lib/achievo";
 import { useUserTasks } from "../../../hooks/useUserTasks";
 import { useProfileInfo } from "../../../hooks/useProfileInfo";
@@ -24,25 +26,37 @@ import { GoalCard } from "../../../components/GoalCard";
 import { ProfileEditor } from "../../../components/ProfileEditor";
 import { ProofList } from "../../../components/ProofList";
 import { VisibilityControls } from "../../../components/VisibilityControls";
+import { AnchorStatusBadge, AnchorTimeline } from "../../../components/domain/AnchorStatus";
+import { EmptyState } from "../../../components/states/EmptyState";
+import { ErrorState } from "../../../components/states/ErrorState";
+import { LoadingState } from "../../../components/states/LoadingState";
+import { DegradedHint } from "../../../components/states/DegradedHint";
+import { Modal } from "../../../components/ui/Modal";
 import {
+  Alert,
   Badge,
   Button,
   Card,
   CardBody,
+  Checkbox,
   CopyField,
-  EmptyState,
   HashDisplay,
-  QRCode,
+  Input,
+  Select,
   Section,
+  StatusBadge,
   uiToast,
 } from "../../../components/ui";
 import { useIdentityId } from "../../../hooks/useIdentity";
 import { formatAchievoId } from "../../../lib/userId";
 import { ipfsToHttp } from "../../../lib/ipfs";
 import { useBackendAuth } from "../../../hooks/useBackendAuth";
+import { usePolicy } from "../../../hooks/usePolicy";
 
 type FollowStats = { followersCount: number; followingCount: number; isFollowing: boolean };
 type ActivityItem = { id: string; summary: string; createdAt: string };
+
+const QRCode = dynamic(() => import("../../../components/ui").then((mod) => mod.QRCode), { ssr: false });
 
 function formatTimeAgo(iso?: string) {
   if (!iso) return "";
@@ -362,7 +376,9 @@ function ProfileContent() {
   const threshold = Number(thresholdRaw ?? 5);
   const { userId } = useIdentityId(addr as `0x${string}`);
   const { token, user } = useBackendAuth();
+  const { policy } = usePolicy();
   const { signTypedDataAsync } = useSignTypedData();
+  const showRiskSignals = policy.displayPolicies.showRiskSignalsToPublic || isOwner;
   const { data: professionalMe, loading: professionalMeLoading } = useProfessionalProfile();
   const {
     data: professionalPublic,
@@ -372,8 +388,17 @@ function ProfileContent() {
   const { links: shareLinks } = useShareLinks();
   const [askPrice, setAskPrice] = useState("");
   const [askLoading, setAskLoading] = useState(false);
+  const [askSubmitting, setAskSubmitting] = useState(false);
   const [askError, setAskError] = useState("");
   const [ask, setAsk] = useState<any | null>(null);
+  const [askPreviewOpen, setAskPreviewOpen] = useState(false);
+  const [askPreview, setAskPreview] = useState<{
+    normalized: string;
+    priceWei: string;
+    expiresAt?: string;
+    orderHash: string;
+    typedData: any;
+  } | null>(null);
   const [followStats, setFollowStats] = useState<FollowStats>({
     followersCount: 0,
     followingCount: 0,
@@ -410,17 +435,12 @@ function ProfileContent() {
     loading: consistencyLoading,
     error: consistencyError,
   } = useConsistency(achusrId);
-  const {
-    proofs,
-    loading: proofsLoading,
-    error: proofsError,
-    refetch: refetchProofs,
-  } = useProofs({ userId: achusrId });
-  const { createExport, loading: exportLoading, error: exportError } = useProfileExportActions();
+  const { proofs, error: proofsError, state: proofsState, refetch: refetchProofs } = useProofs({ userId: achusrId });
+  const { createExport, loading: exportLoading, error: exportError, state: exportState } = useProfileExportActions();
   const {
     items: approvedValidations,
-    loading: validationsLoading,
     error: validationsError,
+    state: validationsState,
     refetch: refetchValidations,
   } = useUserValidations(achusrId, { status: "APPROVED" });
   const {
@@ -613,33 +633,69 @@ function ProfileContent() {
       const typedData = prepareJson?.data?.typedData;
       if (!typedData?.message) throw new Error("Failed to prepare order");
       const message = typedData.message || {};
-      const signature = await signTypedDataAsync({
+      const preparedMessage = {
+        ...message,
+        priceWei: BigInt(String(message.priceWei)),
+        nonce: BigInt(String(message.nonce)),
+        salt: BigInt(String(message.salt)),
+        expiresAt: BigInt(String(message.expiresAt)),
+      };
+      const orderHash = hashTypedData({
         domain: typedData.domain,
         types: typedData.types,
         primaryType: typedData.primaryType,
-        message: {
-          ...message,
-          priceWei: BigInt(String(message.priceWei)),
-          nonce: BigInt(String(message.nonce)),
-          salt: BigInt(String(message.salt)),
-          expiresAt: BigInt(String(message.expiresAt)),
-        },
+        message: preparedMessage,
       });
-      const res = await fetch("/api/usernames/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ name: cleaned, typedData, signature }),
+      const expiresAtSeconds = Number(message.expiresAt || 0);
+      const expiresAtLabel = expiresAtSeconds > 0 ? new Date(expiresAtSeconds * 1000).toLocaleString() : undefined;
+      setAskPreview({
+        normalized,
+        priceWei: priceRaw,
+        expiresAt: expiresAtLabel,
+        orderHash,
+        typedData: { ...typedData, message: preparedMessage },
       });
-      if (!res.ok) throw new Error(await getApiErrorMessage(res));
-      const json = await res.json();
-      setAsk(json.data);
-      setAskPrice("");
+      setAskPreviewOpen(true);
     } catch (e: any) {
       setAskError(e?.message || "Failed to list username");
     } finally {
       setAskLoading(false);
     }
+  };
+
+  const submitListing = async () => {
+    if (!askPreview) return;
+    setAskSubmitting(true);
+    setAskError("");
+    try {
+      const signature = await signTypedDataAsync({
+        domain: askPreview.typedData.domain,
+        types: askPreview.typedData.types,
+        primaryType: askPreview.typedData.primaryType,
+        message: askPreview.typedData.message,
+      });
+      const res = await fetch("/api/usernames/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: askPreview.normalized, typedData: askPreview.typedData, signature }),
+      });
+      if (!res.ok) throw new Error(await getApiErrorMessage(res));
+      const json = await res.json();
+      setAsk(json.data);
+      setAskPrice("");
+      setAskPreview(null);
+      setAskPreviewOpen(false);
+    } catch (e: any) {
+      setAskError(e?.message || "Failed to list username");
+    } finally {
+      setAskSubmitting(false);
+    }
+  };
+
+  const closeAskPreview = () => {
+    setAskPreviewOpen(false);
+    setAskPreview(null);
   };
 
   const cancelListing = async () => {
@@ -835,6 +891,7 @@ function ProfileContent() {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
+        <DegradedHint />
         <h2 className="text-2xl font-semibold">Profile</h2>
         <Card>
           <CardBody className="space-y-4">
@@ -970,11 +1027,11 @@ function ProfileContent() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
                       value={askPrice}
                       onChange={(e) => setAskPrice(e.target.value)}
                       placeholder="Price (wei)"
-                      className="w-32 rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
+                      className="w-32"
                     />
                     <Button onClick={listUsername} disabled={askLoading}>
                       {askLoading ? "Listing..." : "Create listing"}
@@ -1060,7 +1117,7 @@ function ProfileContent() {
                               className="w-full rounded-md bg-accent"
                               style={{ height: `${Math.max((week.activeDays / weeklyMax) * 100, 8)}%` }}
                             />
-                            <div className="text-[10px] text-textMuted">{week.weekKey.split("-W")[1]}</div>
+                            <div className="text-xs text-textMuted">{week.weekKey.split("-W")[1]}</div>
                           </div>
                         ))}
                       </div>
@@ -1070,12 +1127,12 @@ function ProfileContent() {
                   </CardBody>
                 </Card>
 
-                {consistencyScore.anomalyScore >= 70 && (
+                {showRiskSignals && consistencyScore.anomalyScore >= 70 && (
                   <div className="rounded-2xl border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
                     Unusual activity detected; credibility score reduced.
                   </div>
                 )}
-                {riskPenalty > 0 && (
+                {showRiskSignals && riskPenalty > 0 && (
                   <div className="rounded-2xl border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
                     Risk signals reduced credibility by {riskPenalty} points (risk score {riskScore}).
                   </div>
@@ -1089,20 +1146,26 @@ function ProfileContent() {
                         Reliability inputs: {consistencyScore.explanations?.reliability?.completedEvents ?? 0} completed
                         vs {consistencyScore.explanations?.reliability?.startedEvents ?? 0} started
                       </div>
-                      <div>Anomaly score: {consistencyScore.anomalyScore} / 100</div>
-                      {riskPenalty > 0 && (
-                        <div>
-                          Risk penalty: -{riskPenalty} (risk score {riskScore})
-                        </div>
-                      )}
-                      {anomalyNotes.length ? (
-                        <div className="space-y-1">
-                          {anomalyNotes.map((note, index) => (
-                            <div key={`${index}-${note}`}>- {note}</div>
-                          ))}
-                        </div>
+                      {showRiskSignals ? (
+                        <>
+                          <div>Anomaly score: {consistencyScore.anomalyScore} / 100</div>
+                          {riskPenalty > 0 && (
+                            <div>
+                              Risk penalty: -{riskPenalty} (risk score {riskScore})
+                            </div>
+                          )}
+                          {anomalyNotes.length ? (
+                            <div className="space-y-1">
+                              {anomalyNotes.map((note, index) => (
+                                <div key={`${index}-${note}`}>- {note}</div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div>No anomaly signals detected.</div>
+                          )}
+                        </>
                       ) : (
-                        <div>No anomaly signals detected.</div>
+                        <div className="text-xs text-textMuted">Risk signals are hidden by policy.</div>
                       )}
                     </CardBody>
                   </Card>
@@ -1172,12 +1235,14 @@ function ProfileContent() {
               </div>
             }
           >
-            {proofsLoading ? (
-              <div className="text-textMuted text-sm">Loading proofs...</div>
-            ) : proofsError ? (
-              <div className="text-sm text-danger">{proofsError}</div>
-            ) : (
+            {proofsState.status === "loading" ? (
+              <LoadingState title="Loading proofs" description="Fetching proof artifacts for this profile." rows={2} />
+            ) : proofsState.status === "failed" ? (
+              <ErrorState message={proofsError || "Unable to load proofs."} onRetry={refetchProofs} />
+            ) : filteredProofs.length ? (
               <ProofList proofs={filteredProofs} showControls={Boolean(isOwner && token)} onRefresh={refetchProofs} />
+            ) : (
+              <EmptyState title="No proofs yet" description="Proof artifacts will appear here once added." />
             )}
           </Section>
 
@@ -1187,43 +1252,60 @@ function ProfileContent() {
                 <CardBody className="space-y-4">
                   <div className="flex flex-wrap items-center gap-3 text-sm">
                     <label className="text-xs text-textMuted">Format</label>
-                    <select
-                      className="rounded-full border border-border bg-surface2 px-3 py-1 text-sm"
+                    <Select
+                      className="w-fit"
                       value={exportFormat}
                       onChange={(e) => setExportFormat(e.target.value as "JSON" | "JSONLD" | "PDF")}
                     >
                       <option value="JSON">JSON</option>
                       <option value="JSONLD">JSON-LD</option>
                       <option value="PDF">PDF</option>
-                    </select>
+                    </Select>
                     <label className="flex items-center gap-2 text-xs text-textMuted">
-                      <input
-                        type="checkbox"
-                        checked={exportAnchor}
-                        onChange={(e) => setExportAnchor(e.target.checked)}
-                      />
+                      <Checkbox checked={exportAnchor} onChange={(e) => setExportAnchor(e.target.checked)} />
                       Anchor on-chain
                     </label>
                     <Button type="button" onClick={handleExport} disabled={exportLoading}>
                       {exportLoading ? "Exporting..." : "Create export"}
                     </Button>
                   </div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    {exportState.status === "loading" && <StatusBadge tone="info">Creating export</StatusBadge>}
+                    {exportState.status === "failed" && <StatusBadge tone="danger">Export failed</StatusBadge>}
+                    {exportState.status === "confirmed" && <StatusBadge tone="success">Export ready</StatusBadge>}
+                  </div>
                   {exportError && <div className="text-sm text-danger">{exportError}</div>}
                   {exportResult && (
                     <div className="grid gap-4 md:grid-cols-[1.4fr_0.6fr]">
                       <Card>
                         <CardBody className="space-y-3">
-                          <div className="text-sm font-semibold">Export ready</div>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-sm font-semibold">Export ready</div>
+                            {exportResult.anchor?.txHash ? (
+                              <AnchorStatusBadge
+                                txHash={exportResult.anchor.txHash}
+                                anchoredAt={exportResult.anchor.anchoredAt}
+                              />
+                            ) : exportAnchor ? (
+                              <StatusBadge tone="warning">Anchoring queued</StatusBadge>
+                            ) : null}
+                          </div>
                           <CopyField label="Public link" value={`${window.location.origin}${exportPath}`} />
                           <CopyField label="Snapshot hash" value={exportResult.snapshotHash} />
                           <CopyField label="Signature" value={exportResult.signature} />
-                          {exportResult.anchor?.txHash && (
-                            <HashDisplay
-                              label="Anchor tx"
-                              value={exportResult.anchor.txHash}
-                              href={explorerTx(exportResult.anchor.chainId, exportResult.anchor.txHash)}
-                            />
-                          )}
+                          {exportResult.anchor?.txHash ? (
+                            <>
+                              <HashDisplay
+                                label="Anchor tx"
+                                value={exportResult.anchor.txHash}
+                                href={explorerTx(exportResult.anchor.chainId, exportResult.anchor.txHash)}
+                              />
+                              <AnchorTimeline
+                                txHash={exportResult.anchor.txHash}
+                                anchoredAt={exportResult.anchor.anchoredAt}
+                              />
+                            </>
+                          ) : null}
                           {downloadPath && (
                             <a
                               href={downloadPath}
@@ -1259,10 +1341,10 @@ function ProfileContent() {
           )}
 
           <Section title="Validated achievements">
-            {validationsLoading ? (
-              <div className="text-textMuted text-sm">Loading validations...</div>
-            ) : validationsError ? (
-              <div className="text-sm text-danger">{validationsError}</div>
+            {validationsState.status === "loading" ? (
+              <LoadingState title="Loading validations" description="Fetching validated achievements." rows={2} />
+            ) : validationsState.status === "failed" ? (
+              <ErrorState message={validationsError || "Unable to load validations."} onRetry={refetchValidations} />
             ) : approvedValidations.length ? (
               <div className="space-y-3">
                 {approvedValidations.map((item) => {
@@ -1273,7 +1355,12 @@ function ProfileContent() {
                   return (
                     <Card key={item.request.id}>
                       <CardBody className="space-y-2 text-sm">
-                        <div className="font-semibold">{item.request.title}</div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-semibold">{item.request.title}</div>
+                          {attestation?.anchorTxHash ? (
+                            <AnchorStatusBadge txHash={attestation.anchorTxHash} anchoredAt={attestation.anchoredAt} />
+                          ) : null}
+                        </div>
                         <div className="flex flex-wrap items-center gap-2 text-xs text-textMuted">
                           {item.request.achievementId && <span>Goal #{item.request.achievementId}</span>}
                           {item.request.badgeTokenId && <span>Badge #{item.request.badgeTokenId}</span>}
@@ -1289,9 +1376,12 @@ function ProfileContent() {
                           <div className="text-textMuted">{attestation.message}</div>
                         )}
                         {metadataHidden && <Badge variant="private">Validation details hidden</Badge>}
-                        {attestation?.anchorTxHash && (
-                          <HashDisplay label="Anchor tx" value={attestation.anchorTxHash} href={anchorUrl} />
-                        )}
+                        {attestation?.anchorTxHash ? (
+                          <>
+                            <HashDisplay label="Anchor tx" value={attestation.anchorTxHash} href={anchorUrl} />
+                            <AnchorTimeline txHash={attestation.anchorTxHash} anchoredAt={attestation.anchoredAt} />
+                          </>
+                        ) : null}
                         {isOwner && token && (
                           <VisibilityControls
                             contentType="VALIDATION"
@@ -1309,7 +1399,10 @@ function ProfileContent() {
                 })}
               </div>
             ) : (
-              <div className="text-textMuted text-sm">No validated achievements yet.</div>
+              <EmptyState
+                title="No validated achievements yet"
+                description="Validated achievements will appear here once approved."
+              />
             )}
           </Section>
 
@@ -1329,7 +1422,9 @@ function ProfileContent() {
               ) : null
             }
           >
-            {endorsementSummaryLoading || profileEndorsementsLoading ? (
+            {!policy.featureFlags.endorsementsEnabled ? (
+              <Alert tone="warning">Endorsements are currently disabled by policy.</Alert>
+            ) : endorsementSummaryLoading || profileEndorsementsLoading ? (
               <div className="text-textMuted text-sm">Loading endorsements...</div>
             ) : endorsementSummaryError || profileEndorsementsError ? (
               <div className="text-sm text-danger">{endorsementSummaryError || profileEndorsementsError}</div>
@@ -1361,7 +1456,7 @@ function ProfileContent() {
               </div>
             )}
 
-            {!isOwner && (
+            {!isOwner && policy.featureFlags.endorsementsEnabled && (
               <Card>
                 <CardBody className="space-y-3 text-sm">
                   <div className="text-xs text-textMuted">Endorse this profile</div>
@@ -1399,11 +1494,11 @@ function ProfileContent() {
             actions={
               isOwner && token ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <input
+                  <Input
                     value={skillInput}
                     onChange={(e) => setSkillInput(e.target.value)}
                     placeholder="Add a skill"
-                    className="w-40 rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
+                    className="w-40"
                   />
                   <Button type="button" onClick={handleAddSkill} disabled={skillBusy}>
                     {skillBusy ? "Adding..." : "Add"}
@@ -1495,6 +1590,37 @@ function ProfileContent() {
           />
         </Section>
       )}
+      <Modal open={askPreviewOpen} onClose={closeAskPreview} title="Review username listing">
+        {askPreview ? (
+          <div className="space-y-4">
+            <div className="text-sm text-textMuted">Review the listing details before signing the order.</div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <CopyField label="Handle" value={`@${askPreview.normalized}`} />
+              <CopyField label="Price (wei)" value={askPreview.priceWei} />
+              {askPreview.expiresAt ? <CopyField label="Expires at" value={askPreview.expiresAt} /> : null}
+              <CopyField label="Order hash" value={askPreview.orderHash} />
+              {askPreview.typedData?.domain?.chainId ? (
+                <CopyField label="Chain ID" value={String(askPreview.typedData.domain.chainId)} />
+              ) : null}
+              {askPreview.typedData?.domain?.verifyingContract ? (
+                <CopyField label="Registry" value={askPreview.typedData.domain.verifyingContract} />
+              ) : null}
+            </div>
+            <div className="text-xs text-textMuted">
+              Signing authorizes this listing until the expiry. You can revoke by signing a cancel message from your
+              profile.
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <Button type="button" variant="ghost" onClick={closeAskPreview}>
+                Cancel
+              </Button>
+              <Button type="button" onClick={submitListing} disabled={askSubmitting}>
+                {askSubmitting ? "Signing..." : "Sign order"}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
     </div>
   );
 }

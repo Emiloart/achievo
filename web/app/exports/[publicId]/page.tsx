@@ -4,6 +4,7 @@ import { getApiErrorMessage } from "../../../lib/apiError";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { verifyMessage } from "viem";
 import {
   Badge,
@@ -15,7 +16,6 @@ import {
   CopyField,
   EmptyState,
   HashDisplay,
-  QRCode,
   Section,
 } from "../../../components/ui";
 import { TrustCard } from "../../../components/trust/TrustCard";
@@ -44,6 +44,7 @@ type VerifyState = {
 };
 
 const API_BASE = "/api";
+const QRCode = dynamic(() => import("../../../components/ui").then((mod) => mod.QRCode), { ssr: false });
 
 function stableStringify(value: any): string {
   if (value === null || typeof value !== "object") {

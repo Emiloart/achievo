@@ -4,10 +4,11 @@
  * Manages validation requests and attestation submissions.
  */
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getApiErrorMessage } from "../lib/apiError";
 import { useBackendAuth } from "./useBackendAuth";
+import { asyncConfirmed, asyncFailed, asyncIdle, asyncLoading, type AsyncState } from "../types/asyncState";
 
 /** Validation request record returned by the backend. */
 export type ValidationRequest = {
@@ -101,7 +102,14 @@ export function useUserValidations(
     void fetchValidations();
   }, [fetchValidations]);
 
-  return { items, loading, error, refetch: fetchValidations };
+  const state: AsyncState<ValidationItem[]> = useMemo(() => {
+    if (!userId) return asyncIdle<ValidationItem[]>([]);
+    if (loading) return asyncLoading<ValidationItem[]>(items);
+    if (error) return asyncFailed<ValidationItem[]>(error, items);
+    return asyncConfirmed<ValidationItem[]>(items);
+  }, [error, items, loading, userId]);
+
+  return { items, loading, error, state, refetch: fetchValidations };
 }
 
 /** Loads pending validation requests for a validator wallet. */
@@ -138,7 +146,14 @@ export function useValidatorRequests(walletAddress?: string) {
     void fetchRequests();
   }, [fetchRequests]);
 
-  return { items, loading, error, refetch: fetchRequests };
+  const state: AsyncState<ValidationItem[]> = useMemo(() => {
+    if (!walletAddress || !token) return asyncIdle<ValidationItem[]>([]);
+    if (loading) return asyncLoading<ValidationItem[]>(items);
+    if (error) return asyncFailed<ValidationItem[]>(error, items);
+    return asyncConfirmed<ValidationItem[]>(items);
+  }, [error, items, loading, token, walletAddress]);
+
+  return { items, loading, error, state, refetch: fetchRequests };
 }
 
 /** Submits validation attestations for the authenticated validator. */

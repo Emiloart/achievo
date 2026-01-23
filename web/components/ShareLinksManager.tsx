@@ -1,7 +1,25 @@
 "use client";
+
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useShareLinks, type ShareLink } from "../hooks/useShareLinks";
+import { EmptyState } from "./states/EmptyState";
+import { ErrorState } from "./states/ErrorState";
+import { LoadingState } from "./states/LoadingState";
+import { ConfirmDialog } from "./ui/ConfirmDialog";
+import { Modal } from "./ui/Modal";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Checkbox,
+  CopyableText,
+  Input,
+  Select,
+  StatusBadge,
+  Textarea,
+} from "./ui";
 
 const SECTION_KEYS = [
   { id: "summary", label: "Summary" },
@@ -33,10 +51,25 @@ type FormState = {
   sections: Record<string, boolean>;
 };
 
+function formatExpiry(value?: string | null) {
+  if (!value) return "Never";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown";
+  return date.toLocaleString();
+}
+
+function isExpired(value?: string | null) {
+  if (!value) return false;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+  return date.getTime() < Date.now();
+}
+
 export function ShareLinksManager() {
-  const { links, loading, error, createLink, updateLink, deleteLink } = useShareLinks();
+  const { links, error, state, createLink, updateLink, deleteLink } = useShareLinks();
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<ShareLink | null>(null);
+  const [confirming, setConfirming] = useState<ShareLink | null>(null);
   const [form, setForm] = useState<FormState>({
     slug: "",
     title: "",
@@ -47,6 +80,11 @@ export function ShareLinksManager() {
     expiresAt: "",
     sections: DEFAULT_SECTIONS,
   });
+
+  const shareBase = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}/s`;
+  }, []);
 
   const openCreate = () => {
     setEditing(null);
@@ -90,9 +128,9 @@ export function ShareLinksManager() {
   const handleSave = async () => {
     try {
       const payload = {
-        slug: form.slug,
-        title: form.title,
-        description: form.description || null,
+        slug: form.slug.trim().toLowerCase(),
+        title: form.title.trim(),
+        description: form.description?.trim() || null,
         visibility: form.visibility,
         theme: form.theme,
         isPrimary: form.isPrimary,
@@ -112,141 +150,143 @@ export function ShareLinksManager() {
     }
   };
 
-  const handleDelete = async (link: ShareLink) => {
-    if (!confirm("Delete this share link?")) return;
+  const handleDelete = async () => {
+    if (!confirming) return;
     try {
-      await deleteLink(link.id);
-      toast.success("Share link removed");
+      await deleteLink(confirming.id);
+      toast.success("Share link revoked");
+      setConfirming(null);
     } catch (e: any) {
-      toast.error(e?.message || "Failed to delete share link");
+      toast.error(e?.message || "Failed to revoke share link");
     }
   };
 
-  const shareBase = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return `${window.location.origin}/s`;
-  }, []);
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <div className="text-lg font-semibold">Share Links</div>
-          <div className="text-sm text-gray-500">Create shareable profile links with tailored sections.</div>
+          <div className="text-lg font-semibold">Share links</div>
+          <div className="text-sm text-textMuted">Create shareable profile links with tailored sections.</div>
         </div>
-        <button type="button" className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm" onClick={openCreate}>
+        <Button type="button" onClick={openCreate}>
           Create share link
-        </button>
+        </Button>
       </div>
 
-      {error && <div className="text-sm text-red-600">{error}</div>}
-
-      {loading ? (
-        <div className="text-sm text-gray-500">Loading share links...</div>
+      {state.status === "loading" ? (
+        <LoadingState title="Loading share links" description="Fetching active share tokens." rows={2} />
+      ) : state.status === "failed" ? (
+        <ErrorState message={error || "Unable to load share links."} />
       ) : links.length ? (
         <div className="space-y-3">
-          {links.map((link) => (
-            <div key={link.id} className="rounded-2xl border bg-white p-4 space-y-2">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div>
-                  <div className="text-sm font-semibold">{link.title}</div>
-                  <div className="text-xs text-gray-500">/{link.slug}</div>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="px-2 py-1 rounded-full bg-slate-100 text-slate-600">{link.visibility}</span>
-                  {link.isPrimary && (
-                    <span className="px-2 py-1 rounded-full bg-green-100 text-green-700">Primary</span>
-                  )}
-                </div>
-              </div>
-              {link.description && <div className="text-sm text-gray-600">{link.description}</div>}
-              <div className="flex items-center gap-2 text-xs">
-                <button
-                  type="button"
-                  className="px-2 py-1 rounded border"
-                  onClick={() => navigator.clipboard?.writeText(`${shareBase}/${link.slug}`)}
-                >
-                  Copy link
-                </button>
-                <button type="button" className="px-2 py-1 rounded border" onClick={() => openEdit(link)}>
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  className="px-2 py-1 rounded border text-red-600"
-                  onClick={() => handleDelete(link)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+          {links.map((link) => {
+            const expired = isExpired(link.expiresAt);
+            const shareUrl = `${shareBase}/${link.slug}`;
+            return (
+              <Card key={link.id}>
+                <CardHeader className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <div className="text-sm font-semibold">{link.title}</div>
+                    <div className="text-xs text-textMuted">/{link.slug}</div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <StatusBadge
+                      tone={
+                        link.visibility === "PUBLIC"
+                          ? "success"
+                          : link.visibility === "UNLISTED"
+                            ? "warning"
+                            : "neutral"
+                      }
+                    >
+                      {link.visibility.toLowerCase()}
+                    </StatusBadge>
+                    {expired && <StatusBadge tone="danger">expired</StatusBadge>}
+                    {link.isPrimary && <StatusBadge tone="info">primary</StatusBadge>}
+                  </div>
+                </CardHeader>
+                <CardBody className="space-y-3">
+                  {link.description && <div className="text-sm text-textMuted">{link.description}</div>}
+                  <div className="grid gap-2 text-xs text-textMuted">
+                    <div>Expires: {formatExpiry(link.expiresAt)}</div>
+                    <CopyableText label="Share link" value={shareUrl} />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button type="button" variant="secondary" size="sm" onClick={() => openEdit(link)}>
+                      Edit
+                    </Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setConfirming(link)}>
+                      Revoke
+                    </Button>
+                  </div>
+                </CardBody>
+              </Card>
+            );
+          })}
         </div>
       ) : (
-        <div className="text-sm text-gray-500">No share links yet.</div>
+        <EmptyState
+          title="No share links yet"
+          description="Create a share link to expose selected profile sections."
+          primaryAction={{ label: "Create share link", onClick: openCreate }}
+        />
       )}
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-lg p-5 w-full max-w-xl space-y-4">
-            <div className="text-lg font-semibold">{editing ? "Edit share link" : "Create share link"}</div>
-            <div className="grid gap-3">
-              <input
-                value={form.slug}
-                onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value.toLowerCase() }))}
-                className="rounded-md border px-3 py-2 text-sm"
-                placeholder="slug"
+      <Modal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        title={editing ? "Edit share link" : "Create share link"}
+      >
+        <div className="space-y-4">
+          <div className="grid gap-3">
+            <Input
+              value={form.slug}
+              onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value.toLowerCase() }))}
+              placeholder="slug"
+            />
+            <Input
+              value={form.title}
+              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+              placeholder="Title"
+            />
+            <Textarea
+              value={form.description}
+              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+              rows={3}
+              placeholder="Description"
+            />
+            <div className="grid gap-3 md:grid-cols-2">
+              <Select
+                value={form.visibility}
+                onChange={(e) => setForm((prev) => ({ ...prev, visibility: e.target.value }))}
+              >
+                {VISIBILITY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Select>
+              <Select value={form.theme} onChange={(e) => setForm((prev) => ({ ...prev, theme: e.target.value }))}>
+                {THEME_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={form.isPrimary}
+                onChange={(e) => setForm((prev) => ({ ...prev, isPrimary: e.target.checked }))}
               />
-              <input
-                value={form.title}
-                onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                className="rounded-md border px-3 py-2 text-sm"
-                placeholder="Title"
-              />
-              <input
-                value={form.description}
-                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                className="rounded-md border px-3 py-2 text-sm"
-                placeholder="Description"
-              />
-              <div className="grid gap-3 md:grid-cols-2">
-                <select
-                  value={form.visibility}
-                  onChange={(e) => setForm((prev) => ({ ...prev, visibility: e.target.value }))}
-                  className="rounded-md border px-3 py-2 text-sm"
-                >
-                  {VISIBILITY_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={form.theme}
-                  onChange={(e) => setForm((prev) => ({ ...prev, theme: e.target.value }))}
-                  className="rounded-md border px-3 py-2 text-sm"
-                >
-                  {THEME_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={form.isPrimary}
-                  onChange={(e) => setForm((prev) => ({ ...prev, isPrimary: e.target.checked }))}
-                />
-                Set as primary
-              </label>
-              <label className="text-sm font-semibold">Sections</label>
+              Set as primary
+            </label>
+            <div className="space-y-2">
+              <div className="text-sm font-semibold">Sections</div>
               <div className="grid gap-2 md:grid-cols-2 text-sm">
                 {SECTION_KEYS.map((section) => (
                   <label key={section.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={form.sections[section.id]}
                       onChange={(e) =>
                         setForm((prev) => ({
@@ -259,27 +299,36 @@ export function ShareLinksManager() {
                   </label>
                 ))}
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-semibold">Expires at (optional)</label>
-                <input
-                  type="datetime-local"
-                  value={form.expiresAt}
-                  onChange={(e) => setForm((prev) => ({ ...prev, expiresAt: e.target.value }))}
-                  className="rounded-md border px-3 py-2 text-sm"
-                />
-              </div>
             </div>
-            <div className="flex items-center justify-end gap-2">
-              <button type="button" className="px-3 py-2 rounded-md border" onClick={() => setShowModal(false)}>
-                Cancel
-              </button>
-              <button type="button" className="px-3 py-2 rounded-md bg-brand-600 text-white" onClick={handleSave}>
-                Save link
-              </button>
+            <div className="space-y-1">
+              <label className="text-sm font-semibold">Expires at (optional)</label>
+              <Input
+                type="datetime-local"
+                value={form.expiresAt}
+                onChange={(e) => setForm((prev) => ({ ...prev, expiresAt: e.target.value }))}
+              />
             </div>
           </div>
+          <div className="flex items-center justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleSave}>
+              Save link
+            </Button>
+          </div>
         </div>
-      )}
+      </Modal>
+
+      <ConfirmDialog
+        open={Boolean(confirming)}
+        onClose={() => setConfirming(null)}
+        onConfirm={handleDelete}
+        title="Revoke share link"
+        description="This link will stop working immediately. Type REVOKE to confirm."
+        confirmPhrase="REVOKE"
+        confirmLabel="Revoke"
+      />
     </div>
   );
 }

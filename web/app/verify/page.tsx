@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { PageHeader } from "../../components/nav/PageHeader";
-import { Badge, Button, Card, CardBody } from "../../components/ui";
+import { EmptyState } from "../../components/states/EmptyState";
+import { PolicyMarkdown } from "../../components/policy/PolicyMarkdown";
+import { usePolicy } from "../../hooks/usePolicy";
+import { Alert, Badge, Button, Card, CardBody, Input, Select } from "../../components/ui";
+import { UI_LABELS } from "../../lib/uiCopy";
 
 type Kind = "EXPORT" | "PROOF" | "VALIDATION" | "ANCHOR" | "TX";
 
@@ -55,8 +59,19 @@ export default function VerifyPage() {
   const [value, setValue] = useState("");
   const [manualKind, setManualKind] = useState<Kind>("EXPORT");
   const [error, setError] = useState("");
+  const { isEnabled, policy, getMessage } = usePolicy();
 
   const detected = useMemo(() => detectFromInput(value), [value]);
+
+  if (!isEnabled("verifyPortalEnabled")) {
+    return (
+      <EmptyState
+        title="Verification disabled"
+        description={getMessage("verifyPortal") || "Verification is disabled by policy."}
+        primaryAction={{ label: "Back to dashboard", href: "/dashboard" }}
+      />
+    );
+  }
 
   const handleVerify = () => {
     const target = detected || (value.trim() ? { kind: manualKind, id: value.trim() } : null);
@@ -81,30 +96,32 @@ export default function VerifyPage() {
           title="Verify a claim"
           description="Paste an export link, proof id, validation id, anchor hash, or transaction hash to verify authenticity."
         />
+        {policy.displayPolicies.showVerificationAsExperimental ? (
+          <div className="text-xs text-warning">
+            Verification is available but labeled experimental for transparency.
+          </div>
+        ) : null}
       </div>
+
+      {getMessage("verifyPortal") ? (
+        <Alert tone="info" title="Verification notice">
+          <PolicyMarkdown markdown={getMessage("verifyPortal") || ""} />
+        </Alert>
+      ) : null}
 
       <Card>
         <CardBody className="space-y-4">
-          <input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Paste a link, ID, or hash"
-            className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
-          />
+          <Input value={value} onChange={(e) => setValue(e.target.value)} placeholder="Paste a link, ID, or hash" />
           {!detected && (
             <div className="flex items-center gap-3 text-sm">
               <label className="text-xs text-textMuted">Type</label>
-              <select
-                value={manualKind}
-                onChange={(e) => setManualKind(e.target.value as Kind)}
-                className="rounded-full border border-border bg-surface2 px-3 py-2 text-xs"
-              >
+              <Select value={manualKind} onChange={(e) => setManualKind(e.target.value as Kind)} className="max-w-xs">
                 <option value="EXPORT">Profile export</option>
                 <option value="PROOF">Proof artifact</option>
                 <option value="VALIDATION">Validation</option>
                 <option value="ANCHOR">Anchor hash</option>
                 <option value="TX">Transaction hash</option>
-              </select>
+              </Select>
             </div>
           )}
           {detected && (
@@ -114,7 +131,7 @@ export default function VerifyPage() {
           )}
           {error && <div className="text-xs text-danger">{error}</div>}
           <Button type="button" onClick={handleVerify}>
-            Verify
+            {UI_LABELS.verify}
           </Button>
         </CardBody>
       </Card>

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { computeValidationTrust } from "../../../../trust/compute";
 import { TrustCard } from "../../../../components/trust/TrustCard";
 import { PageHeader } from "../../../../components/nav/PageHeader";
+import { verifyBreadcrumbs } from "../../../../components/nav/breadcrumbs";
 import { VerifyResultCard } from "../../../../components/domain/verify/VerifyResultCard";
 import { LoadingState } from "../../../../components/states/LoadingState";
 import { Badge, Button, CopyField, HashDisplay, Section } from "../../../../components/ui";
@@ -16,6 +17,7 @@ type VerifyResponse = {
   valid: boolean;
   redacted?: boolean;
   checks: Record<string, boolean | "unknown">;
+  checksDetailed?: Array<{ name: string; status: "pass" | "fail" | "warn" | "unknown"; details?: any }>;
   details: any;
 };
 
@@ -69,7 +71,7 @@ export default function VerifyValidationPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." />
+        <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." breadcrumbs={verifyBreadcrumbs("Validation")} />
         <LoadingState title="Checking validation" description="Verifying signatures and anchoring metadata." />
       </div>
     );
@@ -79,7 +81,7 @@ export default function VerifyValidationPage() {
     const status = error.message.toLowerCase().includes("not found") ? "NOT_FOUND" : "ERROR";
     return (
       <div className="space-y-6">
-        <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." />
+        <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." breadcrumbs={verifyBreadcrumbs("Validation")} />
         <VerifyResultCard
           status={status}
           title="Validation verification"
@@ -95,7 +97,7 @@ export default function VerifyValidationPage() {
   if (!data) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." />
+        <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." breadcrumbs={verifyBreadcrumbs("Validation")} />
         <VerifyResultCard status="NOT_FOUND" title="Validation verification" idLabel="Validation ID" idValue={id} />
       </div>
     );
@@ -113,13 +115,11 @@ export default function VerifyValidationPage() {
   const hasUnknown = Object.values(data.checks || {}).includes("unknown");
   const status = data.valid ? (hasUnknown ? "UNKNOWN" : "VERIFIED") : hasUnknown ? "UNKNOWN" : "INVALID";
   const unknownReason =
-    status === "UNKNOWN"
-      ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure."
-      : undefined;
+    status === "UNKNOWN" ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure." : undefined;
 
   return (
     <div className="space-y-10">
-      <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." />
+      <PageHeader title="Validation verification" description="Confirm a validator signature and anchor status." breadcrumbs={verifyBreadcrumbs("Validation")} />
       <VerifyResultCard
         status={status}
         title="Validation verification"
@@ -128,6 +128,8 @@ export default function VerifyValidationPage() {
         source={anchor?.contract}
         timestamp={chain?.anchoredAt}
         reason={unknownReason || (data.valid ? undefined : "Validator signature verification failed.")}
+        checks={data.checksDetailed}
+        details={data.details}
         meta={[
           { label: "Validator", value: data.details?.validatorWallet },
           { label: "Attestation hash", value: data.details?.attestationHash },
@@ -178,3 +180,4 @@ export default function VerifyValidationPage() {
     </div>
   );
 }
+

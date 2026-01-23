@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { computeProofTrust } from "../../../../trust/compute";
 import { TrustCard } from "../../../../components/trust/TrustCard";
 import { PageHeader } from "../../../../components/nav/PageHeader";
+import { verifyBreadcrumbs } from "../../../../components/nav/breadcrumbs";
 import { VerifyResultCard } from "../../../../components/domain/verify/VerifyResultCard";
 import { LoadingState } from "../../../../components/states/LoadingState";
 import { Badge, Button, CopyField, HashDisplay, Section } from "../../../../components/ui";
@@ -16,6 +17,7 @@ type VerifyResponse = {
   valid: boolean;
   redacted?: boolean;
   checks: Record<string, boolean | "unknown">;
+  checksDetailed?: Array<{ name: string; status: "pass" | "fail" | "warn" | "unknown"; details?: any }>;
   details: any;
 };
 
@@ -69,7 +71,11 @@ export default function VerifyProofPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Proof verification" description="Confirm the integrity of proof artifacts and anchors." />
+        <PageHeader
+          title="Proof verification"
+          description="Confirm the integrity of proof artifacts and anchors."
+          breadcrumbs={verifyBreadcrumbs("Proof")}
+        />
         <LoadingState title="Checking proof" description="Verifying proof metadata and anchor status." />
       </div>
     );
@@ -79,7 +85,11 @@ export default function VerifyProofPage() {
     const status = error.message.toLowerCase().includes("not found") ? "NOT_FOUND" : "ERROR";
     return (
       <div className="space-y-6">
-        <PageHeader title="Proof verification" description="Confirm the integrity of proof artifacts and anchors." />
+        <PageHeader
+          title="Proof verification"
+          description="Confirm the integrity of proof artifacts and anchors."
+          breadcrumbs={verifyBreadcrumbs("Proof")}
+        />
         <VerifyResultCard
           status={status}
           title="Proof verification"
@@ -95,7 +105,11 @@ export default function VerifyProofPage() {
   if (!data) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Proof verification" description="Confirm the integrity of proof artifacts and anchors." />
+        <PageHeader
+          title="Proof verification"
+          description="Confirm the integrity of proof artifacts and anchors."
+          breadcrumbs={verifyBreadcrumbs("Proof")}
+        />
         <VerifyResultCard status="NOT_FOUND" title="Proof verification" idLabel="Proof ID" idValue={id} />
       </div>
     );
@@ -113,13 +127,15 @@ export default function VerifyProofPage() {
   const hasUnknown = Object.values(data.checks || {}).includes("unknown");
   const status = data.valid ? (hasUnknown ? "UNKNOWN" : "VERIFIED") : hasUnknown ? "UNKNOWN" : "INVALID";
   const unknownReason =
-    status === "UNKNOWN"
-      ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure."
-      : undefined;
+    status === "UNKNOWN" ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure." : undefined;
 
   return (
     <div className="space-y-10">
-      <PageHeader title="Proof verification" description="Confirm the integrity of proof artifacts and anchors." />
+      <PageHeader
+        title="Proof verification"
+        description="Confirm the integrity of proof artifacts and anchors."
+        breadcrumbs={verifyBreadcrumbs("Proof")}
+      />
       <VerifyResultCard
         status={status}
         title="Proof verification"
@@ -128,6 +144,8 @@ export default function VerifyProofPage() {
         source={anchor?.contract}
         timestamp={chain?.anchoredAt}
         reason={unknownReason || (data.valid ? undefined : "The proof hash could not be verified.")}
+        checks={data.checksDetailed}
+        details={data.details}
         meta={[{ label: "SHA-256", value: data.details?.sha256 }]}
       />
 

@@ -83,7 +83,7 @@ export default function PartiesPage() {
         </Link>
       </div>
 
-      {error && <div className="rounded-md border border-red-200 bg-red-50 text-red-700 p-3 text-sm">{error}</div>}
+      {error && <div className="rounded-md border border-danger/20 bg-danger/10 text-danger p-3 text-sm">{error}</div>}
 
       <section className="space-y-3">
         <h3 className="text-lg font-semibold">Your Parties</h3>

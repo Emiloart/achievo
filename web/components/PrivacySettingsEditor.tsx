@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import type { PrivacySettings, VisibilityLevel } from "../hooks/usePrivacySettings";
+import { ErrorState } from "./states/ErrorState";
+import { LoadingState } from "./states/LoadingState";
+import { Button, Checkbox, Select, StatusBadge } from "./ui";
 
 const VISIBILITY_OPTIONS: { value: VisibilityLevel; label: string }[] = [
   { value: "PUBLIC", label: "Public" },
@@ -59,82 +62,135 @@ export function PrivacySettingsEditor({ settings, overridesCount = 0, loading, e
   };
 
   if (loading && !settings) {
-    return <div className="text-sm text-gray-500">Loading privacy settings...</div>;
+    return (
+      <LoadingState title="Loading privacy settings" description="Fetching your default privacy profile." rows={2} />
+    );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <div className="text-sm text-red-600">{error}</div>}
-      <div className="text-xs text-gray-500">Overrides active: {overridesCount}</div>
+      {error && <ErrorState message={error} />}
+      <div className="text-xs text-textMuted">Overrides active: {overridesCount}</div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1">
           <label className="text-sm font-semibold">Profile visibility</label>
-          <select
-            value={form.defaultProfileVisibility}
-            onChange={(e) => setForm((prev) => ({ ...prev, defaultProfileVisibility: e.target.value }))}
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          >
-            {VISIBILITY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <Select
+              value={form.defaultProfileVisibility}
+              onChange={(e) => setForm((prev) => ({ ...prev, defaultProfileVisibility: e.target.value }))}
+              className="w-full"
+            >
+              {VISIBILITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <StatusBadge
+              tone={
+                form.defaultProfileVisibility === "PUBLIC"
+                  ? "success"
+                  : form.defaultProfileVisibility === "UNLISTED"
+                    ? "warning"
+                    : "neutral"
+              }
+            >
+              {form.defaultProfileVisibility.toLowerCase()}
+            </StatusBadge>
+          </div>
         </div>
         <div className="space-y-1">
           <label className="text-sm font-semibold">Proofs visibility</label>
-          <select
-            value={form.defaultProofVisibility}
-            onChange={(e) => setForm((prev) => ({ ...prev, defaultProofVisibility: e.target.value }))}
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          >
-            {VISIBILITY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <Select
+              value={form.defaultProofVisibility}
+              onChange={(e) => setForm((prev) => ({ ...prev, defaultProofVisibility: e.target.value }))}
+              className="w-full"
+            >
+              {VISIBILITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <StatusBadge
+              tone={
+                form.defaultProofVisibility === "PUBLIC"
+                  ? "success"
+                  : form.defaultProofVisibility === "UNLISTED"
+                    ? "warning"
+                    : "neutral"
+              }
+            >
+              {form.defaultProofVisibility.toLowerCase()}
+            </StatusBadge>
+          </div>
         </div>
         <div className="space-y-1">
           <label className="text-sm font-semibold">Validations visibility</label>
-          <select
-            value={form.defaultValidationVisibility}
-            onChange={(e) => setForm((prev) => ({ ...prev, defaultValidationVisibility: e.target.value }))}
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          >
-            {VISIBILITY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <Select
+              value={form.defaultValidationVisibility}
+              onChange={(e) => setForm((prev) => ({ ...prev, defaultValidationVisibility: e.target.value }))}
+              className="w-full"
+            >
+              {VISIBILITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <StatusBadge
+              tone={
+                form.defaultValidationVisibility === "PUBLIC"
+                  ? "success"
+                  : form.defaultValidationVisibility === "UNLISTED"
+                    ? "warning"
+                    : "neutral"
+              }
+            >
+              {form.defaultValidationVisibility.toLowerCase()}
+            </StatusBadge>
+          </div>
         </div>
         <div className="space-y-1">
           <label className="text-sm font-semibold">Achievements visibility</label>
-          <select
-            value={form.defaultAchievementVisibility}
-            onChange={(e) => setForm((prev) => ({ ...prev, defaultAchievementVisibility: e.target.value }))}
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          >
-            {VISIBILITY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <Select
+              value={form.defaultAchievementVisibility}
+              onChange={(e) => setForm((prev) => ({ ...prev, defaultAchievementVisibility: e.target.value }))}
+              className="w-full"
+            >
+              {VISIBILITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <StatusBadge
+              tone={
+                form.defaultAchievementVisibility === "PUBLIC"
+                  ? "success"
+                  : form.defaultAchievementVisibility === "UNLISTED"
+                    ? "warning"
+                    : "neutral"
+              }
+            >
+              {form.defaultAchievementVisibility.toLowerCase()}
+            </StatusBadge>
+          </div>
         </div>
       </div>
       <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={form.showConsistency}
           onChange={(e) => setForm((prev) => ({ ...prev, showConsistency: e.target.checked }))}
         />
         Show consistency metrics on public profiles
       </label>
-      <button type="submit" className="px-4 py-2 rounded-md bg-brand-600 text-white disabled:opacity-60">
+      <Button type="submit" disabled={loading} className="w-fit">
         Save privacy settings
-      </button>
+      </Button>
     </form>
   );
 }

@@ -3,6 +3,7 @@
  *
  * Maps backend error codes into human-readable messages for UI display.
  */
+import { normalizeError } from "./errorTaxonomy";
 type ApiErrorPayload = {
   success?: boolean;
   requestId?: string;
@@ -68,6 +69,17 @@ function extractRequestId(payload: ApiErrorPayload | null) {
   return payload.error?.requestId || payload.error?.traceId || payload.requestId || payload.traceId || null;
 }
 
+function fallbackForStatus(status?: number) {
+  if (!status) return null;
+  if (status === 401) return "Sign in to continue.";
+  if (status === 403) return "You do not have permission to perform that action.";
+  if (status === 404) return "We couldn't find what you were looking for.";
+  if (status === 409) return "That request conflicts with existing data.";
+  if (status === 429) return "You're doing that too often. Please try again shortly.";
+  if (status >= 500) return "The service is temporarily unavailable. Please try again.";
+  return null;
+}
+
 /** Formats API error payloads into a user-facing message. */
 export function formatApiError(raw: string, fallback = "We couldn't complete that request. Please try again.") {
   const text = String(raw || "").trim();
@@ -94,14 +106,24 @@ export async function getApiErrorMessage(
   fallback = "We couldn't complete that request. Please try again.",
 ) {
   const text = await res.text();
-  return formatApiError(text, fallback || res.statusText);
+  const statusFallback = fallbackForStatus(res.status);
+  const message = formatApiError(text, statusFallback || fallback || res.statusText);
+  const normalized = normalizeError({ message, status: res.status });
+  return normalized.message;
 }
 
 /** Extracts a user-facing message and request id from a backend error response. */
 export async function getApiError(
   res: Response,
   fallback = "We couldn't complete that request. Please try again.",
-): Promise<{ message: string; requestId: string | null }> {
+): Promise<{
+  message: string;
+  requestId: string | null;
+  status: number;
+  category: string;
+  severity: string;
+  action: { type: string; label: string };
+}> {
   const text = await res.text();
   let payload: ApiErrorPayload | null = null;
   try {
@@ -109,8 +131,15 @@ export async function getApiError(
   } catch {
     payload = null;
   }
+  const requestId = extractRequestId(payload);
+  const message = formatApiError(text, fallbackForStatus(res.status) || fallback || res.statusText);
+  const normalized = normalizeError({ message, status: res.status, requestId });
   return {
-    message: formatApiError(text, fallback || res.statusText),
-    requestId: extractRequestId(payload),
+    message: normalized.message,
+    requestId: normalized.requestId || requestId,
+    status: res.status,
+    category: normalized.category,
+    severity: normalized.severity,
+    action: normalized.action,
   };
 }

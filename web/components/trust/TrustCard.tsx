@@ -1,7 +1,4 @@
-import { Badge } from "../ui/Badge";
-import { Card, CardBody, CardHeader } from "../ui/Card";
-import { Accordion } from "../ui/Accordion";
-import { HashDisplay } from "../ui/HashDisplay";
+import { Accordion, Badge, Card, CardBody, CardHeader, HashDisplay } from "../ui";
 import type { TrustCheck, TrustState } from "../../trust/types";
 import type { ReactNode } from "react";
 

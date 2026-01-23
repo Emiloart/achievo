@@ -13,6 +13,18 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+      "react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime"],
+      "clsx": ["./node_modules/clsx"],
+      "react-hot-toast": ["./node_modules/react-hot-toast"],
+      "qrcode.react": ["./node_modules/qrcode.react"],
+      "next": ["./node_modules/next"],
+      "next/*": ["./node_modules/next/*"]
+    },
     "incremental": true,
     "plugins": [
       {

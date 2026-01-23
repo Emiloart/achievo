@@ -4,10 +4,11 @@
  * Creates and lists shareable profile links for the authenticated user.
  */
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getApiErrorMessage } from "../lib/apiError";
 import { useBackendAuth } from "./useBackendAuth";
+import { asyncConfirmed, asyncFailed, asyncIdle, asyncLoading, type AsyncState } from "../types/asyncState";
 
 /** Share link record returned by the backend. */
 export type ShareLink = {
@@ -108,5 +109,12 @@ export function useShareLinks() {
     [token],
   );
 
-  return { links, loading, error, refetch: fetchLinks, createLink, updateLink, deleteLink };
+  const state: AsyncState<ShareLink[]> = useMemo(() => {
+    if (!token) return asyncIdle<ShareLink[]>([]);
+    if (loading) return asyncLoading<ShareLink[]>(links);
+    if (error) return asyncFailed<ShareLink[]>(error, links);
+    return asyncConfirmed<ShareLink[]>(links);
+  }, [error, links, loading, token]);
+
+  return { links, loading, error, state, refetch: fetchLinks, createLink, updateLink, deleteLink };
 }

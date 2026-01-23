@@ -102,7 +102,7 @@ export default function NewProjectPage() {
         <p className="text-sm text-gray-500">Set up a new workspace and invite collaborators.</p>
       </div>
 
-      {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-md border border-danger/20 bg-danger/10 p-3 text-sm text-danger">{error}</div>}
 
       <form onSubmit={submit} className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">

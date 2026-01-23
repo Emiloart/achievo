@@ -6,10 +6,13 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useBackendAuth } from "../../../hooks/useBackendAuth";
 import { PageHeader } from "../../../components/nav/PageHeader";
+import { orgBreadcrumbs } from "../../../components/nav/breadcrumbs";
+import { DegradedHint } from "../../../components/states/DegradedHint";
 import { EmptyState } from "../../../components/states/EmptyState";
 import { ErrorState } from "../../../components/states/ErrorState";
 import { LoadingState } from "../../../components/states/LoadingState";
-import { Badge, ButtonLink, Card, CardBody, Section } from "../../../components/ui";
+import { Badge, ButtonLink, Card, CardBody, Section, StatusPill } from "../../../components/ui";
+import { UI_LABELS } from "../../../lib/uiCopy";
 
 type OrgSummary = {
   org: {
@@ -79,11 +82,14 @@ export default function OrgPage() {
 
   if (!data) {
     return (
-      <EmptyState
-        title="Organization not found"
-        description="Double-check the handle or return to the org directory."
-        primaryAction={{ label: "Back to orgs", href: "/orgs" }}
-      />
+      <div className="space-y-4">
+        <DegradedHint />
+        <EmptyState
+          title="Organization not found"
+          description="Double-check the handle or return to the org directory."
+          primaryAction={{ label: "Back to orgs", href: "/orgs" }}
+        />
+      </div>
     );
   }
 
@@ -95,23 +101,21 @@ export default function OrgPage() {
       <PageHeader
         title={org.displayName}
         description={org.description || "Organization workspace overview and programs."}
-        breadcrumbs={[
-          { label: "Organizations", href: "/orgs" },
-          { label: org.displayName },
-        ]}
+        breadcrumbs={orgBreadcrumbs(org.handle, org.displayName)}
         actions={
           <div className="flex flex-wrap gap-2">
             <ButtonLink href="/orgs" variant="secondary" size="sm">
-              Back to orgs
+              {UI_LABELS.backToOrgs}
             </ButtonLink>
             {isAdmin ? (
               <ButtonLink href={`/orgs/${org.handle}/admin`} variant="primary" size="sm">
-                Manage org
+                {UI_LABELS.manageOrg}
               </ButtonLink>
             ) : null}
           </div>
         }
       />
+      <DegradedHint />
 
       <Card>
         <CardBody className="space-y-3">
@@ -154,13 +158,12 @@ export default function OrgPage() {
         {programs.length ? (
           <div className="grid gap-3 md:grid-cols-2">
             {programs.map((program) => {
-              const badgeVariant = program.status === "LIVE" ? "verified" : "neutral";
               return (
                 <Card key={program.id}>
                   <CardBody className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-semibold">{program.title}</div>
-                      <Badge variant={badgeVariant}>{program.status}</Badge>
+                      <StatusPill status={program.status} />
                     </div>
                     {program.summary && <div className="text-xs text-textMuted">{program.summary}</div>}
                     <Link

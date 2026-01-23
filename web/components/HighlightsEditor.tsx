@@ -123,7 +123,7 @@ export function HighlightsEditor() {
                 </button>
                 <button
                   type="button"
-                  className="text-xs px-2 py-1 rounded border text-red-600"
+                  className="text-xs px-2 py-1 rounded border text-danger"
                   onClick={() => removePin(index)}
                 >
                   Remove

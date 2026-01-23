@@ -6,7 +6,9 @@ import { useParams } from "next/navigation";
 import type { TrustCheck, TrustState } from "../../../../trust/types";
 import { TrustCard } from "../../../../components/trust/TrustCard";
 import { PageHeader } from "../../../../components/nav/PageHeader";
+import { verifyBreadcrumbs } from "../../../../components/nav/breadcrumbs";
 import { VerifyResultCard } from "../../../../components/domain/verify/VerifyResultCard";
+import type { VerificationCheck } from "../../../../components/domain/verify/types";
 import { LoadingState } from "../../../../components/states/LoadingState";
 import { Badge, Button, CopyField, HashDisplay, Section } from "../../../../components/ui";
 
@@ -89,7 +91,11 @@ export default function VerifyTxPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Transaction verification" description="Decode anchor events from registry transactions." />
+        <PageHeader
+          title="Transaction verification"
+          description="Decode anchor events from registry transactions."
+          breadcrumbs={verifyBreadcrumbs("Transaction")}
+        />
         <LoadingState title="Checking transaction" description="Inspecting anchor events and receipts." />
       </div>
     );
@@ -99,7 +105,11 @@ export default function VerifyTxPage() {
     const status = error.message.toLowerCase().includes("not found") ? "NOT_FOUND" : "ERROR";
     return (
       <div className="space-y-6">
-        <PageHeader title="Transaction verification" description="Decode anchor events from registry transactions." />
+        <PageHeader
+          title="Transaction verification"
+          description="Decode anchor events from registry transactions."
+          breadcrumbs={verifyBreadcrumbs("Transaction")}
+        />
         <VerifyResultCard
           status={status}
           title="Transaction verification"
@@ -115,8 +125,17 @@ export default function VerifyTxPage() {
   if (!data || !trust) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Transaction verification" description="Decode anchor events from registry transactions." />
-        <VerifyResultCard status="NOT_FOUND" title="Transaction verification" idLabel="Transaction hash" idValue={txHash} />
+        <PageHeader
+          title="Transaction verification"
+          description="Decode anchor events from registry transactions."
+          breadcrumbs={verifyBreadcrumbs("Transaction")}
+        />
+        <VerifyResultCard
+          status="NOT_FOUND"
+          title="Transaction verification"
+          idLabel="Transaction hash"
+          idValue={txHash}
+        />
       </div>
     );
   }
@@ -130,21 +149,32 @@ export default function VerifyTxPage() {
 
   const status = data.valid ? (data.checks.anchorVerified === "unknown" ? "UNKNOWN" : "VERIFIED") : "INVALID";
   const unknownReason =
-    status === "UNKNOWN"
-      ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure."
-      : undefined;
+    status === "UNKNOWN" ? "Unable to confirm right now (RPC unavailable/circuit breaker). Not a failure." : undefined;
+  const inspectorChecks: VerificationCheck[] = [
+    { name: "anchor_present", status: data.checks.anchorPresent ? "pass" : "fail" },
+    {
+      name: "anchor_verified",
+      status: data.checks.anchorVerified === "unknown" ? "unknown" : data.checks.anchorVerified ? "pass" : "fail",
+    },
+  ];
 
   return (
     <div className="space-y-10">
-      <PageHeader title="Transaction verification" description="Decode anchor events from registry transactions." />
+      <PageHeader
+        title="Transaction verification"
+        description="Decode anchor events from registry transactions."
+        breadcrumbs={verifyBreadcrumbs("Transaction")}
+      />
       <VerifyResultCard
         status={status}
         title="Transaction verification"
         idLabel="Transaction hash"
         idValue={data.txHash}
-        source={chain.contract}
+        source={chain.contract ?? undefined}
         timestamp={chain.anchoredAt}
         reason={unknownReason || (data.valid ? undefined : "No anchor event was found in this transaction.")}
+        checks={inspectorChecks}
+        details={data.details}
         meta={[
           { label: "Anchored hash", value: chain.hash },
           { label: "Submitter", value: chain.submitter },

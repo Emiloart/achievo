@@ -9,9 +9,13 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagm
 import toast from "react-hot-toast";
 import { coreAddress, coreAbi } from "../../../lib/contracts";
 import { ipfsToHttp } from "../../../lib/ipfs";
-import { StatusPill } from "../../../components/StatusPill";
+import { StatusPill } from "../../../components/ui";
 import { ProofList } from "../../../components/ProofList";
 import { VisibilityControls } from "../../../components/VisibilityControls";
+import { AnchorStatusBadge, AnchorTimeline } from "../../../components/domain/AnchorStatus";
+import { EmptyState } from "../../../components/states/EmptyState";
+import { ErrorState } from "../../../components/states/ErrorState";
+import { LoadingState } from "../../../components/states/LoadingState";
 import { useProfileInfo } from "../../../hooks/useProfileInfo";
 import { useUserTasks, type GoalWithStatus } from "../../../hooks/useUserTasks";
 import { useQuests } from "../../../hooks/useQuests";
@@ -91,8 +95,8 @@ export default function GoalDetailPage() {
   const proofUserId = goalOwnerProfile.achusrId || user?.userId || profile.achievoId || "";
   const {
     proofs,
-    loading: proofsLoading,
     error: proofsError,
+    state: proofsState,
     uploadFile,
     addUrlProof,
     anchorProof,
@@ -111,7 +115,8 @@ export default function GoalDetailPage() {
   const [anchoringId, setAnchoringId] = useState<string | null>(null);
   const {
     items: validations,
-    loading: validationsLoading,
+    error: validationsError,
+    state: validationsState,
     refetch: refetchValidations,
   } = useUserValidations(claimantAchusrId, {
     achievementId: goalIdNum !== null ? String(goalIdNum) : undefined,
@@ -543,7 +548,7 @@ export default function GoalDetailPage() {
         <Link href="/dashboard" className="text-sm text-brand-600 hover:underline">
           Back to dashboard
         </Link>
-        <div className="text-red-600">Invalid goal id.</div>
+        <div className="text-danger">Invalid goal id.</div>
       </div>
     );
   }
@@ -590,7 +595,7 @@ export default function GoalDetailPage() {
               <span className="px-2 py-1 rounded-full bg-gray-100 text-xs">Level {goal.level}</span>
               <span className="text-xs text-gray-500">Created {formatDate(goal.createdAt)}</span>
               {goal.isMigrated && (
-                <span className="text-[11px] px-2 py-1 rounded-full bg-slate-100 text-slate-700">Imported from v1</span>
+                <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">Imported from v1</span>
               )}
             </div>
           </div>
@@ -664,24 +669,24 @@ export default function GoalDetailPage() {
               )}
             </div>
 
-            <div className="rounded-3xl border bg-white p-5 space-y-3 shadow-sm">
+            <div className="rounded-3xl border border-border bg-surface p-5 space-y-3 shadow-soft">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-lg font-semibold">Proofs</div>
                 {isOwner && token && (
                   <button
                     type="button"
-                    className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm"
+                    className="px-3 py-2 rounded-full bg-accent text-onAccent text-sm"
                     onClick={() => setShowProofModal(true)}
                   >
                     Add proof
                   </button>
                 )}
               </div>
-              {proofsLoading ? (
-                <div className="text-sm text-gray-500">Loading proofs...</div>
-              ) : proofsError ? (
-                <div className="text-sm text-red-600">{proofsError}</div>
-              ) : (
+              {proofsState.status === "loading" ? (
+                <LoadingState title="Loading proofs" description="Fetching proof artifacts for this goal." rows={2} />
+              ) : proofsState.status === "failed" ? (
+                <ErrorState message={proofsError || "Unable to load proofs."} onRetry={refetchProofs} />
+              ) : proofs.length ? (
                 <ProofList
                   proofs={proofs}
                   onAnchor={handleAnchor}
@@ -690,41 +695,68 @@ export default function GoalDetailPage() {
                   showControls={Boolean(isOwner && token)}
                   onRefresh={refetchProofs}
                 />
+              ) : (
+                <EmptyState
+                  title="No proofs yet"
+                  description="Add evidence or links to support this goal."
+                  primaryAction={
+                    isOwner && token ? { label: "Add proof", onClick: () => setShowProofModal(true) } : undefined
+                  }
+                />
               )}
             </div>
 
-            <div className="rounded-3xl border bg-white p-5 space-y-3 shadow-sm">
+            <div className="rounded-3xl border border-border bg-surface p-5 space-y-3 shadow-soft">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-lg font-semibold">Validations</div>
                 {isOwner && token && (
                   <button
                     type="button"
-                    className="px-3 py-2 rounded-md bg-brand-600 text-white text-sm"
+                    className="px-3 py-2 rounded-full bg-accent text-onAccent text-sm"
                     onClick={() => setShowValidationModal(true)}
                   >
                     Request validation
                   </button>
                 )}
               </div>
-              {validationsLoading ? (
-                <div className="text-sm text-gray-500">Loading validations...</div>
+              {validationsState.status === "loading" ? (
+                <LoadingState title="Loading validations" description="Fetching validation requests." rows={2} />
+              ) : validationsState.status === "failed" ? (
+                <ErrorState message={validationsError || "Unable to load validations."} onRetry={refetchValidations} />
               ) : validations.length ? (
                 <div className="space-y-3">
                   {validations.map((item) => {
                     const redaction = item.request.redaction || "NONE";
                     const metadataHidden = !isOwner && redaction !== "NONE";
                     return (
-                      <div key={item.request.id} className="rounded-xl border bg-white p-3 text-sm space-y-1">
-                        <div className="font-semibold">{item.request.title}</div>
-                        <div className="text-xs text-gray-500">Status: {item.request.status}</div>
+                      <div
+                        key={item.request.id}
+                        className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-semibold">{item.request.title}</div>
+                          {item.attestation?.anchorTxHash ? (
+                            <AnchorStatusBadge
+                              txHash={item.attestation.anchorTxHash}
+                              anchoredAt={item.attestation.anchoredAt}
+                            />
+                          ) : null}
+                        </div>
+                        <div className="text-xs text-textMuted">Status: {item.request.status}</div>
                         {item.attestation?.validator?.displayName ? (
-                          <div className="text-xs text-gray-600">
+                          <div className="text-xs text-textMuted">
                             Validator: {item.attestation.validator.displayName}
                           </div>
                         ) : item.attestation?.validatorWallet ? (
-                          <div className="text-xs text-gray-600">Validator: {item.attestation.validatorWallet}</div>
+                          <div className="text-xs text-textMuted">Validator: {item.attestation.validatorWallet}</div>
                         ) : null}
-                        {metadataHidden && <div className="text-xs text-gray-500">Validation details hidden</div>}
+                        {metadataHidden && <div className="text-xs text-textMuted">Validation details hidden</div>}
+                        {item.attestation?.anchorTxHash ? (
+                          <AnchorTimeline
+                            txHash={item.attestation.anchorTxHash}
+                            anchoredAt={item.attestation.anchoredAt}
+                          />
+                        ) : null}
                         {isOwner && token && (
                           <VisibilityControls
                             contentType="VALIDATION"
@@ -741,7 +773,15 @@ export default function GoalDetailPage() {
                   })}
                 </div>
               ) : (
-                <div className="text-sm text-gray-500">No validations yet.</div>
+                <EmptyState
+                  title="No validations yet"
+                  description="Request a validator to review this goal."
+                  primaryAction={
+                    isOwner && token
+                      ? { label: "Request validation", onClick: () => setShowValidationModal(true) }
+                      : undefined
+                  }
+                />
               )}
             </div>
 
@@ -763,7 +803,7 @@ export default function GoalDetailPage() {
               {goalEndorsementsLoading ? (
                 <div className="text-sm text-gray-500">Loading endorsements...</div>
               ) : goalEndorsementsError ? (
-                <div className="text-sm text-red-600">{goalEndorsementsError}</div>
+                <div className="text-sm text-danger">{goalEndorsementsError}</div>
               ) : (
                 <div className="space-y-2 text-sm text-gray-600">
                   <div>Weighted reputation: {goalEndorsementWeight}</div>
@@ -1005,7 +1045,7 @@ export default function GoalDetailPage() {
                   {minting || isPending || waitingTx ? "Minting..." : "Mint badge"}
                 </button>
               ) : status === "BADGED" ? (
-                <div className="text-sm text-green-700">This goal is verified and your badge has been minted.</div>
+                <div className="text-sm text-success">This goal is verified and your badge has been minted.</div>
               ) : (
                 <div className="text-xs text-gray-600">Badge minting becomes available after verification.</div>
               )}
@@ -1027,7 +1067,7 @@ export default function GoalDetailPage() {
       </button>
       {renderContent()}
       {showProofModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay px-4">
           <div className="w-full max-w-lg rounded-2xl bg-white p-5 space-y-4 shadow-xl">
             <div className="flex items-center justify-between">
               <div className="text-lg font-semibold">Add proof</div>
@@ -1108,7 +1148,7 @@ export default function GoalDetailPage() {
         </div>
       )}
       {showValidationModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay px-4">
           <div className="w-full max-w-lg rounded-2xl bg-white p-5 space-y-4 shadow-xl">
             <div className="flex items-center justify-between">
               <div className="text-lg font-semibold">Request validation</div>

@@ -1,7 +1,7 @@
 /**
  * Organization creation page with on-chain gating.
  *
- * Flow: prepare → sign → confirm → finalize, with backend finalize only after tx hash/receipt.
+ * Flow: prepare -> sign -> confirm -> finalize, with backend finalize only after tx hash/receipt.
  */
 "use client";
 
@@ -13,10 +13,12 @@ import { AuthRequired } from "../../components/states/AuthRequired";
 import { ChainRequired } from "../../components/states/ChainRequired";
 import { ErrorState } from "../../components/states/ErrorState";
 import { TxStepper } from "../../components/tx/TxStepper";
+import { FinalityTimeline } from "../../components/tx/FinalityTimeline";
 import { useTxLifecycle } from "../../components/tx/useTxLifecycle";
-import { Badge, Button, ButtonLink, Card, CardBody, Section } from "../../components/ui";
+import { Badge, Button, ButtonLink, Card, CardBody, Input, Section, Select, Textarea } from "../../components/ui";
 import { getApiError } from "../../lib/apiError";
 import { orgRegistryAbi } from "../../lib/contracts";
+import { UI_LABELS } from "../../lib/uiCopy";
 
 type OrgForm = {
   handle: string;
@@ -61,14 +63,15 @@ export default function OrgsPage() {
     visibility: "PUBLIC",
   });
   const [finalizing, setFinalizing] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const [retryPayload, setRetryPayload] = useState<OrgFinalizePayload | null>(null);
   const [error, setError] = useState<{ message: string; requestId?: string | null } | null>(null);
   const [requiredChainId, setRequiredChainId] = useState<number | null>(null);
   const [requiredChainLabel, setRequiredChainLabel] = useState<string | null>(null);
 
-  const statusLabel = finalizing ? "Finalizing..." : "";
+  const statusLabel = preparing ? "Preparing..." : finalizing ? "Finalizing..." : "";
   const txBusy = tx.state === "walletPrompt" || tx.state === "submitted" || tx.state === "confirming";
-  const isBusy = isSwitching || finalizing || txBusy;
+  const isBusy = isSwitching || preparing || finalizing || txBusy;
 
   const finalizeOrg = async (payload: OrgFinalizePayload) => {
     const res = await fetch("/api/orgs", {
@@ -107,11 +110,13 @@ export default function OrgsPage() {
     setError(null);
     setRetryPayload(null);
     setFinalizing(false);
+    setPreparing(false);
     setRequiredChainId(null);
     setRequiredChainLabel(null);
     tx.reset();
 
     try {
+      setPreparing(true);
       const prepareRes = await fetch("/api/orgs/prepare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,9 +135,10 @@ export default function OrgsPage() {
       const prepareData = (prepareJson?.data || {}) as OrgPreparePayload;
       normalizedHandle = prepareData.handle || form.handle;
       if (!normalizedHandle) {
-          throw new Error("Enter a valid handle before creating an organization.");
+        throw new Error("Enter a valid handle before creating an organization.");
       }
       setForm((prev) => ({ ...prev, handle: normalizedHandle }));
+      setPreparing(false);
 
       const requiresOnchain = Boolean(prepareData.required);
       const requiredChain = Number(prepareData.chainId || 0);
@@ -140,7 +146,8 @@ export default function OrgsPage() {
         if (!isConnected || !address) {
           throw new Error("Connect your wallet to create an organization.");
         }
-        if (!prepareData.registry) {
+        const registry = prepareData.registry;
+        if (!registry) {
           throw new Error("Org registry is not configured. Try again later.");
         }
         if (prepareData.fee === null || prepareData.fee === undefined) {
@@ -164,7 +171,7 @@ export default function OrgsPage() {
         const feeValue = BigInt(prepareData.fee);
         const result = await tx.submit(() =>
           writeContractAsync({
-            address: prepareData.registry,
+            address: registry,
             abi: orgRegistryAbi,
             functionName: "createOrg",
             args: [normalizedHandle],
@@ -175,16 +182,16 @@ export default function OrgsPage() {
         const submittedHash = result.txHash || null;
         if (result.status !== "confirmed" || !submittedHash) {
           if (result.status === "rejected") {
-          setError({ message: "Transaction cancelled." });
+            setError({ message: "Transaction cancelled." });
+            return;
+          }
+          if (result.error?.message) {
+            setError({ message: result.error.message });
+            return;
+          }
+          setError({ message: "Transaction failed." });
           return;
         }
-        if (result.error?.message) {
-          setError({ message: result.error.message });
-          return;
-        }
-        setError({ message: "Transaction failed." });
-        return;
-      }
         creationTxHash = submittedHash;
       }
 
@@ -215,6 +222,7 @@ export default function OrgsPage() {
         setError({ message: e?.message || "Unable to create the organization.", requestId: e?.requestId });
       }
     } finally {
+      setPreparing(false);
       setFinalizing(false);
     }
   };
@@ -252,14 +260,13 @@ export default function OrgsPage() {
             <CardBody className="space-y-4">
               <div className="text-sm font-semibold">Find an organization</div>
               <div className="flex flex-wrap gap-3 items-center">
-                <input
+                <Input
                   value={searchHandle}
                   onChange={(e) => setSearchHandle(e.target.value)}
                   placeholder="org-handle"
-                  className="rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
                 />
                 <ButtonLink href={searchHandle ? `/orgs/${searchHandle.toLowerCase()}` : "#"} variant="secondary">
-                  View org
+                  {UI_LABELS.viewOrg}
                 </ButtonLink>
               </div>
             </CardBody>
@@ -271,6 +278,13 @@ export default function OrgsPage() {
                 <div className="text-sm font-semibold">Create a new org</div>
                 {form.visibility && <Badge variant="neutral">{form.visibility}</Badge>}
               </div>
+              <ol className="list-decimal list-inside text-xs text-textMuted space-y-1">
+                <li>Choose a handle.</li>
+                <li>Confirm the required fee and network.</li>
+                <li>Submit the on-chain transaction.</li>
+                <li>Wait for confirmations.</li>
+                <li>Finalize the org in the app.</li>
+              </ol>
               {requiredChainId ? (
                 <ChainRequired requiredChainId={requiredChainId} requiredChainLabel={requiredChainLabel || undefined} />
               ) : null}
@@ -283,49 +297,51 @@ export default function OrgsPage() {
                 />
               ) : null}
               {statusLabel && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-textMuted">
                   {statusLabel}
                   {tx.txHash ? ` (${tx.txHash.slice(0, 10)}...)` : ""}
                 </div>
               )}
-              {tx.state !== "idle" || tx.error ? <TxStepper state={tx.state} txHash={tx.txHash} error={tx.error} /> : null}
+              {tx.state !== "idle" || tx.error ? (
+                <TxStepper state={tx.state} txHash={tx.txHash} error={tx.error} />
+              ) : null}
+              {tx.state !== "idle" || tx.error ? (
+                <FinalityTimeline
+                  state={tx.state}
+                  txHash={tx.txHash}
+                  chainId={requiredChainId || chainId || undefined}
+                />
+              ) : null}
               <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
-                <input
+                <Input
                   value={form.handle}
                   onChange={(e) => setForm({ ...form, handle: e.target.value })}
                   placeholder="Handle (lowercase)"
-                  className="rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
                 />
-                <input
+                <Input
                   value={form.displayName}
                   onChange={(e) => setForm({ ...form, displayName: e.target.value })}
                   placeholder="Display name"
-                  className="rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
                 />
-                <input
+                <Input
                   value={form.website}
                   onChange={(e) => setForm({ ...form, website: e.target.value })}
                   placeholder="Website"
-                  className="rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
                 />
-                <select
-                  value={form.visibility}
-                  onChange={(e) => setForm({ ...form, visibility: e.target.value })}
-                  className="rounded-2xl border border-border bg-surface px-3 py-2 text-sm"
-                >
+                <Select value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value })}>
                   <option value="PUBLIC">Public</option>
                   <option value="UNLISTED">Unlisted</option>
                   <option value="PRIVATE">Private</option>
-                </select>
-                <textarea
+                </Select>
+                <Textarea
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Description"
-                  className="rounded-2xl border border-border bg-surface px-3 py-2 text-sm md:col-span-2"
+                  className="md:col-span-2"
                   rows={3}
                 />
                 <Button type="submit" disabled={isBusy || !token} className="md:col-span-2">
-                  {isBusy ? "Creating..." : "Create org"}
+                  {isBusy ? "Creating..." : UI_LABELS.createOrg}
                 </Button>
               </form>
             </CardBody>
@@ -335,3 +351,4 @@ export default function OrgsPage() {
     </div>
   );
 }
+

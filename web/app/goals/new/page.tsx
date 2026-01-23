@@ -1,13 +1,15 @@
 "use client";
 import { useState } from "react";
-import { useWriteContract } from "wagmi";
+import { useChainId, useWriteContract } from "wagmi";
 import { coreAddress, coreAbi } from "../../../lib/contracts";
 import toast from "react-hot-toast";
 import { uploadFile, uploadJSON } from "../../../lib/ipfs";
 import { isAddress } from "viem";
 import { PageHeader } from "../../../components/nav/PageHeader";
 import { TxStepper } from "../../../components/tx/TxStepper";
+import { FinalityTimeline } from "../../../components/tx/FinalityTimeline";
 import { useTxLifecycle } from "../../../components/tx/useTxLifecycle";
+import { Button, Card, CardBody, Checkbox, Input, Textarea } from "../../../components/ui";
 
 export default function CreateGoalPage() {
   const [title, setTitle] = useState("");
@@ -17,6 +19,7 @@ export default function CreateGoalPage() {
   const [restrictPeers, setRestrictPeers] = useState(false);
   const [goalCID, setGoalCID] = useState("");
   const { writeContractAsync, isPending } = useWriteContract();
+  const chainId = useChainId();
   const tx = useTxLifecycle(1);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -86,45 +89,43 @@ export default function CreateGoalPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Create goal" description="Anchor a new goal on-chain and invite peers to approve." />
-      <form onSubmit={onSubmit} className="space-y-3 max-w-xl">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title"
-          className="w-full rounded-md border px-3 py-2"
-        />
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description"
-          className="w-full rounded-md border px-3 py-2"
-        />
-        <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
-        <textarea
-          value={peerInput}
-          onChange={(e) => setPeerInput(e.target.value)}
-          placeholder="Peer addresses (0x...) separated by commas or new lines"
-          className="w-full rounded-md border px-3 py-2 text-sm"
-          rows={3}
-        />
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" checked={restrictPeers} onChange={(e) => setRestrictPeers(e.target.checked)} />
-          Restrict peer approvals to the listed addresses
-        </label>
-        <p className="text-xs text-gray-500">
-          When enabled, only the specified peers will be able to approve this goal.
-        </p>
-        <button disabled={isPending || tx.state !== "idle"} className="px-4 py-2 rounded-md bg-brand-600 text-white">
-          {isPending || tx.state !== "idle" ? "Submitting..." : "Create"}
-        </button>
-      </form>
+      <Card>
+        <CardBody className="space-y-3 max-w-xl">
+          <form onSubmit={onSubmit} className="space-y-3">
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
+            <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+            <Textarea
+              value={peerInput}
+              onChange={(e) => setPeerInput(e.target.value)}
+              placeholder="Peer addresses (0x...) separated by commas or new lines"
+              rows={3}
+            />
+            <label className="flex items-center gap-2 text-sm text-text">
+              <Checkbox checked={restrictPeers} onChange={(e) => setRestrictPeers(e.target.checked)} />
+              Restrict peer approvals to the listed addresses
+            </label>
+            <p className="text-xs text-textMuted">
+              When enabled, only the specified peers will be able to approve this goal.
+            </p>
+            <Button type="submit" disabled={isPending || tx.state !== "idle"}>
+              {isPending || tx.state !== "idle" ? "Submitting..." : "Create"}
+            </Button>
+          </form>
+        </CardBody>
+      </Card>
       {tx.state !== "idle" || tx.error ? <TxStepper state={tx.state} txHash={tx.txHash} error={tx.error} /> : null}
+      {tx.state !== "idle" || tx.error ? (
+        <FinalityTimeline state={tx.state} txHash={tx.txHash} chainId={chainId || undefined} />
+      ) : null}
       {tx.state === "finalized" && tx.txHash ? (
-        <div className="rounded-md border bg-white p-4">
-          <div className="font-medium">Tx: {tx.txHash}</div>
-          <div className="text-sm text-gray-600 break-all">Goal CID: {goalCID}</div>
-          <div className="text-sm text-gray-600">Check your goal with the latest ID on the home page.</div>
-        </div>
+        <Card>
+          <CardBody className="space-y-1 text-sm">
+            <div className="font-medium">Tx: {tx.txHash}</div>
+            <div className="text-textMuted break-all">Goal CID: {goalCID}</div>
+            <div className="text-textMuted">Check your goal with the latest ID on the home page.</div>
+          </CardBody>
+        </Card>
       ) : null}
     </div>
   );

@@ -188,7 +188,7 @@ export default function PartyDetailPage() {
         </Link>
       </div>
 
-      {error && <div className="rounded-md border border-red-200 bg-red-50 text-red-700 p-3 text-sm">{error}</div>}
+      {error && <div className="rounded-md border border-danger/20 bg-danger/10 text-danger p-3 text-sm">{error}</div>}
 
       {loading || !party ? (
         <div className="text-gray-500 text-sm">Loading party...</div>

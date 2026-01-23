@@ -1,35 +1,29 @@
-# State Contracts (UI Runtime Guarantees)
+# State Contracts
 
-This document defines the expected rendering contracts for shared state components. It applies to all App Router pages in `web/app`.
+This document defines the required rendering behavior for shared UX states.
 
-## ApiLoadState Contract
+## ApiLoadState (AsyncState<T>)
 
-Required rendering contract:
-- **Loading**: Use `LoadingState` for initial fetches or refreshes that replace the whole view.
-- **Empty**: Use `EmptyState` with a direct CTA for first-run or zero-data conditions.
-- **Error**: Use `ErrorState` with a retry callback if the action is retryable.
-- **Auth gated**: Use `AuthRequired` for flows that require a signed-in session.
-- **Chain gated**: Use `ChainRequired` when the user is connected to the wrong network.
+- `idle`: no request in flight; render nothing or an EmptyState with a CTA.
+- `loading`: show `LoadingState` with skeleton rows and a concise description.
+- `pending`: show a non-blocking status badge or inline note indicating on-chain or background confirmation.
+- `confirmed`: render the data; if the data is empty, render `EmptyState`.
+- `failed`: render `ErrorState` with a user-safe message and a retry callback when available.
+- `unknown`: render `ErrorState` or a warning badge stating verification is unavailable (do not mark as failed).
 
-Guarantees:
-- Loading must never render empty/error states simultaneously.
-- Errors must never hide a previously loaded successful state unless explicitly re-fetching.
-- If a requestId/traceId is available, it must be passed to `ErrorState`.
+## TxState (useTxLifecycle + TxStepper)
 
-## TxState Contract
+- `walletPrompt`: show the wallet confirmation step as active; do not call backend finalize yet.
+- `submitted`: show the transaction hash and “Submitted”.
+- `confirming`: show confirmation progress or a spinner; never mark success early.
+- `finalized`: show success **only** if a transaction hash exists.
+- `failed`: show failure with user-rejection vs revert messaging.
+- `unknown`: show “Unable to confirm right now” (RPC/circuit breaker) and allow retry.
+- `reorged`: show “Reorg detected” and prompt for retry or resync.
 
-Tx state machine (`TxTypes.TxState`):
-- `idle` → `walletPrompt` → `submitted` → `confirming` → `finalized`
-- Failure states: `failed`, `reorged`, `unknown`
+## Visibility & Access
 
-Required rendering contract:
-- Always use `TxStepper` for on-chain actions that require confirmation.
-- `finalized` must include a transaction hash.
-- `unknown` must not be presented as a failure; it must be explicit that RPC confirmation is unavailable.
-
-## Visibility/Access Contract
-
-Required rendering contract:
-- Auth-required screens must show `AuthRequired` rather than triggering implicit signing.
-- Chain-required screens must show `ChainRequired` with a clear switch CTA.
-- When a feature is partial or not implemented, copy must state the limitation explicitly.
+- Auth-required screens must render `AuthRequired` (never auto-trigger signature).
+- Wrong-chain actions must render `ChainRequired` with a switch CTA.
+- Privacy visibility must be explicit: Public | Unlisted | Private.
+- Unlisted content must show a share token with copy and revoke controls.

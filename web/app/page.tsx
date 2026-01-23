@@ -160,7 +160,7 @@ export default function HomePage() {
                     <div className="text-xs text-textMuted">@{r.username || "-"}</div>
                     <div className="text-xs text-textMuted">ID: {r.achusrId || "-"}</div>
                     <div className="text-xs text-textMuted break-all">Wallet: {r.walletAddress}</div>
-                    <div className="text-[0.7rem] text-textMuted">
+                    <div className="text-xs text-textMuted">
                       Goals: {r.goalsCount ?? 0} - Badges: {r.badgesCount ?? 0} - Level {r.level ?? 1}
                     </div>
                     <Link href={`/profile/${r.walletAddress}`} className="text-xs text-accent hover:underline">
