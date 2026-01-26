@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button, DataTable, StatusBadge } from "../../ui";
 import { EmptyState } from "../../states/EmptyState";
 import { ErrorState } from "../../states/ErrorState";
 import { LoadingState } from "../../states/LoadingState";
 import { UI_LABELS } from "../../../lib/uiCopy";
+import { setPanel } from "../../../lib/panelRouting";
 
 export type TimeEntryItem = {
   id: string;
@@ -27,6 +29,7 @@ export type TimeEntryTableProps = {
   onDelete: (entryId: string) => void;
   busyId?: string | null;
   busy?: boolean;
+  projectSlug?: string;
 };
 
 function formatTimestamp(value?: string | null) {
@@ -55,7 +58,11 @@ export function TimeEntryTable({
   onDelete,
   busyId,
   busy,
+  projectSlug,
 }: TimeEntryTableProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const columns = useMemo(
     () => [
       {
@@ -81,7 +88,9 @@ export function TimeEntryTable({
         key: "billable",
         label: "Billable",
         render: (row: TimeEntryItem) => (
-          <StatusBadge tone={row.billable ? "success" : "neutral"}>{row.billable ? "Billable" : "Non-billable"}</StatusBadge>
+          <StatusBadge tone={row.billable ? "success" : "neutral"}>
+            {row.billable ? "Billable" : "Non-billable"}
+          </StatusBadge>
         ),
       },
       {
@@ -126,5 +135,14 @@ export function TimeEntryTable({
     );
   }
 
-  return <DataTable columns={columns} rows={entries} />;
+  return (
+    <DataTable
+      columns={columns}
+      rows={entries}
+      onRowClick={(row) => {
+        if (!projectSlug) return;
+        setPanel("time-entry", { panelId: row.id, projectSlug }, { router, pathname, searchParams });
+      }}
+    />
+  );
 }

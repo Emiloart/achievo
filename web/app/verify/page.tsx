@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "../../components/nav/PageHeader";
 import { EmptyState } from "../../components/states/EmptyState";
 import { PolicyMarkdown } from "../../components/policy/PolicyMarkdown";
@@ -56,12 +56,23 @@ function detectFromInput(value: string): Detection {
 
 export default function VerifyPage() {
   const router = useRouter();
+  const params = useSearchParams();
+  const focusTarget = params.get("focus");
   const [value, setValue] = useState("");
   const [manualKind, setManualKind] = useState<Kind>("EXPORT");
   const [error, setError] = useState("");
   const { isEnabled, policy, getMessage } = usePolicy();
 
   const detected = useMemo(() => detectFromInput(value), [value]);
+
+  useEffect(() => {
+    if (focusTarget !== "input") return;
+    const input = document.getElementById("verify-input") as HTMLInputElement | null;
+    if (input) {
+      input.focus();
+      input.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  }, [focusTarget]);
 
   if (!isEnabled("verifyPortalEnabled")) {
     return (
@@ -111,7 +122,12 @@ export default function VerifyPage() {
 
       <Card>
         <CardBody className="space-y-4">
-          <Input value={value} onChange={(e) => setValue(e.target.value)} placeholder="Paste a link, ID, or hash" />
+          <Input
+            id="verify-input"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Paste a link, ID, or hash"
+          />
           {!detected && (
             <div className="flex items-center gap-3 text-sm">
               <label className="text-xs text-textMuted">Type</label>

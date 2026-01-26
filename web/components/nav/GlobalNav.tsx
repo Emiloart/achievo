@@ -10,6 +10,7 @@ import { useBackendAuth } from "../../hooks/useBackendAuth";
 import { IdentityBadge } from "../IdentityBadge";
 import { GOALS_NAV, PRIMARY_NAV } from "./navItems";
 import { SessionIndicator } from "./SessionIndicator";
+import { useDensity } from "../layout/DensityProvider";
 
 const ConnectWallet = dynamic(() => import("../ConnectWallet").then((m) => m.ConnectWallet), { ssr: false });
 
@@ -17,6 +18,8 @@ export function GlobalNav() {
   const router = useRouter();
   const { address } = useAccount();
   const { user, signOut } = useBackendAuth();
+  const { density, toggleDensity } = useDensity();
+  const densityLabel = density === "compact" ? "Compact" : "Comfortable";
   const menuItems = [
     address
       ? {
@@ -36,6 +39,11 @@ export function GlobalNav() {
       id: "settings",
       label: "Settings",
       onSelect: () => router.push("/dashboard" as Route),
+    },
+    {
+      id: "density",
+      label: `Density: ${densityLabel}`,
+      onSelect: () => toggleDensity(),
     },
     user
       ? {

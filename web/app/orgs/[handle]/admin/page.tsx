@@ -252,7 +252,7 @@ export default function OrgAdminPage() {
         credentials: "include",
       });
       if (!res.ok) throw new Error(await getApiErrorMessage(res));
-      uiToast.success("Program published");
+      uiToast.group(`org_program_publish:${programId}`, "success", "Program published");
       await fetchOrg();
     } catch (e: any) {
       handleActionError(e?.message || "Failed to publish program", { type: "publishProgram", payload: { programId } });
@@ -407,10 +407,7 @@ export default function OrgAdminPage() {
                 onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
                 placeholder="Email (optional)"
               />
-              <Select
-                value={inviteForm.role}
-                onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })}
-              >
+              <Select value={inviteForm.role} onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })}>
                 <option value="MEMBER">Member</option>
                 <option value="REVIEWER">Reviewer</option>
                 <option value="ADMIN">Admin</option>
@@ -549,6 +546,7 @@ export default function OrgAdminPage() {
           onReview={reviewSubmission}
           onRefresh={loadSubmissions}
           busyId={busyAction?.startsWith("submission:") ? busyAction.replace("submission:", "") : null}
+          orgId={orgId}
         />
       </Section>
     </div>

@@ -235,6 +235,33 @@ The market page presents:
   - `web/app/orgs/[handle]/page.tsx`
   - `web/app/projects/[slug]/page.tsx`
 
+## P4 Power UX + Paneling + Density (Implemented)
+
+- Command palette (Ctrl/Cmd+K) with scoped registry:
+  - Action registry + types: `web/lib/actions/registry.ts`, `web/lib/actions/types.ts`
+  - UI + modal: `web/components/command/CommandPalette.tsx`, `web/components/command/CommandPaletteModal.tsx`
+  - Mounted once in root layout: `web/app/layout.tsx`
+- Panel routing + Inspector rail (query param, no new routes):
+  - Routing helpers: `web/lib/panelRouting.ts`
+  - Rail shell: `web/components/layout/InspectorRail.tsx`
+  - Panel renderers: `web/components/panels/SubmissionPanel.tsx`, `web/components/panels/ValidationRequestPanel.tsx`, `web/components/panels/TimeEntryPanel.tsx`
+  - Layout integration: `web/components/layout/PageLayout.tsx`
+- DataTable selection + bulk actions (opt-in):
+  - Selection-capable table: `web/components/ui/DataTable.tsx`
+  - Bulk action bar: `web/components/ui/BulkActionBar.tsx`
+  - Workbench integrations: `web/components/domain/orgs/SubmissionsTable.tsx`, `web/app/validators/inbox/page.tsx`
+- Density toggle (compact/comfortable):
+  - Storage + class helpers: `web/lib/density.ts`
+  - Provider + root class: `web/components/layout/DensityProvider.tsx`, `web/components/layout/PageLayout.tsx`
+  - UI control in user menu: `web/components/nav/GlobalNav.tsx`
+  - Token deltas: `web/styles/globals.css`
+- Toast grouping / de-duplication:
+  - Toast wrapper: `web/components/ui/toast.tsx`
+  - Grouped toasts in high-churn flows:
+    - Attestation wizard: `web/components/domain/validators/AttestationWizard.tsx`
+    - Program publish: `web/app/orgs/[handle]/admin/page.tsx`
+    - On-chain goal flows: `web/app/goals/new/page.tsx`, `web/app/approve/page.tsx`
+
 ## Regression safety (UX reliability)
 
 - UX regression tests: `web/tests/e2e.spec.ts`

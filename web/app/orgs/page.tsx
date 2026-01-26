@@ -5,7 +5,8 @@
  */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
 import { useBackendAuth } from "../../hooks/useBackendAuth";
 import { PageHeader } from "../../components/nav/PageHeader";
@@ -48,6 +49,8 @@ type OrgFinalizePayload = {
 };
 
 export default function OrgsPage() {
+  const params = useSearchParams();
+  const focusTarget = params.get("focus");
   const { token } = useBackendAuth();
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
@@ -68,6 +71,15 @@ export default function OrgsPage() {
   const [error, setError] = useState<{ message: string; requestId?: string | null } | null>(null);
   const [requiredChainId, setRequiredChainId] = useState<number | null>(null);
   const [requiredChainLabel, setRequiredChainLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (focusTarget !== "create") return;
+    const input = document.getElementById("org-create-handle") as HTMLInputElement | null;
+    if (input) {
+      input.focus();
+      input.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  }, [focusTarget]);
 
   const statusLabel = preparing ? "Preparing..." : finalizing ? "Finalizing..." : "";
   const txBusy = tx.state === "walletPrompt" || tx.state === "submitted" || tx.state === "confirming";
@@ -314,6 +326,7 @@ export default function OrgsPage() {
               ) : null}
               <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
                 <Input
+                  id="org-create-handle"
                   value={form.handle}
                   onChange={(e) => setForm({ ...form, handle: e.target.value })}
                   placeholder="Handle (lowercase)"
@@ -351,4 +364,3 @@ export default function OrgsPage() {
     </div>
   );
 }
-

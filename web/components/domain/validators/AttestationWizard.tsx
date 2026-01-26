@@ -8,17 +8,7 @@ import { useValidationActions, type ValidationItem } from "../../../hooks/useVal
 import { ErrorState } from "../../states/ErrorState";
 import { LoadingState } from "../../states/LoadingState";
 import { ConfirmDialog } from "../../ui/ConfirmDialog";
-import {
-  Badge,
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Input,
-  StatusBadge,
-  Textarea,
-  uiToast,
-} from "../../ui";
+import { Badge, Button, Card, CardBody, CardHeader, Input, StatusBadge, Textarea, uiToast } from "../../ui";
 import { UI_LABELS } from "../../../lib/uiCopy";
 
 export type AttestationWizardProps = {
@@ -115,7 +105,11 @@ export function AttestationWizard({ item, validatorWallet, canAct, onComplete }:
         const newAttestationId = submitResponse?.data?.attestation?.id || null;
         setAttestationId(newAttestationId);
         setPhase("done");
-        uiToast.success(actionStatus === "APPROVED" ? "Attestation submitted" : "Rejection submitted");
+        uiToast.group(
+          `attestation:${item.request.id}`,
+          "success",
+          actionStatus === "APPROVED" ? "Attestation submitted" : "Rejection submitted",
+        );
         onComplete?.();
       } catch (e: any) {
         const normalized = normalizeError(e, e?.message);
@@ -169,7 +163,7 @@ export function AttestationWizard({ item, validatorWallet, canAct, onComplete }:
         message: message.trim() || undefined,
       });
       setPhase("revoked");
-      uiToast.success("Attestation revoked");
+      uiToast.group(`attestation-revoke:${item.request.id}`, "success", "Attestation revoked");
       onComplete?.();
     } catch (e: any) {
       const normalized = normalizeError(e, e?.message);

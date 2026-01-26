@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { useChainId, useWriteContract } from "wagmi";
 import { coreAddress, coreAbi } from "../../../lib/contracts";
-import toast from "react-hot-toast";
 import { uploadFile, uploadJSON } from "../../../lib/ipfs";
 import { isAddress } from "viem";
 import { PageHeader } from "../../../components/nav/PageHeader";
 import { TxStepper } from "../../../components/tx/TxStepper";
 import { FinalityTimeline } from "../../../components/tx/FinalityTimeline";
 import { useTxLifecycle } from "../../../components/tx/useTxLifecycle";
-import { Button, Card, CardBody, Checkbox, Input, Textarea } from "../../../components/ui";
+import { Button, Card, CardBody, Checkbox, Input, Textarea, uiToast } from "../../../components/ui";
 
 export default function CreateGoalPage() {
   const [title, setTitle] = useState("");
@@ -73,16 +72,16 @@ export default function CreateGoalPage() {
       };
       const result = await tx.submit(submit);
       if (result.status === "confirmed") {
-        toast.success("Goal confirmed on-chain");
+        uiToast.group("goal-create", "success", "Goal confirmed on-chain");
         return;
       }
       if (result.error?.message) {
-        toast.error(result.error.message);
+        uiToast.group("goal-create", "error", result.error.message);
         return;
       }
-      toast.error("Transaction failed");
+      uiToast.group("goal-create", "error", "Transaction failed");
     } catch (e: any) {
-      toast.error(e?.shortMessage || e?.message || "Failed");
+      uiToast.group("goal-create", "error", e?.shortMessage || e?.message || "Failed");
     }
   };
 

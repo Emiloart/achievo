@@ -389,6 +389,120 @@ test("validator inbox renders registration gate or inbox", async ({ page }) => {
   await expect(gate).toBeVisible();
 });
 
+test("command palette opens and closes", async ({ page }) => {
+  await goto(page, "/dashboard");
+  await page.waitForFunction(() => (globalThis as any).__ACHIEVO_PAGE_LAYOUT__ === true);
+  await page.evaluate(() => {
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }));
+  });
+  await expect(page.getByTestId("command-palette")).toBeVisible({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("command-palette")).toHaveCount(0);
+});
+
+test("density toggle persists across reload", async ({ page }) => {
+  await goto(page, "/dashboard");
+  await page.getByRole("button", { name: "ACHUSR-0000000001" }).click();
+  await page.getByRole("menuitem", { name: /Density:/ }).click();
+  await expect(page.locator("body")).toHaveClass(/density-compact/);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("body")).toHaveClass(/density-compact/);
+});
+
+test("submission row opens inspector rail via panel routing", async ({ page }) => {
+  registerApiMock(async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname !== "/api/orgs/acme") return false;
+    await fulfillJson(route, 200, {
+      data: {
+        org: {
+          id: "org-1",
+          handle: "acme",
+          displayName: "Acme Org",
+          visibility: "PUBLIC",
+          onchainStatus: "CONFIRMED",
+          onchainChainId: 84532,
+          onchainCreationTxHash: "0x" + "11".repeat(32),
+        },
+        membership: { role: "ADMIN" },
+        programs: [{ id: "program-1", slug: "alpha", title: "Alpha Program", status: "PUBLISHED" }],
+      },
+    });
+    return true;
+  });
+
+  registerApiMock(async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname !== "/api/orgs/org-1/submissions") return false;
+    await fulfillJson(route, 200, {
+      data: [
+        {
+          id: "sub-1",
+          userId: "ACHUSR-0000000002",
+          status: "SUBMITTED",
+          createdAt: new Date().toISOString(),
+          submitter: { displayName: "Jane Doe", username: "jane" },
+          note: "Evidence attached",
+        },
+      ],
+    });
+    return true;
+  });
+
+  await goto(page, "/orgs/acme/admin");
+  await page.getByRole("tab", { name: "Submissions" }).click();
+  await expect(page.getByText("Jane Doe")).toBeVisible({ timeout: 15000 });
+  await page.getByText("Jane Doe").click();
+  await expect(page).toHaveURL(/panel=submission/);
+  await expect(page.getByTestId("inspector-rail")).toBeVisible();
+});
+
+test("bulk selection shows action bar", async ({ page }) => {
+  registerApiMock(async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname !== "/api/orgs/acme") return false;
+    await fulfillJson(route, 200, {
+      data: {
+        org: {
+          id: "org-1",
+          handle: "acme",
+          displayName: "Acme Org",
+          visibility: "PUBLIC",
+          onchainStatus: "CONFIRMED",
+          onchainChainId: 84532,
+          onchainCreationTxHash: "0x" + "11".repeat(32),
+        },
+        membership: { role: "ADMIN" },
+        programs: [{ id: "program-1", slug: "alpha", title: "Alpha Program", status: "PUBLISHED" }],
+      },
+    });
+    return true;
+  });
+
+  registerApiMock(async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname !== "/api/orgs/org-1/submissions") return false;
+    await fulfillJson(route, 200, {
+      data: [
+        {
+          id: "sub-1",
+          userId: "ACHUSR-0000000002",
+          status: "SUBMITTED",
+          createdAt: new Date().toISOString(),
+          submitter: { displayName: "Jane Doe", username: "jane" },
+        },
+      ],
+    });
+    return true;
+  });
+
+  await goto(page, "/orgs/acme/admin");
+  await page.getByRole("tab", { name: "Submissions" }).click();
+  await expect(page.getByText("Jane Doe")).toBeVisible({ timeout: 15000 });
+  await page.getByLabel("Select sub-1").click();
+  await expect(page.getByText("1 selected")).toBeVisible();
+});
+
 test("project workbench renders tab shell", async ({ page }) => {
   registerApiMock(async (route) => {
     const url = new URL(route.request().url());

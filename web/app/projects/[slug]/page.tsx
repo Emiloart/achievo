@@ -22,7 +22,18 @@ import {
   type ShareLinkPayload,
 } from "../../../components/domain/projects/ProjectShareLinksManager";
 import { TimeEntryTable, type TimeEntryItem as TimeEntryRow } from "../../../components/domain/projects/TimeEntryTable";
-import { Button, Card, CardBody, Input, Select, Section, StatusPill, TableFilters, Textarea, uiToast } from "../../../components/ui";
+import {
+  Button,
+  Card,
+  CardBody,
+  Input,
+  Select,
+  Section,
+  StatusPill,
+  TableFilters,
+  Textarea,
+  uiToast,
+} from "../../../components/ui";
 import { UI_LABELS } from "../../../lib/uiCopy";
 
 const API_BASE = "/api";
@@ -1105,6 +1116,7 @@ export default function ProjectDetailPage() {
             onDelete={deleteTimeEntry}
             busyId={busyEntryId}
             busy={saving}
+            projectSlug={slug}
           />
           <Button
             variant="ghost"

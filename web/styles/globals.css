@@ -30,9 +30,28 @@ body {
     radial-gradient(circle at 85% 0%, rgb(var(--color-warning-rgb) / 0.14), transparent 38%),
     linear-gradient(180deg, rgb(var(--color-surface-rgb) / 0.6) 0%, transparent 65%);
   background-attachment: fixed;
+  line-height: var(--line-height-normal);
 }
 
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.density-comfortable {
+  --line-height-normal: 1.5;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+}
+
+.density-compact {
+  --line-height-normal: 1.4;
+  --space-2: 6px;
+  --space-3: 10px;
+  --space-4: 14px;
+  --space-5: 18px;
+  --space-6: 22px;
 }

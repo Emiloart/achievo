@@ -3,13 +3,12 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAccount, useChainId, useReadContract, useWriteContract } from "wagmi";
 import { coreAddress, coreAbi } from "../../lib/contracts";
-import toast from "react-hot-toast";
 import { PageHeader } from "../../components/nav/PageHeader";
 import { LoadingState } from "../../components/states/LoadingState";
 import { TxStepper } from "../../components/tx/TxStepper";
 import { FinalityTimeline } from "../../components/tx/FinalityTimeline";
 import { useTxLifecycle } from "../../components/tx/useTxLifecycle";
-import { Button, Card, CardBody, Input } from "../../components/ui";
+import { Button, Card, CardBody, Input, uiToast } from "../../components/ui";
 
 function ApproveClient() {
   const params = useSearchParams();
@@ -59,23 +58,23 @@ function ApproveClient() {
   const tx = useTxLifecycle(1);
 
   const approve = async () => {
-    if (goalId === undefined) return toast.error("Enter a valid goal id");
+    if (goalId === undefined) return uiToast.group("goal-approve", "error", "Enter a valid goal id");
     try {
       tx.reset();
       const result = await tx.submit(() =>
         writeContractAsync({ address: coreAddress, abi: coreAbi, functionName: "approve", args: [goalId] }),
       );
       if (result.status === "confirmed") {
-        toast.success("Approval confirmed");
+        uiToast.group("goal-approve", "success", "Approval confirmed");
         return;
       }
       if (result.error?.message) {
-        toast.error(result.error.message);
+        uiToast.group("goal-approve", "error", result.error.message);
         return;
       }
-      toast.error("Approval failed");
+      uiToast.group("goal-approve", "error", "Approval failed");
     } catch (e: any) {
-      toast.error(e?.shortMessage || e?.message || "Failed");
+      uiToast.group("goal-approve", "error", e?.shortMessage || e?.message || "Failed");
     }
   };
 

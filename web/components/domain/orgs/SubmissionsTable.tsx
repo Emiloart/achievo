@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
-import { Button, DataTable, Input, Select, StatusPill, TableFilters } from "../../ui";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Button, BulkActionBar, DataTable, Input, Select, StatusPill, TableFilters } from "../../ui";
 import { EmptyState } from "../../states/EmptyState";
 import { LoadingState } from "../../states/LoadingState";
 import { UI_LABELS } from "../../../lib/uiCopy";
+import { setPanel } from "../../../lib/panelRouting";
 
 export type SubmissionItem = {
   id: string;
@@ -32,6 +34,7 @@ export type SubmissionsTableProps = {
   onIssueValidation?: (submission: SubmissionItem) => void;
   onRefresh?: () => void;
   busyId?: string | null;
+  orgId?: string;
 };
 
 function formatSubmitter(item: SubmissionItem) {
@@ -57,7 +60,12 @@ export function SubmissionsTable({
   onIssueValidation,
   onRefresh,
   busyId,
+  orgId,
 }: SubmissionsTableProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const columns = useMemo(
     () => [
       {
@@ -111,6 +119,12 @@ export function SubmissionsTable({
     [busyId, onIssueValidation, onReview],
   );
 
+  useEffect(() => {
+    if (!selectedIds.length) return;
+    const next = selectedIds.filter((id) => submissions.some((submission) => submission.id === id));
+    if (next.length !== selectedIds.length) setSelectedIds(next);
+  }, [selectedIds, submissions]);
+
   return (
     <div className="space-y-4">
       <TableFilters>
@@ -139,10 +153,44 @@ export function SubmissionsTable({
         />
       </TableFilters>
 
+      <BulkActionBar
+        count={selectedIds.length}
+        actions={[
+          {
+            id: "open",
+            label: "Open in rail",
+            variant: "secondary",
+            disabled: !orgId || selectedIds.length === 0,
+            onClick: () => {
+              if (!orgId || !selectedIds.length) return;
+              setPanel("submission", { panelId: selectedIds[0], orgId }, { router, pathname, searchParams });
+            },
+          },
+          {
+            id: "clear",
+            label: "Clear selection",
+            variant: "ghost",
+            onClick: () => setSelectedIds([]),
+          },
+        ]}
+      />
+
       {loading ? (
         <LoadingState title="Loading submissions" description="Fetching program submissions." rows={3} />
       ) : submissions.length ? (
-        <DataTable columns={columns} rows={submissions} />
+        <DataTable
+          columns={columns}
+          rows={submissions}
+          selectable
+          selectionLabel="Select submissions"
+          getRowId={(row) => row.id}
+          selectedIds={selectedIds}
+          onSelectedIdsChange={setSelectedIds}
+          onRowClick={(row) => {
+            if (!orgId) return;
+            setPanel("submission", { panelId: row.id, orgId }, { router, pathname, searchParams });
+          }}
+        />
       ) : (
         <EmptyState
           title="No submissions"

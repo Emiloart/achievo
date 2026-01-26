@@ -1,32 +1,87 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ErrorBoundary } from "../ui";
 import { GlobalNav } from "../nav/GlobalNav";
 import { MobileNav } from "../nav/MobileNav";
 import { SideNav } from "../nav/SideNav";
 import { DegradedBanner } from "../states/DegradedBanner";
 import { PolicyBanner } from "../policy/PolicyBanner";
+import { DensityProvider } from "./DensityProvider";
+import { InspectorRail } from "./InspectorRail";
+import { readPanel, clearPanel } from "../../lib/panelRouting";
+import { SubmissionPanel } from "../panels/SubmissionPanel";
+import { ValidationRequestPanel } from "../panels/ValidationRequestPanel";
+import { TimeEntryPanel } from "../panels/TimeEntryPanel";
+import { ErrorState } from "../states/ErrorState";
 
 export function PageLayout({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const panelState = readPanel(searchParams);
+
+  const panelContent = (() => {
+    if (!panelState) return null;
+    if (panelState.panel === "submission") {
+      if (!panelState.panelId || !panelState.params.orgId) {
+        return <ErrorState message="Submission panel is missing context." />;
+      }
+      return <SubmissionPanel submissionId={panelState.panelId} orgId={panelState.params.orgId} />;
+    }
+    if (panelState.panel === "validation") {
+      if (!panelState.panelId) return <ErrorState message="Validation panel is missing context." />;
+      return <ValidationRequestPanel requestId={panelState.panelId} />;
+    }
+    if (panelState.panel === "time-entry") {
+      if (!panelState.panelId || !panelState.params.projectSlug) {
+        return <ErrorState message="Time entry panel is missing context." />;
+      }
+      return <TimeEntryPanel entryId={panelState.panelId} projectSlug={panelState.params.projectSlug} />;
+    }
+    return <ErrorState message="Unknown panel requested." />;
+  })();
+
+  const panelTitle = (() => {
+    if (!panelState) return "Inspector";
+    if (panelState.panel === "submission") return "Submission";
+    if (panelState.panel === "validation") return "Validation Request";
+    if (panelState.panel === "time-entry") return "Time Entry";
+    return "Inspector";
+  })();
+
   useEffect(() => {
     if (process.env.NODE_ENV !== "production") {
       (globalThis as { __ACHIEVO_PAGE_LAYOUT__?: boolean }).__ACHIEVO_PAGE_LAYOUT__ = true;
     }
   }, []);
 
+  const hasPanel = Boolean(panelContent);
+
   return (
-    <div className="min-h-screen text-text">
-      <GlobalNav />
-      <div className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 lg:grid lg:grid-cols-[220px,1fr] lg:gap-8 lg:pb-12">
-        <SideNav />
-        <main className="min-h-[60vh] space-y-6">
-          <PolicyBanner />
-          <DegradedBanner />
-          <ErrorBoundary>{children}</ErrorBoundary>
-        </main>
+    <DensityProvider>
+      <div className="min-h-screen text-text">
+        <GlobalNav />
+        <div
+          className={`mx-auto w-full max-w-6xl px-4 pb-24 pt-6 lg:grid lg:gap-8 lg:pb-12 ${
+            hasPanel ? "lg:grid-cols-[220px,1fr,360px]" : "lg:grid-cols-[220px,1fr]"
+          }`}
+        >
+          <SideNav />
+          <main className="min-h-[60vh] space-y-6">
+            <PolicyBanner />
+            <DegradedBanner />
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </main>
+          {hasPanel ? (
+            <InspectorRail title={panelTitle} onClose={() => clearPanel({ router, pathname, searchParams })}>
+              {panelContent}
+            </InspectorRail>
+          ) : null}
+        </div>
+        <MobileNav />
       </div>
-      <MobileNav />
-    </div>
+    </DensityProvider>
   );
 }

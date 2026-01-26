@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useBackendAuth } from "../../../hooks/useBackendAuth";
 import { useValidatorRequests, type ValidationItem } from "../../../hooks/useValidations";
@@ -17,6 +18,7 @@ import { Drawer } from "../../../components/ui/Modal";
 import {
   Badge,
   Button,
+  BulkActionBar,
   Card,
   CardBody,
   CardHeader,
@@ -31,6 +33,7 @@ import {
 import { AttestationWizard } from "../../../components/domain/validators/AttestationWizard";
 import { ValidatorInboxTabs } from "../../../components/domain/validators/ValidatorInboxTabs";
 import { UI_LABELS } from "../../../lib/uiCopy";
+import { setPanel } from "../../../lib/panelRouting";
 
 const API_BASE = "/api";
 
@@ -67,6 +70,9 @@ function formatClaimant(item: ValidationItem) {
 }
 
 export default function ValidatorInboxPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { address } = useAccount();
   const { token } = useBackendAuth();
   const { items, error, state: requestsState, refetch } = useValidatorRequests(address);
@@ -83,6 +89,7 @@ export default function ValidatorInboxPage() {
   const [activeTab, setActiveTab] = useState<"pending" | "completed">("pending");
   const [selectedRequest, setSelectedRequest] = useState<ValidationItem | null>(null);
   const [filterQuery, setFilterQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const canAct = Boolean(address && token);
 
@@ -181,6 +188,19 @@ export default function ValidatorInboxPage() {
     });
   }, [completedRequests, filterQuery]);
 
+  useEffect(() => {
+    if (!selectedIds.length) return;
+    const allowedIds = new Set(filteredPending.map((item) => item.request.id));
+    const next = selectedIds.filter((id) => allowedIds.has(id));
+    if (next.length !== selectedIds.length) setSelectedIds(next);
+  }, [filteredPending, selectedIds]);
+
+  useEffect(() => {
+    if (activeTab !== "pending") {
+      setSelectedIds([]);
+    }
+  }, [activeTab]);
+
   const pendingContent = (() => {
     if (requestsState.status === "loading") {
       return (
@@ -196,9 +216,7 @@ export default function ValidatorInboxPage() {
           title="No pending requests"
           description="Incoming validations will appear here for review."
           primaryAction={
-            !canAct
-              ? { label: "Go to identity", href: "/identity" }
-              : { label: UI_LABELS.refresh, onClick: refetch }
+            !canAct ? { label: "Go to identity", href: "/identity" } : { label: UI_LABELS.refresh, onClick: refetch }
           }
         />
       );
@@ -213,6 +231,28 @@ export default function ValidatorInboxPage() {
             placeholder="Search requests"
           />
         </TableFilters>
+        <BulkActionBar
+          count={selectedIds.length}
+          actions={[
+            {
+              id: "open-wizard",
+              label: "Open first in wizard",
+              variant: "secondary",
+              disabled: !selectedIds.length,
+              onClick: () => {
+                if (!selectedIds.length) return;
+                const first = filteredPending.find((item) => item.request.id === selectedIds[0]);
+                if (first) setSelectedRequest(first);
+              },
+            },
+            {
+              id: "clear",
+              label: "Clear selection",
+              variant: "ghost",
+              onClick: () => setSelectedIds([]),
+            },
+          ]}
+        />
         <DataTable
           rows={filteredPending}
           columns={[
@@ -234,7 +274,9 @@ export default function ValidatorInboxPage() {
             {
               key: "id",
               label: "Request ID",
-              render: (row: ValidationItem) => <span className="text-xs text-textMuted">{shortId(row.request.id)}</span>,
+              render: (row: ValidationItem) => (
+                <span className="text-xs text-textMuted">{shortId(row.request.id)}</span>
+              ),
             },
             {
               key: "actions",
@@ -246,6 +288,14 @@ export default function ValidatorInboxPage() {
               ),
             },
           ]}
+          selectable
+          selectionLabel="Select validation requests"
+          getRowId={(row) => row.request.id}
+          selectedIds={selectedIds}
+          onSelectedIdsChange={setSelectedIds}
+          onRowClick={(row) => {
+            setPanel("validation", { panelId: row.request.id }, { router, pathname, searchParams });
+          }}
         />
       </div>
     );

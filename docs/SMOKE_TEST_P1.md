@@ -155,3 +155,26 @@ Expected API calls:
      - `web/app/orgs/[handle]/admin/page.tsx`
      - `web/app/projects/[slug]/page.tsx`
      - `web/app/validators/inbox/page.tsx`
+
+## P4 Power UX smoke tests
+
+1. Command palette opens and closes.
+   - Route: any (e.g., `/dashboard`)
+   - Press Ctrl/Cmd+K -> palette appears.
+   - Press Escape -> palette closes.
+   - Files: `web/components/command/CommandPalette.tsx`, `web/components/command/CommandPaletteModal.tsx`.
+2. Density toggle persists.
+   - Route: `/dashboard`
+   - Open GlobalNav user menu -> toggle Density.
+   - Expect `body` class `density-compact` after toggle.
+   - Refresh page -> class remains.
+   - Files: `web/lib/density.ts`, `web/components/layout/DensityProvider.tsx`, `web/components/nav/GlobalNav.tsx`, `web/styles/globals.css`.
+3. Panel routing opens Inspector rail.
+   - Route: `/orgs/:handle/admin` -> Submissions tab.
+   - Click a submission row -> URL includes `?panel=submission&panelId=...` and rail appears.
+   - Close rail -> query params cleared.
+   - Files: `web/lib/panelRouting.ts`, `web/components/layout/InspectorRail.tsx`, `web/components/panels/SubmissionPanel.tsx`, `web/components/layout/PageLayout.tsx`.
+4. Bulk selection shows action bar.
+   - Route: `/orgs/:handle/admin` -> Submissions tab.
+   - Select row checkbox -> BulkActionBar appears with selection count.
+   - Files: `web/components/ui/DataTable.tsx`, `web/components/ui/BulkActionBar.tsx`, `web/components/domain/orgs/SubmissionsTable.tsx`.
