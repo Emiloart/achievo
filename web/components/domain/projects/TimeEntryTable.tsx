@@ -103,6 +103,17 @@ export function TimeEntryTable({
         label: "Actions",
         render: (row: TimeEntryItem) => (
           <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                if (!projectSlug) return;
+                setPanel("time-entry", { panelId: row.id, projectSlug }, { router, pathname, searchParams });
+              }}
+              disabled={!projectSlug}
+            >
+              View
+            </Button>
             {!row.endedAt ? (
               <Button size="sm" onClick={() => onStop(row.id)} disabled={busy || busyId === row.id}>
                 {UI_LABELS.stop}
@@ -118,7 +129,7 @@ export function TimeEntryTable({
         ),
       },
     ],
-    [busy, busyId, onDelete, onEdit, onStop],
+    [busy, busyId, onDelete, onEdit, onStop, pathname, projectSlug, router, searchParams],
   );
 
   if (loading) {

@@ -46,7 +46,7 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void;
 } & SelectionConfig<T>) {
   const { density } = useDensity();
-  const defaultRowHeight = density === "compact" ? 46 : 52;
+  const defaultRowHeight = density === "compact" ? 40 : 52;
   const effectiveRowHeight = rowHeight ?? defaultRowHeight;
   const isSelectable = Boolean(selectable);
 
@@ -144,7 +144,11 @@ export function DataTable<T>({
       <div role="rowgroup" className="bg-surface2 text-xs uppercase tracking-wider text-textMuted">
         <div role="row" className={clsx("grid gap-0", gridTemplate)}>
           {visibleColumns.map((col) => (
-            <div key={col.key} role="columnheader" className={clsx("px-4 py-3 text-left font-medium", col.className)}>
+            <div
+              key={col.key}
+              role="columnheader"
+              className={clsx("px-[var(--table-cell-x)] py-[var(--table-cell-y)] text-left font-medium", col.className)}
+            >
               {col.label}
             </div>
           ))}
@@ -191,7 +195,11 @@ export function DataTable<T>({
                 }}
               >
                 {visibleColumns.map((col) => (
-                  <div key={col.key} role="cell" className={clsx("px-4 py-3", col.className)}>
+                  <div
+                    key={col.key}
+                    role="cell"
+                    className={clsx("px-[var(--table-cell-x)] py-[var(--table-cell-y)]", col.className)}
+                  >
                     {col.render ? col.render(row) : (row as any)[col.key]}
                   </div>
                 ))}

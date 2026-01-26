@@ -558,6 +558,7 @@ export default function OrgAdminPage() {
         title={`${org.displayName} admin`}
         description="Administer programs, submissions, and access for this organization."
         breadcrumbs={orgAdminBreadcrumbs(org.handle, org.displayName)}
+        workbench={activeTab === "submissions"}
         actions={
           <ButtonLink href={`/orgs/${org.handle}`} variant="secondary" size="sm">
             Back to org

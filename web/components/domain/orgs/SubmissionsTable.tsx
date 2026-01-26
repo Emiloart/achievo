@@ -88,6 +88,17 @@ export function SubmissionsTable({
         label: "Actions",
         render: (row: SubmissionItem) => (
           <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                if (!orgId) return;
+                setPanel("submission", { panelId: row.id, orgId }, { router, pathname, searchParams });
+              }}
+              disabled={!orgId}
+            >
+              View
+            </Button>
             <Button size="sm" onClick={() => onReview(row.id, "APPROVED")} disabled={busyId === row.id}>
               {UI_LABELS.approve}
             </Button>
@@ -116,7 +127,7 @@ export function SubmissionsTable({
         ),
       },
     ],
-    [busyId, onIssueValidation, onReview],
+    [busyId, onIssueValidation, onReview, orgId, pathname, router, searchParams],
   );
 
   useEffect(() => {

@@ -5,7 +5,7 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useAccount } from "wagmi";
-import { DropdownMenu } from "../ui";
+import { Button, DropdownMenu } from "../ui";
 import { useBackendAuth } from "../../hooks/useBackendAuth";
 import { IdentityBadge } from "../IdentityBadge";
 import { GOALS_NAV, PRIMARY_NAV } from "./navItems";
@@ -19,6 +19,10 @@ export function GlobalNav() {
   const { address } = useAccount();
   const { user, signOut } = useBackendAuth();
   const { density, toggleDensity } = useDensity();
+  const openCommandPalette = () => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(new CustomEvent("achievo:command-palette"));
+  };
   const densityLabel = density === "compact" ? "Compact" : "Comfortable";
   const menuItems = [
     address
@@ -64,14 +68,26 @@ export function GlobalNav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-surface/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-4">
-        <div className="flex items-center gap-4">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-[var(--nav-gap)] px-4 py-[var(--nav-pad-y)]">
+        <div className="flex items-center gap-[var(--nav-gap-tight)]">
           <Link href="/" className="text-lg font-semibold tracking-tight font-display">
             Achievo
           </Link>
           <DropdownMenu triggerLabel="Menu" className="lg:hidden" items={navMenuItems} />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-[var(--nav-gap-tight)]">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={openCommandPalette}
+            aria-haspopup="dialog"
+            className="flex items-center gap-2"
+          >
+            <span>Search / Commands</span>
+            <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-textMuted">
+              Ctrl+K / ⌘K
+            </span>
+          </Button>
           <SessionIndicator />
           <IdentityBadge />
           <DropdownMenu triggerLabel={menuTrigger} items={menuItems} />

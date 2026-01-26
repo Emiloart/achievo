@@ -31,6 +31,16 @@ body {
     linear-gradient(180deg, rgb(var(--color-surface-rgb) / 0.6) 0%, transparent 65%);
   background-attachment: fixed;
   line-height: var(--line-height-normal);
+  --line-height-normal: 1.5;
+  --table-cell-x: 16px;
+  --table-cell-y: 12px;
+  --card-pad-x: 20px;
+  --card-pad-y: 16px;
+  --input-pad-x: 12px;
+  --input-pad-y: 8px;
+  --nav-pad-y: 16px;
+  --nav-gap: 20px;
+  --nav-gap-tight: 12px;
 }
 
 button:disabled {
@@ -45,13 +55,61 @@ button:disabled {
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
+  --table-cell-x: 16px;
+  --table-cell-y: 12px;
+  --card-pad-x: 20px;
+  --card-pad-y: 16px;
+  --input-pad-x: 12px;
+  --input-pad-y: 8px;
+  --nav-pad-y: 16px;
+  --nav-gap: 20px;
+  --nav-gap-tight: 12px;
 }
 
 .density-compact {
-  --line-height-normal: 1.4;
-  --space-2: 6px;
-  --space-3: 10px;
-  --space-4: 14px;
-  --space-5: 18px;
-  --space-6: 22px;
+  --line-height-normal: 1.35;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --table-cell-x: 12px;
+  --table-cell-y: 8px;
+  --card-pad-x: 16px;
+  --card-pad-y: 12px;
+  --input-pad-x: 10px;
+  --input-pad-y: 6px;
+  --nav-pad-y: 10px;
+  --nav-gap: 12px;
+  --nav-gap-tight: 8px;
+}
+
+.density-comfortable
+  :where(
+    input[type="text"],
+    input[type="email"],
+    input[type="search"],
+    input[type="url"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select
+  ),
+.density-compact
+  :where(
+    input[type="text"],
+    input[type="email"],
+    input[type="search"],
+    input[type="url"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select
+  ) {
+  padding: var(--input-pad-y) var(--input-pad-x);
+}
+
+.density-comfortable .rounded-2xl.border.border-border.bg-surface.shadow-soft > .px-5.py-4,
+.density-compact .rounded-2xl.border.border-border.bg-surface.shadow-soft > .px-5.py-4 {
+  padding: var(--card-pad-y) var(--card-pad-x);
 }

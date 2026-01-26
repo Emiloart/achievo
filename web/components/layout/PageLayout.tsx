@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ErrorBoundary } from "../ui";
 import { GlobalNav } from "../nav/GlobalNav";
@@ -10,7 +10,7 @@ import { DegradedBanner } from "../states/DegradedBanner";
 import { PolicyBanner } from "../policy/PolicyBanner";
 import { DensityProvider } from "./DensityProvider";
 import { InspectorRail } from "./InspectorRail";
-import { readPanel, clearPanel } from "../../lib/panelRouting";
+import { readPanel, clearPanel, loadPanelMode, savePanelMode, type PanelMode } from "../../lib/panelRouting";
 import { SubmissionPanel } from "../panels/SubmissionPanel";
 import { ValidationRequestPanel } from "../panels/ValidationRequestPanel";
 import { TimeEntryPanel } from "../panels/TimeEntryPanel";
@@ -21,6 +21,8 @@ export function PageLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const panelState = readPanel(searchParams);
+  const [panelMode, setPanelMode] = useState<PanelMode>("pinned");
+  const [isDesktop, setIsDesktop] = useState(true);
 
   const panelContent = (() => {
     if (!panelState) return null;
@@ -57,7 +59,41 @@ export function PageLayout({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    setPanelMode(loadPanelMode());
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(media.matches);
+    update();
+    if (media.addEventListener) {
+      media.addEventListener("change", update);
+      return () => media.removeEventListener("change", update);
+    }
+    media.addListener(update);
+    return () => media.removeListener(update);
+  }, []);
+
   const hasPanel = Boolean(panelContent);
+  const effectiveMode: PanelMode = isDesktop ? panelMode : "overlay";
+  const showPinnedInGrid = hasPanel && effectiveMode === "pinned";
+  const inspectorRail = hasPanel ? (
+    <InspectorRail
+      title={panelTitle}
+      mode={panelMode}
+      displayMode={effectiveMode}
+      canPin={isDesktop}
+      onModeChange={(mode) => {
+        setPanelMode(mode);
+        savePanelMode(mode);
+      }}
+      onClose={() => clearPanel({ router, pathname, searchParams })}
+    >
+      {panelContent}
+    </InspectorRail>
+  ) : null;
 
   return (
     <DensityProvider>
@@ -65,7 +101,7 @@ export function PageLayout({ children }: { children: ReactNode }) {
         <GlobalNav />
         <div
           className={`mx-auto w-full max-w-6xl px-4 pb-24 pt-6 lg:grid lg:gap-8 lg:pb-12 ${
-            hasPanel ? "lg:grid-cols-[220px,1fr,360px]" : "lg:grid-cols-[220px,1fr]"
+            showPinnedInGrid ? "lg:grid-cols-[220px,1fr,420px]" : "lg:grid-cols-[220px,1fr]"
           }`}
         >
           <SideNav />
@@ -74,12 +110,9 @@ export function PageLayout({ children }: { children: ReactNode }) {
             <DegradedBanner />
             <ErrorBoundary>{children}</ErrorBoundary>
           </main>
-          {hasPanel ? (
-            <InspectorRail title={panelTitle} onClose={() => clearPanel({ router, pathname, searchParams })}>
-              {panelContent}
-            </InspectorRail>
-          ) : null}
+          {showPinnedInGrid ? inspectorRail : null}
         </div>
+        {!showPinnedInGrid ? inspectorRail : null}
         <MobileNav />
       </div>
     </DensityProvider>

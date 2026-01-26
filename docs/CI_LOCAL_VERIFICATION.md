@@ -3520,3 +3520,158 @@ Running 22 tests using 1 worker
 [WebServer] ⚠ Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
 [WebServer] [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
 ```
+
+## Web (P4.1 visibility + git setup — 2026-01-27 00:36:35)
+
+### Command
+
+```
+npm --prefix web run lint
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 lint
+> next lint
+
+✔ No ESLint warnings or errors
+```
+
+### Command
+
+```
+npm --prefix web run typecheck
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 typecheck
+> tsc -p tsconfig.json --noEmit
+```
+
+### Command
+
+```
+npm --prefix web run build
+```
+
+### Output
+
+```
+command timed out after 120201 milliseconds
+
+> achievo-web@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.15
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · externalDir
+
+   Creating an optimized production build ...
+   Using tsconfig file: ./tsconfig.build.json
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+ ⚠ Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+```
+
+### Command
+
+```
+npm --prefix web run build
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.15
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · externalDir
+
+   Creating an optimized production build ...
+   Using tsconfig file: ./tsconfig.build.json
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+ ⚠ Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+PageNotFoundError: Cannot find module for page: /about
+    at getPagePath (C:\dev\achievo\web\node_modules\next\dist\server\require.js:94:15)
+    at requirePage (C:\dev\achievo\web\node_modules\next\dist\server\require.js:99:22)
+    at C:\dev\achievo\web\node_modules\next\dist\server\load-components.js:98:84
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async loadComponentsImpl (C:\dev\achievo\web\node_modules\next\dist\server\load-components.js:98:26)
+    at async C:\dev\achievo\web\node_modules\next\dist\build\utils.js:1116:32
+    at async Span.traceAsyncFn (C:\dev\achievo\web\node_modules\next\dist\trace\trace.js:154:20) {
+  code: 'ENOENT'
+}
+
+> Build error occurred
+Error: Failed to collect page data for /about
+    at C:\dev\achievo\web\node_modules\next\dist\build\utils.js:1268:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  type: 'Error'
+}
+```
+
+### Command
+
+```
+npm --prefix web run test:e2e
+```
+
+### Output
+
+```
+command timed out after 180065 milliseconds
+
+> achievo-web@0.1.0 test:e2e
+> playwright test
+
+
+Running 22 tests using 1 worker
+
+  ok 1 e2e.spec.ts:120:1 › verification page renders (24.3s)
+  x  2 e2e.spec.ts:125:1 › projects page renders for mocked auth (27.0s)
+  ok 3 e2e.spec.ts:154:1 › navigation does not request auth nonce after session established (4.1s)
+  x  4 e2e.spec.ts:168:1 › org creation requires on-chain tx before backend finalize (13.0s)
+  ok 5 e2e.spec.ts:207:1 › degraded banner appears when health is degraded (3.5s)
+  x  6 e2e.spec.ts:220:1 › degraded banner stays hidden when health is ok (16.1s)
+  x  7 e2e.spec.ts:225:1 › verification unknown state renders as non-failure (40.2s)
+```
+
+### Command
+
+```
+npm --prefix web run test:e2e
+```
+
+### Output
+
+```
+command timed out after 300061 milliseconds
+
+> achievo-web@0.1.0 test:e2e
+> playwright test
+
+
+Running 22 tests using 1 worker
+
+  ok 1 e2e.spec.ts:120:1 › verification page renders (21.2s)
+  x  2 e2e.spec.ts:125:1 › projects page renders for mocked auth (26.6s)
+  ok 3 e2e.spec.ts:154:1 › navigation does not request auth nonce after session established (4.4s)
+  x  4 e2e.spec.ts:168:1 › org creation requires on-chain tx before backend finalize (19.8s)
+  ok 5 e2e.spec.ts:207:1 › degraded banner appears when health is degraded (4.6s)
+  x  6 e2e.spec.ts:220:1 › degraded banner stays hidden when health is ok (14.1s)
+  x  7 e2e.spec.ts:225:1 › verification unknown state renders as non-failure (44.7s)
+  x  8 e2e.spec.ts:244:1 › verification proof renders invalid and not found states (48.0s)
+  x  9 e2e.spec.ts:272:1 › verification tx renders unknown, invalid, and not found states (24.2s)
+```

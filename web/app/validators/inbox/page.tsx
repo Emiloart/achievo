@@ -282,9 +282,20 @@ export default function ValidatorInboxPage() {
               key: "actions",
               label: "Action",
               render: (row: ValidationItem) => (
-                <Button size="sm" onClick={() => setSelectedRequest(row)} disabled={!canAct}>
-                  {UI_LABELS.review}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() =>
+                      setPanel("validation", { panelId: row.request.id }, { router, pathname, searchParams })
+                    }
+                  >
+                    View
+                  </Button>
+                  <Button size="sm" onClick={() => setSelectedRequest(row)} disabled={!canAct}>
+                    {UI_LABELS.review}
+                  </Button>
+                </div>
               ),
             },
           ]}
@@ -357,6 +368,7 @@ export default function ValidatorInboxPage() {
         title="Validator inbox"
         description="Review validation requests and issue attestations with clear, auditable steps."
         breadcrumbs={validatorInboxBreadcrumbs()}
+        workbench={activeTab === "pending"}
         actions={
           <Link href="/identity" className="text-xs text-accent hover:underline">
             Manage identity

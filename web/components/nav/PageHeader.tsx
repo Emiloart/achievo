@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import type { ReactNode } from "react";
+import { Tooltip } from "../ui";
 
 export type Breadcrumb = {
   label: string;
@@ -12,9 +13,10 @@ export type PageHeaderProps = {
   description?: string;
   breadcrumbs?: Breadcrumb[];
   actions?: ReactNode;
+  workbench?: boolean;
 };
 
-export function PageHeader({ title, description, breadcrumbs, actions }: PageHeaderProps) {
+export function PageHeader({ title, description, breadcrumbs, actions, workbench }: PageHeaderProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="space-y-1">
@@ -34,7 +36,16 @@ export function PageHeader({ title, description, breadcrumbs, actions }: PageHea
             ))}
           </nav>
         ) : null}
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+          {workbench ? (
+            <Tooltip label="Panels, bulk select, keyboard commands enabled">
+              <span className="rounded-full border border-border bg-surface2 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-textMuted">
+                Workbench
+              </span>
+            </Tooltip>
+          ) : null}
+        </div>
         {description ? <p className="text-sm text-textMuted">{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}

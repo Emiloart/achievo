@@ -8,6 +8,8 @@ export type PanelState = {
   params: Record<string, string>;
 };
 
+export type PanelMode = "pinned" | "overlay";
+
 export type PanelParams = Record<string, string | undefined> & { panelId?: string };
 
 type PanelRoutingOptions = {
@@ -15,6 +17,8 @@ type PanelRoutingOptions = {
   pathname?: string;
   searchParams?: URLSearchParams;
 };
+
+const PANEL_MODE_KEY = "achievo_panel_mode_v1";
 
 function getSearchParams(options?: PanelRoutingOptions) {
   if (options?.searchParams) return new URLSearchParams(options.searchParams.toString());
@@ -78,4 +82,23 @@ export function clearPanel(options?: PanelRoutingOptions) {
   const nextParams = getSearchParams(options);
   clearPanelParams(nextParams);
   applyUrl(nextParams, options);
+}
+
+export function loadPanelMode(): PanelMode {
+  if (typeof window === "undefined") return "pinned";
+  try {
+    const stored = window.localStorage.getItem(PANEL_MODE_KEY);
+    return stored === "overlay" || stored === "pinned" ? stored : "pinned";
+  } catch {
+    return "pinned";
+  }
+}
+
+export function savePanelMode(mode: PanelMode) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PANEL_MODE_KEY, mode);
+  } catch {
+    // Ignore storage failures.
+  }
 }

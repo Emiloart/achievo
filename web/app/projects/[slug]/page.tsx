@@ -1368,6 +1368,7 @@ export default function ProjectDetailPage() {
         title={project.name}
         description={project.description || "Project workspace overview."}
         breadcrumbs={projectBreadcrumbs(project.slug, project.name)}
+        workbench={activeTab === "time"}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <StatusPill status={project.status} />

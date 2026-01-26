@@ -55,8 +55,13 @@ export function CommandPalette() {
       event.preventDefault();
       setOpen(true);
     };
+    const onOpenRequest = () => setOpen(true);
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("achievo:command-palette", onOpenRequest as EventListener);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("achievo:command-palette", onOpenRequest as EventListener);
+    };
   }, []);
 
   useEffect(() => {
