@@ -47,3 +47,15 @@ git push origin HEAD
 
 - Do not store credentials in the repo.
 - If authentication prompts do not appear in a non-interactive shell, re-run the commands from an interactive terminal.
+
+## Incident log (2026-01-27)
+- Broken remote string found: none. `origin` was already `https://github.com/Emiloart/achievo.git`, but HTTPS auth failed with `could not read Username for 'https://github.com': No such device or address`.
+- Fix command used (idempotent):
+  ```bash
+  git remote set-url origin https://github.com/Emiloart/achievo.git
+  ```
+- Credential helper fix (WSL + Windows Git):
+  ```bash
+  git config --global credential.helper "/mnt/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe"
+  ```
+- `git ls-remote origin` success summary: fetched refs; HEAD resolved to `2549f26d01bd3d12b5343a12cba2b46d0726c312` and `refs/heads/main` matched.

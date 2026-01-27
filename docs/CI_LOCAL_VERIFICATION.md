@@ -3675,3 +3675,680 @@ Running 22 tests using 1 worker
   x  8 e2e.spec.ts:244:1 › verification proof renders invalid and not found states (48.0s)
   x  9 e2e.spec.ts:272:1 › verification tx renders unknown, invalid, and not found states (24.2s)
 ```
+
+## Web (Emergency Stabilization — 2026-01-27 14:09:12)
+
+### Command
+
+
+
+### Output
+
+
+
+### Command
+
+
+
+### Output
+
+
+
+### Command
+
+
+
+### Output
+
+
+
+### Command
+
+
+
+### Output
+
+
+
+## Web (Emergency Stabilization — 2026-01-27 14:10:04)
+
+### Command
+
+```
+npm --prefix web run lint
+```
+
+### Output
+
+```
+
+> achievo-web@0.1.0 lint
+> next lint
+
+✔ No ESLint warnings or errors
+```
+
+### Command
+
+```
+npm --prefix web run typecheck
+```
+
+### Output
+
+```
+
+> achievo-web@0.1.0 typecheck
+> tsc -p tsconfig.json --noEmit
+
+```
+
+### Command
+
+```
+npm --prefix web run build
+```
+
+### Output
+
+```
+
+> achievo-web@0.1.0 build
+> next build
+
+ ⚠ Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+  ▲ Next.js 14.2.15
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · externalDir
+
+   Creating an optimized production build ...
+   Using tsconfig file: ./tsconfig.build.json
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18) 
+   Generating static pages (8/18) 
+   Generating static pages (13/18) 
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                Size     First Load JS
+┌ ○ /                                      7.55 kB         192 kB
+├ ○ /_not-found                            880 B          88.3 kB
+├ ○ /about                                 258 B           106 kB
+├ ○ /admin                                 4.42 kB         110 kB
+├ ƒ /api/[...path]                         0 B                0 B
+├ ○ /approve                               2.53 kB         204 kB
+├ ○ /dashboard                             12.1 kB         218 kB
+├ ƒ /exports/[publicId]                    4.11 kB         122 kB
+├ ƒ /goals/[id]                            8.38 kB         226 kB
+├ ○ /goals/new                             4.65 kB         200 kB
+├ ○ /identity                              3.85 kB         205 kB
+├ ƒ /invoices/public/[slug]                4.15 kB        91.6 kB
+├ ○ /orgs                                  4.69 kB         212 kB
+├ ƒ /orgs/[handle]                         8.13 kB         147 kB
+├ ƒ /orgs/[handle]/admin                   12.3 kB         152 kB
+├ ƒ /orgs/[handle]/members                 8.66 kB         130 kB
+├ ƒ /orgs/[handle]/programs/[slug]         8.41 kB         130 kB
+├ ƒ /orgs/[handle]/programs/[slug]/submit  8.75 kB         130 kB
+├ ○ /parties                               5.76 kB         116 kB
+├ ƒ /parties/[slug]                        6.79 kB         117 kB
+├ ○ /parties/new                           5.8 kB          109 kB
+├ ƒ /profile/[address]                     13.9 kB         236 kB
+├ ƒ /profile/professional/[handle]         7.87 kB         114 kB
+├ ○ /projects                              4.46 kB         195 kB
+├ ƒ /projects/[slug]                       14.1 kB         219 kB
+├ ƒ /projects/[slug]/invoices/[invoiceId]  6.62 kB         117 kB
+├ ƒ /projects/[slug]/invoices/new          6.64 kB         117 kB
+├ ○ /projects/new                          6.17 kB         109 kB
+├ ƒ /projects/share/[slug]                 4.23 kB        91.7 kB
+├ ƒ /s/[slug]                              7.97 kB         114 kB
+├ ƒ /share/[publicId]                      7.82 kB         114 kB
+├ ○ /usernames/market                      6.83 kB         211 kB
+├ ○ /validators/inbox                      11.1 kB         216 kB
+├ ○ /verify                                6.63 kB         126 kB
+├ ƒ /verify/anchor/[hash]                  3.48 kB         116 kB
+├ ƒ /verify/export/[publicId]              3.94 kB         116 kB
+├ ƒ /verify/proof/[id]                     3.93 kB         116 kB
+├ ƒ /verify/tx/[txHash]                    3.49 kB         116 kB
+└ ƒ /verify/validation/[id]                3.96 kB         116 kB
++ First Load JS shared by all              87.5 kB
+  ├ chunks/2117-e340696670a44cf1.js        31.8 kB
+  ├ chunks/fd9d1056-7264e1b4e29d00f5.js    53.6 kB
+  └ other shared chunks (total)            2.07 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+```
+
+### Command
+
+```
+npm --prefix web run test:e2e
+```
+
+### Output
+
+```
+
+> achievo-web@0.1.0 test:e2e
+> playwright test
+
+
+Running 22 tests using 1 worker
+
+[2m[WebServer] [22m [33m[1m⚠[22m[39m Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+  ok 1 e2e.spec.ts:120:1 › verification page renders (48.3s)
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+  ok 2 e2e.spec.ts:125:1 › projects page renders for mocked auth (19.0s)
+  ok 3 e2e.spec.ts:154:1 › navigation does not request auth nonce after session established (20.6s)
+  ok 4 e2e.spec.ts:168:1 › org creation requires on-chain tx before backend finalize (10.0s)
+  ok 5 e2e.spec.ts:207:1 › degraded banner appears when health is degraded (791ms)
+  ok 6 e2e.spec.ts:220:1 › degraded banner stays hidden when health is ok (4.4s)
+  ok 7 e2e.spec.ts:225:1 › verification unknown state renders as non-failure (13.8s)
+  ok 8 e2e.spec.ts:244:1 › verification proof renders invalid and not found states (14.2s)
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+  ok 9 e2e.spec.ts:272:1 › verification tx renders unknown, invalid, and not found states (25.1s)
+  ok 10 e2e.spec.ts:310:1 › policy gating disables verify portal and username market (14.4s)
+  ok 11 e2e.spec.ts:325:1 › session indicator shows sign in when signed out (4.4s)
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+  ok 12 e2e.spec.ts:343:1 › org create page shows tx stepper and finality timeline when tx state is preset (8.8s)
+  ok 13 e2e.spec.ts:356:1 › org admin workbench renders tabs (11.2s)
+  ok 14 e2e.spec.ts:385:1 › validator inbox renders registration gate or inbox (5.3s)
+  ok 15 e2e.spec.ts:392:1 › command palette opens and closes (4.3s)
+  ok 16 e2e.spec.ts:403:1 › density toggle persists across reload (9.0s)
+  ok 17 e2e.spec.ts:412:1 › submission row opens inspector rail via panel routing (5.7s)
+  ok 18 e2e.spec.ts:460:1 › bulk selection shows action bar (4.7s)
+  ok 19 e2e.spec.ts:506:1 › project workbench renders tab shell (11.7s)
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m TypeError: fetch failed
+[2m[WebServer] [22m[90m    at node:internal/deps/undici/undici:13502:13[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+[2m[WebServer] [22m    at async proxy (webpack-internal:///(rsc)/./app/api/[...path]/route.ts:115:22)
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:55778
+[2m[WebServer] [22m    at async eO.execute [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:46527[90m)[39m
+[2m[WebServer] [22m    at async eO.handle [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\compiled\next-server\app-route.runtime.dev.js:6:57112[90m)[39m
+[2m[WebServer] [22m    at async doRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1352:42[90m)[39m
+[2m[WebServer] [22m    at async cacheEntry.responseCache.get.routeKind [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1562:40[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseWithComponentsImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1482:28[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderPageComponent [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1908:24[90m)[39m
+[2m[WebServer] [22m    at async DevServer.renderToResponseImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:1946:32[90m)[39m
+[2m[WebServer] [22m    at async DevServer.pipeImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:921:25[90m)[39m
+[2m[WebServer] [22m    at async NextNodeServer.handleCatchallRenderRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:272:17[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequestImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\base-server.js:817:17[90m)[39m
+[2m[WebServer] [22m    at async [90mC:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:339:20
+[2m[WebServer] [22m    at async Span.traceAsyncFn [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\trace\trace.js:154:20[90m)[39m
+[2m[WebServer] [22m    at async DevServer.handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\dev\next-dev-server.js:336:24[90m)[39m
+[2m[WebServer] [22m    at async invokeRender [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:173:21[90m)[39m
+[2m[WebServer] [22m    at async handleRequest [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:350:24[90m)[39m
+[2m[WebServer] [22m    at async requestHandlerImpl [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\router-server.js:374:13[90m)[39m
+[2m[WebServer] [22m    at async Server.requestListener [90m(C:\dev\achievo\web\[39mnode_modules\[4mnext[24m\dist\server\lib\start-server.js:141:13[90m)[39m {
+[2m[WebServer] [22m  [cause]: Error: connect ECONNREFUSED 127.0.0.1:4001
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1634:16)[39m
+[2m[WebServer] [22m  [90m    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)[39m {
+[2m[WebServer] [22m    errno: [33m-4078[39m,
+[2m[WebServer] [22m    code: [32m'ECONNREFUSED'[39m,
+[2m[WebServer] [22m    syscall: [32m'connect'[39m,
+[2m[WebServer] [22m    address: [32m'127.0.0.1'[39m,
+[2m[WebServer] [22m    port: [33m4001[39m
+[2m[WebServer] [22m  }
+[2m[WebServer] [22m}
+  ok 20 e2e.spec.ts:578:1 › username market trade transitions from pending to confirmed (6.6s)
+  ok 21 e2e.spec.ts:631:1 › a11y: global nav keyboard access and modal focus trap (12.5s)
+  ok 22 e2e.spec.ts:666:1 › a11y snapshots include headings for key routes (24.9s)
+
+  Slow test file: e2e.spec.ts (4.7m)
+  Consider splitting slow test files to speed up parallel execution
+  22 passed (4.9m)
+```
