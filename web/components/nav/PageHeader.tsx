@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import type { Route } from "next";
 import type { ReactNode } from "react";
+import clsx from "clsx";
 import { Tooltip } from "../ui";
+import { useRevealOnScroll } from "../../hooks/useRevealOnScroll";
 
 export type Breadcrumb = {
   label: string;
@@ -17,8 +21,16 @@ export type PageHeaderProps = {
 };
 
 export function PageHeader({ title, description, breadcrumbs, actions, workbench }: PageHeaderProps) {
+  const { ref, revealed } = useRevealOnScroll<HTMLDivElement>();
+
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between page-header glass-surface glass-border">
+    <div
+      ref={ref}
+      className={clsx(
+        "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between page-header glass-surface glass-border edge-glow surface-shine hover-lift reveal",
+        revealed ? "reveal-in" : null,
+      )}
+    >
       <div className="space-y-1">
         {breadcrumbs?.length ? (
           <nav className="text-xs text-textMuted">

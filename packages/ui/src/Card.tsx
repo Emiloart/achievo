@@ -3,7 +3,12 @@ import type { PropsWithChildren } from "react";
 
 export function Card({ className, children }: PropsWithChildren<{ className?: string }>) {
   return (
-    <div className={clsx("rounded-2xl border border-border bg-surface shadow-soft glass-surface glass-border glass-elevated", className)}>
+    <div
+      className={clsx(
+        "rounded-2xl border border-border bg-surface shadow-soft glass-surface glass-border glass-elevated edge-glow surface-shine hover-lift",
+        className,
+      )}
+    >
       {children}
     </div>
   );

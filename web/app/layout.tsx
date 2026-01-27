@@ -6,6 +6,7 @@ import { PageLayout } from "../components/layout/PageLayout";
 import { LayoutInvariant } from "../components/layout/LayoutInvariant";
 import { PolicyProvider } from "../components/policy/PolicyProvider";
 import { CommandPalette } from "../components/command/CommandPalette";
+import { SpotlightController } from "../components/theme/SpotlightController";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <PolicyProvider>
             <Suspense fallback={null}>
               <PageLayout>{children}</PageLayout>
+              <SpotlightController />
               <CommandPalette />
               <LayoutInvariant />
             </Suspense>

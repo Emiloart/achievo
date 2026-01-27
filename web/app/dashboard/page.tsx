@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import clsx from "clsx";
 
 import { getApiErrorMessage } from "../../lib/apiError";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -25,6 +26,7 @@ import { useProfessionalProfile } from "../../hooks/useProfessionalProfile";
 import { usePrivacySettings } from "../../hooks/usePrivacySettings";
 import { useRiskProfile } from "../../hooks/useRiskProfile";
 import { PageHeader } from "../../components/nav/PageHeader";
+import { useRevealOnScroll } from "../../hooks/useRevealOnScroll";
 import { AuthRequired } from "../../components/states/AuthRequired";
 import { ErrorState } from "../../components/states/ErrorState";
 
@@ -345,6 +347,8 @@ function PartyFeedPreview({ items }: { items: PartyFeedItem[] }) {
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  const profileReveal = useRevealOnScroll<HTMLDivElement>();
+  const questReveal = useRevealOnScroll<HTMLDivElement>();
 
   const { address } = useAccount();
   const { token } = useBackendAuth();
@@ -560,7 +564,10 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader title="Dashboard" description="Your profile, goals, and progress at a glance." />
-      <section className="grid gap-6 lg:grid-cols-3 items-start">
+      <section
+        ref={profileReveal.ref}
+        className={clsx("grid gap-6 lg:grid-cols-3 items-start reveal", profileReveal.revealed ? "reveal-in" : null)}
+      >
         <div className="lg:col-span-2 rounded-3xl border bg-white p-6 space-y-3 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 border">
@@ -745,7 +752,10 @@ export default function DashboardPage() {
         />
       )}
 
-      <section className="grid gap-6 lg:grid-cols-3 items-start">
+      <section
+        ref={questReveal.ref}
+        className={clsx("grid gap-6 lg:grid-cols-3 items-start reveal", questReveal.revealed ? "reveal-in" : null)}
+      >
         <div className="lg:col-span-2 space-y-4">
           <QuestPanel
             title="Today's Quests"

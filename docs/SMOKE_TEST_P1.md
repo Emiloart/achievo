@@ -189,8 +189,27 @@ Expected API calls:
 2. Prefers-reduced-motion disables animation.
    - Enable OS/browser reduced motion setting.
    - Confirm aurora/background and panel/modal transitions are static.
-   - Files: `web/styles/theme.css`, `web/lib/motion.ts`.
+
+- Files: `web/styles/theme.cinematic.css`, `web/lib/motion.ts`.
+
 3. Mobile readability preserved.
    - View at ≤ 768px width.
    - Confirm glass surfaces remain legible and grid/noise are subdued.
-   - Files: `web/styles/theme.css`, `web/components/theme/BackgroundFX.tsx`.
+
+- Files: `web/styles/theme.cinematic.css`, `web/components/theme/BackgroundFX.tsx`.
+
+## P5.1 Theme life pass smoke tests
+
+1. Spotlight reacts on desktop when effects are on.
+   - Route: `/dashboard` (desktop, pointer fine).
+   - Move cursor; subtle spotlight tracks and recenters on leave.
+   - Files: `web/components/theme/SpotlightController.tsx`, `web/styles/theme.cinematic.css`.
+2. Spotlight disabled when effects are off.
+   - Toggle Effects Off; spotlight should disappear and stop reacting.
+   - Files: `web/lib/effects.ts`, `web/components/nav/GlobalNav.tsx`, `web/components/theme/SpotlightController.tsx`.
+3. Reduced motion disables animation + reveal transitions.
+   - Enable reduced motion; aurora drift and reveal animations are static/instant.
+   - Files: `web/styles/theme.cinematic.css`, `web/hooks/useRevealOnScroll.ts`.
+4. Primary CTA sheen + edge glow visible on hover (desktop).
+   - Hover primary buttons and cards; sheen/edge glow should be subtle.
+   - Files: `packages/ui/src/Button.tsx`, `packages/ui/src/Card.tsx`, `web/styles/theme.cinematic.css`.

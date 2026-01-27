@@ -1,5 +1,6 @@
 "use client";
 
+import clsx from "clsx";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "../../components/nav/PageHeader";
@@ -8,6 +9,7 @@ import { PolicyMarkdown } from "../../components/policy/PolicyMarkdown";
 import { usePolicy } from "../../hooks/usePolicy";
 import { Alert, Badge, Button, Card, CardBody, Input, Select } from "../../components/ui";
 import { UI_LABELS } from "../../lib/uiCopy";
+import { useRevealOnScroll } from "../../hooks/useRevealOnScroll";
 
 type Kind = "EXPORT" | "PROOF" | "VALIDATION" | "ANCHOR" | "TX";
 
@@ -62,6 +64,7 @@ export default function VerifyPage() {
   const [manualKind, setManualKind] = useState<Kind>("EXPORT");
   const [error, setError] = useState("");
   const { isEnabled, policy, getMessage } = usePolicy();
+  const formReveal = useRevealOnScroll<HTMLDivElement>();
 
   const detected = useMemo(() => detectFromInput(value), [value]);
 
@@ -120,37 +123,39 @@ export default function VerifyPage() {
         </Alert>
       ) : null}
 
-      <Card>
-        <CardBody className="space-y-4">
-          <Input
-            id="verify-input"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Paste a link, ID, or hash"
-          />
-          {!detected && (
-            <div className="flex items-center gap-3 text-sm">
-              <label className="text-xs text-textMuted">Type</label>
-              <Select value={manualKind} onChange={(e) => setManualKind(e.target.value as Kind)} className="max-w-xs">
-                <option value="EXPORT">Profile export</option>
-                <option value="PROOF">Proof artifact</option>
-                <option value="VALIDATION">Validation</option>
-                <option value="ANCHOR">Anchor hash</option>
-                <option value="TX">Transaction hash</option>
-              </Select>
-            </div>
-          )}
-          {detected && (
-            <div className="text-xs text-textMuted">
-              Detected {detected.kind.toLowerCase()} - {detected.id}
-            </div>
-          )}
-          {error && <div className="text-xs text-danger">{error}</div>}
-          <Button type="button" onClick={handleVerify}>
-            {UI_LABELS.verify}
-          </Button>
-        </CardBody>
-      </Card>
+      <div ref={formReveal.ref} className={clsx("reveal", formReveal.revealed ? "reveal-in" : null)}>
+        <Card>
+          <CardBody className="space-y-4">
+            <Input
+              id="verify-input"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="Paste a link, ID, or hash"
+            />
+            {!detected && (
+              <div className="flex items-center gap-3 text-sm">
+                <label className="text-xs text-textMuted">Type</label>
+                <Select value={manualKind} onChange={(e) => setManualKind(e.target.value as Kind)} className="max-w-xs">
+                  <option value="EXPORT">Profile export</option>
+                  <option value="PROOF">Proof artifact</option>
+                  <option value="VALIDATION">Validation</option>
+                  <option value="ANCHOR">Anchor hash</option>
+                  <option value="TX">Transaction hash</option>
+                </Select>
+              </div>
+            )}
+            {detected && (
+              <div className="text-xs text-textMuted">
+                Detected {detected.kind.toLowerCase()} - {detected.id}
+              </div>
+            )}
+            {error && <div className="text-xs text-danger">{error}</div>}
+            <Button type="button" onClick={handleVerify}>
+              {UI_LABELS.verify}
+            </Button>
+          </CardBody>
+        </Card>
+      </div>
     </div>
   );
 }

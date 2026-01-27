@@ -64,7 +64,13 @@ test.beforeEach(async ({ page }) => {
   apiMocks = [];
   await page.addInitScript(() => {
     (globalThis as { __ACHIEVO_POLICY_RESET__?: boolean }).__ACHIEVO_POLICY_RESET__ = true;
+    try {
+      window.localStorage.setItem("achievo_fx_v1", "off");
+    } catch {
+      // ignore storage failures
+    }
   });
+  await page.emulateMedia({ reducedMotion: "reduce" });
 
   registerDefaultApiMock(async (route) => {
     const url = new URL(route.request().url());

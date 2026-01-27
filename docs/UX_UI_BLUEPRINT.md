@@ -265,7 +265,7 @@ The market page presents:
 ## P5 Cinematic theme layer (Implemented)
 
 - Theme tokens + global theme class:
-  - Token definitions: `web/styles/theme.css`
+- Token definitions: `web/styles/theme.cinematic.css`
   - Theme class + dark tokens: `web/app/layout.tsx` (html/body + `data-theme=\"dark\"`)
 - Background FX system (aurora, noise, grid):
   - Background component: `web/components/theme/BackgroundFX.tsx`
@@ -279,7 +279,24 @@ The market page presents:
   - Primary CTA glow: `packages/ui/src/Button.tsx`
 - Motion helpers (reduced-motion safe):
   - Motion helper: `web/lib/motion.ts`
-  - Panel/modal animations + hover lift: `web/styles/theme.css`
+- Panel/modal animations + hover lift: `web/styles/theme.cinematic.css`
+
+## P5.1 Theme life pass (Implemented)
+
+- Ambient aurora drift + depth layering:
+  - CSS keyframes + layer tuning: `web/styles/theme.cinematic.css`
+  - Multi-layer background: `web/components/theme/BackgroundFX.tsx`
+- Interactive spotlight (desktop-only, fx-gated):
+  - Controller + CSS var updates: `web/components/theme/SpotlightController.tsx`
+  - Mounted once in layout: `web/app/layout.tsx`
+- Alive surface utilities:
+  - Edge glow + hover lift + surface shine: `web/styles/theme.cinematic.css`
+  - Applied to Card + Inspector + PageHeader: `packages/ui/src/Card.tsx`, `web/components/layout/InspectorRail.tsx`, `web/components/nav/PageHeader.tsx`
+- Primary CTA sheen + animated gradient border:
+  - Button primary variants: `packages/ui/src/Button.tsx`
+- Subtle scroll reveal (reduced-motion safe):
+  - Hook: `web/hooks/useRevealOnScroll.ts`
+  - PageHeader + key sections: `web/components/nav/PageHeader.tsx`, `web/app/dashboard/page.tsx`, `web/app/verify/page.tsx`
 
 ## Regression safety (UX reliability)
 

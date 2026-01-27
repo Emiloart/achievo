@@ -9,7 +9,8 @@ const base =
   "relative isolate inline-flex items-center justify-center gap-2 rounded-full font-medium transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none";
 
 const variantStyles: Record<Variant, string> = {
-  primary: "bg-accent text-onAccent shadow-soft hover:shadow-card gradient-border glow-primary",
+  primary:
+    "bg-accent text-onAccent shadow-soft hover:shadow-card gradient-border gradient-border-animated glow-primary cta-sheen",
   secondary: "bg-surface2 text-text border border-border hover:border-accent/40",
   ghost: "bg-transparent text-text hover:bg-surface2",
   destructive: "bg-danger text-onAccent shadow-soft hover:shadow-card",

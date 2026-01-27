@@ -3680,35 +3680,19 @@ Running 22 tests using 1 worker
 
 ### Command
 
-
-
 ### Output
-
-
 
 ### Command
 
-
-
 ### Output
-
-
 
 ### Command
 
-
-
 ### Output
-
-
 
 ### Command
 
-
-
 ### Output
-
-
 
 ## Web (Emergency Stabilization — 2026-01-27 14:10:04)
 
@@ -3769,9 +3753,9 @@ npm --prefix web run build
    Checking validity of types ...
    Collecting page data ...
    Generating static pages (0/18) ...
-   Generating static pages (4/18) 
-   Generating static pages (8/18) 
-   Generating static pages (13/18) 
+   Generating static pages (4/18)
+   Generating static pages (8/18)
+   Generating static pages (13/18)
  ✓ Generating static pages (18/18)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -4412,9 +4396,9 @@ npm --prefix web run build
    Checking validity of types ...
    Collecting page data ...
    Generating static pages (0/18) ...
-   Generating static pages (4/18) 
-   Generating static pages (8/18) 
-   Generating static pages (13/18) 
+   Generating static pages (4/18)
+   Generating static pages (8/18)
+   Generating static pages (13/18)
  ✓ Generating static pages (18/18)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -4514,4 +4498,162 @@ Running 22 tests using 1 worker
   Slow test file: e2e.spec.ts (5.8m)
   Consider splitting slow test files to speed up parallel execution
   22 passed (6.1m)
+```
+
+## 2026-01-27 18:43:29 +01
+
+### Command
+
+```
+npm --prefix web run lint
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 lint
+> next lint
+
+✔ No ESLint warnings or errors
+```
+
+### Command
+
+```
+npm --prefix web run typecheck
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 typecheck
+> tsc -p tsconfig.json --noEmit
+```
+
+### Command
+
+```
+npm --prefix web run build
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.15
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · externalDir
+
+   Creating an optimized production build ...
+   Using tsconfig file: ./tsconfig.build.json
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18)
+   Generating static pages (8/18)
+   Generating static pages (13/18)
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                Size     First Load JS
+┌ ○ /                                      7.55 kB         191 kB
+├ ○ /_not-found                            880 B          88.3 kB
+├ ○ /about                                 1.14 kB         109 kB
+├ ○ /admin                                 2.28 kB         110 kB
+├ ƒ /api/[...path]                         0 B                0 B
+├ ○ /approve                               3.15 kB         203 kB
+├ ○ /dashboard                             12.5 kB         218 kB
+├ ƒ /exports/[publicId]                    4.11 kB         121 kB
+├ ƒ /goals/[id]                            8.37 kB         226 kB
+├ ○ /goals/new                             5.3 kB          200 kB
+├ ○ /identity                              4.43 kB         205 kB
+├ ƒ /invoices/public/[slug]                4.15 kB        91.6 kB
+├ ○ /orgs                                  5.24 kB         212 kB
+├ ƒ /orgs/[handle]                         6.06 kB         147 kB
+├ ƒ /orgs/[handle]/admin                   10.3 kB         152 kB
+├ ƒ /orgs/[handle]/members                 6.12 kB         130 kB
+├ ƒ /orgs/[handle]/programs/[slug]         5.83 kB         129 kB
+├ ƒ /orgs/[handle]/programs/[slug]/submit  6.19 kB         130 kB
+├ ○ /parties                               5.76 kB         116 kB
+├ ƒ /parties/[slug]                        6.79 kB         117 kB
+├ ○ /parties/new                           5.8 kB          109 kB
+├ ƒ /profile/[address]                     13.9 kB         235 kB
+├ ƒ /profile/professional/[handle]         5.37 kB         113 kB
+├ ○ /projects                              4.82 kB         195 kB
+├ ƒ /projects/[slug]                       14.5 kB         218 kB
+├ ƒ /projects/[slug]/invoices/[invoiceId]  6.62 kB         117 kB
+├ ƒ /projects/[slug]/invoices/new          6.64 kB         117 kB
+├ ○ /projects/new                          6.17 kB         109 kB
+├ ƒ /projects/share/[slug]                 4.23 kB        91.7 kB
+├ ƒ /s/[slug]                              5.48 kB         113 kB
+├ ƒ /share/[publicId]                      5.43 kB         113 kB
+├ ○ /usernames/market                      4.99 kB         212 kB
+├ ○ /validators/inbox                      11.4 kB         215 kB
+├ ○ /verify                                4.56 kB         126 kB
+├ ƒ /verify/anchor/[hash]                  3.87 kB         115 kB
+├ ƒ /verify/export/[publicId]              4.33 kB         116 kB
+├ ƒ /verify/proof/[id]                     4.32 kB         116 kB
+├ ƒ /verify/tx/[txHash]                    3.89 kB         115 kB
+└ ƒ /verify/validation/[id]                4.34 kB         116 kB
++ First Load JS shared by all              87.5 kB
+  ├ chunks/2117-e340696670a44cf1.js        31.8 kB
+  ├ chunks/fd9d1056-7264e1b4e29d00f5.js    53.6 kB
+  └ other shared chunks (total)            2.07 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+ ⚠ Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+```
+
+### Command
+
+```
+NODE_OPTIONS=--max-old-space-size=4096 npm --prefix web run test:e2e
+```
+
+### Output
+
+```
+> achievo-web@0.1.0 test:e2e
+> playwright test
+
+Running 22 tests using 1 worker
+
+  ok 1 e2e.spec.ts:126:1 › verification page renders (35.8s)
+  ok 2 e2e.spec.ts:131:1 › projects page renders for mocked auth (10.7s)
+  ok 3 e2e.spec.ts:164:1 › navigation does not request auth nonce after session established (9.9s)
+  ok 4 e2e.spec.ts:178:1 › org creation requires on-chain tx before backend finalize (8.1s)
+  ok 5 e2e.spec.ts:217:1 › degraded banner appears when health is degraded (2.7s)
+  ok 6 e2e.spec.ts:230:1 › degraded banner stays hidden when health is ok (4.1s)
+  ok 7 e2e.spec.ts:241:1 › verification unknown state renders as non-failure (11.3s)
+  ok 8 e2e.spec.ts:260:1 › verification proof renders invalid and not found states (9.9s)
+  ok 9 e2e.spec.ts:296:1 › verification tx renders unknown, invalid, and not found states (19.2s)
+  ok 10 e2e.spec.ts:346:1 › policy gating disables verify portal and username market (13.9s)
+  ok 11 e2e.spec.ts:361:1 › session indicator shows sign in when signed out (810ms)
+  ok 12 e2e.spec.ts:379:1 › org create page shows tx stepper and finality timeline when tx state is preset (4.6s)
+  ok 13 e2e.spec.ts:392:1 › org admin workbench renders tabs (11.2s)
+  ok 14 e2e.spec.ts:421:1 › validator inbox renders registration gate or inbox (7.6s)
+  ok 15 e2e.spec.ts:428:1 › command palette opens and closes (3.9s)
+  ok 16 e2e.spec.ts:439:1 › density toggle persists across reload (6.7s)
+  ok 17 e2e.spec.ts:450:1 › submission row opens inspector rail via panel routing (5.6s)
+  ok 18 e2e.spec.ts:498:1 › bulk selection shows action bar (4.3s)
+  ok 19 e2e.spec.ts:544:1 › project workbench renders tab shell (12.5s)
+  ok 20 e2e.spec.ts:616:1 › username market trade transitions from pending to confirmed (6.3s)
+  ok 21 e2e.spec.ts:669:1 › a11y: global nav keyboard access and modal focus trap (14.4s)
+  ok 22 e2e.spec.ts:704:1 › a11y snapshots include headings for key routes (20.2s)
+
+  Slow test file: e2e.spec.ts (3.7m)
+  Consider splitting slow test files to speed up parallel execution
+  22 passed (3.9m)
+
+[WebServer] TypeError: fetch failed (ECONNREFUSED 127.0.0.1:4001) logged during run.
 ```
