@@ -9,5 +9,6 @@ import { AnchoringModule } from "../anchoring/anchoring.module";
   imports: [PrismaModule, AnchoringModule],
   controllers: [HealthController, ReadyController],
   providers: [HealthService],
+  exports: [HealthService],
 })
 export class HealthModule {}

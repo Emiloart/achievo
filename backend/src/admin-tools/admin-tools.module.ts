@@ -22,5 +22,6 @@ import { ValidationsModule } from "../validations/validations.module";
   ],
   controllers: [AdminToolsController],
   providers: [AdminToolsService, AdminAuditInterceptor],
+  exports: [AdminToolsService],
 })
 export class AdminToolsModule {}

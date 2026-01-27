@@ -42,6 +42,7 @@ flowchart LR
 ### Frontend route map (web)
 
 App Router pages (37 routes):
+
 - /
 - /about
 - /admin
@@ -81,11 +82,13 @@ App Router pages (37 routes):
 - /verify/validation/[id]
 
 API proxy route:
-- /api/* -> `web/app/api/[...path]/route.ts`
+
+- /api/\* -> `web/app/api/[...path]/route.ts`
 
 ### Admin Console route map (apps/admin)
 
 App Router pages (10 routes):
+
 - /
 - /alerts
 - /anchoring
@@ -150,7 +153,7 @@ App Router pages (10 routes):
 
 - Status: complete
 - UX screens:
-  - All screens via /api/*
+  - All screens via /api/\*
 - Frontend files:
   - `web/app/api/[...path]/route.ts`
 - Backend routes:
@@ -179,7 +182,7 @@ App Router pages (10 routes):
 - DB models:
   - AdminUser, AdminSession, AdminCsrfToken, AdminAuditLog
 - Dependencies:
-  - ADMIN_ACCESS_TTL_MIN, ADMIN_REFRESH_TTL_DAYS, ADMIN_LOCKOUT_* , ADMIN_CSRF_TTL_MIN
+  - ADMIN*ACCESS_TTL_MIN, ADMIN_REFRESH_TTL_DAYS, ADMIN_LOCKOUT*\* , ADMIN_CSRF_TTL_MIN
 - Edge cases:
   - Lockout after repeated failures
   - Refresh token reuse revokes session family
@@ -401,7 +404,7 @@ App Router pages (10 routes):
 
 ### Feature: Proof submissions and artifacts
 
-- Status: complete (storage provider determines availability)
+- Status: partial (ProofsService stubbed; proof CRUD/viewer access not implemented)
 - UX screens:
   - /goals/[id] (proof submit), /verify/proof/[id]
 - Frontend files:
@@ -419,9 +422,12 @@ App Router pages (10 routes):
   - AchievoAnchorRegistry (optional anchoring)
 - Dependencies:
   - PROOF_STORAGE_DRIVER, PROOF_LOCAL_DIR, PROOF_MAX_SIZE_MB, AUTO_ANCHOR_PROOFS
+- Implementation note:
+  - `backend/src/proofs/proofs.service.ts` is a stub to satisfy module contracts; proof operations are not implemented yet.
 - Edge cases:
   - File size limits and unsupported storage driver
-  - Private proof access requires token or ownership
+  - Private proof access requires token or ownership (not implemented; ProofsService currently throws NotImplementedException)
+  - Viewer-scoped proof access is not implemented yet (see `backend/src/proofs/proofs.service.ts`)
 
 ---
 
@@ -783,7 +789,7 @@ App Router pages (10 routes):
   - POST /files/upload
   - POST /files/json
 - Dependencies:
-  - PROOF_STORAGE_DRIVER, AWS_*, S3_BUCKET
+  - PROOF*STORAGE_DRIVER, AWS*\*, S3_BUCKET
 
 ---
 
@@ -864,7 +870,7 @@ App Router pages (10 routes):
 - DB models:
   - OperationalAlert
 - Dependencies:
-  - METRICS_ENABLED, MONITORING_ENABLED, HEALTH_* thresholds
+  - METRICS*ENABLED, MONITORING_ENABLED, HEALTH*\* thresholds
 - Edge cases:
   - Metrics and docs disabled by default
 
@@ -900,6 +906,7 @@ App Router pages (10 routes):
 ### Backend inventory by domain (controllers and routes)
 
 Auth:
+
 - POST /auth/nonce
 - POST /auth/login
 - POST /auth/verify
@@ -908,6 +915,7 @@ Auth:
 - GET /auth/me
 
 Admin auth:
+
 - POST /admin-auth/login
 - POST /admin-auth/refresh
 - POST /admin-auth/logout
@@ -915,6 +923,7 @@ Admin auth:
 - GET /admin-auth/csrf
 
 Admin gateway:
+
 - POST /admin-gateway/dry-run
 - POST /admin-gateway/execute
 - GET /admin-gateway/overview
@@ -936,6 +945,7 @@ Admin gateway:
 - GET /admin-gateway/env
 
 Admin tools (legacy HMAC):
+
 - GET /admin/chain-actions
 - GET /admin/chain-actions/:id
 - POST /admin/chain-actions/:id/retry
@@ -948,11 +958,13 @@ Admin tools (legacy HMAC):
 - GET /admin/risk/users
 
 Achievo chain data:
+
 - GET /achievo/tasks/:address
 - GET /achievo/badges/:address
 - GET /achievo/profile/:address
 
 Identity and social:
+
 - GET /identity/search
 - GET /identity/username/availability
 - POST /identity/username
@@ -964,6 +976,7 @@ Identity and social:
 - GET /identity/:achusrId/activity
 
 Profile and share links:
+
 - GET /profile/me
 - PUT /profile/me
 - GET /profile/professional/me
@@ -979,6 +992,7 @@ Profile and share links:
 - GET /share-links/:slug
 
 Privacy:
+
 - GET /privacy/me
 - PUT /privacy/me
 - PUT /privacy/override
@@ -986,6 +1000,7 @@ Privacy:
 - GET /privacy/unlisted/:publicId
 
 Proofs and files:
+
 - POST /proofs/upload
 - POST /proofs/url
 - GET /proofs/:id
@@ -996,6 +1011,7 @@ Proofs and files:
 - POST /files/json
 
 Profile exports:
+
 - POST /exports/profile
 - POST /exports/verify
 - GET /exports/:publicId
@@ -1003,6 +1019,7 @@ Profile exports:
 - GET /users/:userId/exports
 
 Validations and validators:
+
 - POST /validators/register
 - GET /validators/:walletAddress
 - GET /validators/:walletAddress/requests
@@ -1014,6 +1031,7 @@ Validations and validators:
 - GET /users/:userId/validations
 
 Skills and endorsements:
+
 - GET /skills
 - POST /skills
 - POST /users/me/skills
@@ -1025,6 +1043,7 @@ Skills and endorsements:
 - GET /users/:userId/endorsements/summary
 
 Organizations:
+
 - POST /orgs/prepare
 - POST /orgs
 - GET /orgs/:handle
@@ -1035,6 +1054,7 @@ Organizations:
 - POST /org-invites/:token/revoke
 
 Organization programs and submissions:
+
 - POST /orgs/:orgId/programs
 - PATCH /orgs/:orgId/programs/:programId
 - POST /orgs/:orgId/programs/:programId/milestones
@@ -1046,6 +1066,7 @@ Organization programs and submissions:
 - POST /orgs/:orgId/validations/issue
 
 Projects and billing:
+
 - GET /projects
 - POST /projects
 - GET /projects/:slug
@@ -1082,6 +1103,7 @@ Projects and billing:
 - GET /invoices/public/:slug
 
 Parties:
+
 - GET /parties/discover
 - GET /parties/me
 - POST /parties
@@ -1097,6 +1119,7 @@ Parties:
 - GET /parties/:slug/leaderboard/streak
 
 Usernames:
+
 - GET /usernames/availability
 - GET /usernames/orders
 - GET /usernames/orders/:id
@@ -1113,10 +1136,12 @@ Usernames:
 - POST /usernames/asks/:id/accept
 
 Quests:
+
 - GET /quests/me
 - POST /quests/claim/:userQuestId
 
 Consistency and activity:
+
 - GET /users/:userId/consistency
 - GET /users/:userId/activity/summary
 - POST /activity/events
@@ -1124,20 +1149,24 @@ Consistency and activity:
 - POST /users/me/consistency/recompute
 
 Risk:
+
 - GET /users/:userId/risk
 - POST /users/:userId/risk/recompute
 - GET /admin/risk/users
 
 Leaderboards:
+
 - GET /leaderboard/global/xp
 - GET /leaderboard/global/streak
 
 Legacy:
+
 - GET /legacy/v1/badges/:address
 - GET /legacy/v1/goals/:address
 - GET /legacy/v1/goals/:goalId
 
 Verification:
+
 - POST /verify
 - POST /verify/proof/:id/check-file
 - GET /verify/proof/:id
@@ -1147,6 +1176,7 @@ Verification:
 - GET /verify/tx/:txHash
 
 Health and metrics:
+
 - GET /health
 - GET /health/chain
 - GET /health/indexer
@@ -1155,6 +1185,7 @@ Health and metrics:
 - GET /metrics
 
 Automation:
+
 - GET /auto/queue
 
 ---
@@ -1164,49 +1195,62 @@ Automation:
 Models by domain:
 
 User and auth:
+
 - User, Wallet, WalletNonce, AuthSession, AuthNonce
 - UserPrivacySettings, ContentVisibilityOverride
 
 Identity and social:
+
 - Username, UserFollow, UserActivity, UserActivityEvent
 - ProfessionalProfile, ProfileShareLink, ProfilePin
 
 Marketplace:
+
 - UsernameOrder, UsernameTrade, UsernameOwnership
 
 Organizations:
+
 - Organization, OrgMember, OrgInvite, OrgProgram, ProgramMilestone, MilestoneSubmission, OrgAuditLog
 
 Projects and billing:
+
 - Project, ProjectMember, ProjectGoal, ProjectShareLink, ProjectEvent, ProjectBillingSettings
 - TimeEntry, Invoice, InvoiceLineItem
 
 Parties:
+
 - Party, PartyMember, PartyInvite, PartyFeedItem
 
 Proofs and validations:
+
 - ProofArtifact, ProfileExport
 - ValidatorProfile, ValidationRequest, ValidationAttestation
 - SkillTag, UserSkill, Endorsement
 
 Quests and progression:
+
 - QuestTemplate, UserQuest, UserStreak, StreakMilestone, QuestEventLog
 
 Risk and consistency:
+
 - UserConsistencyScore, UserRiskProfile, RiskSignalEvent
 
 Anchoring and chain actions:
+
 - AnchorJob, ChainActionReceipt
 
 Indexer and projections:
+
 - ChainCursor, ChainLog, DecodedEvent, ProjectionCursor
 - LegacyBadgeOwnership, LegacyOwnerBadgeToken, LegacyGoal, LegacyGoalEvidence, LegacyGoalApproval
 
 Admin and monitoring:
+
 - AdminUser, AdminSession, AdminCsrfToken, AdminActionIntent
 - AdminRequestNonce, AdminAuditLog, OperationalAlert, ProjectionRebuildRun
 
 Enums (selected):
+
 - UsernameStatus, OrgRole, OrgVisibility, OrgOnchainStatus
 - ChainActionType, ChainActionStatus
 - UsernameOrderType, UsernameOrderStatus, SettlementStatus
@@ -1215,6 +1259,7 @@ Enums (selected):
 - AdminRole
 
 Constraints relevant to UX:
+
 - Organization.handle is unique
 - Username.usernameNormalized is unique
 - OrgMember unique (orgId, userId)
@@ -1227,25 +1272,30 @@ Constraints relevant to UX:
 ### Smart contracts inventory
 
 - AchievoIdentity (`contracts/AchievoIdentity.sol`)
+
   - Responsibility: on-chain identity record (userId, username, avatar, bio)
   - Key functions: register, getUserId, getUserProfile, setProfile, setRecoveryKey, addSubWallet, removeSubWallet, transferUsername
   - Roles: owner/admin as defined in contract
 
 - AchievoCore (`contracts/AchievoCore.sol`) and AchievoCoreV11 (`contracts/AchievoCoreV11.sol`)
+
   - Responsibility: on-chain goals, approvals, verification, badge minting
   - Key functions: createGoal, createGoalWithPeers, approve, verifyAuto, getGoal
   - Roles: owner for admin functions
 
 - BadgeSBT (`contracts/BadgeSBT.sol`), AchievoBadgeV11 (`contracts/AchievoBadgeV11.sol`), AchievoBadgeV12 (`contracts/achievo/AchievoBadgeV12.sol`)
+
   - Responsibility: badge minting and ownership
   - Key functions: mint, tokenURI, tokensOfOwner
   - Roles: owner/minter (AccessControl in V12)
 
 - AchievoUsernameRegistryV1 (`contracts/AchievoUsernameRegistryV1.sol`)
+
   - Responsibility: on-chain username ownership and transfer
   - Key functions: ownerOfUsername, transferUsername
 
 - AchievoOrgRegistry (`contracts/achievo/AchievoOrgRegistry.sol`)
+
   - Responsibility: on-chain organization creation fee gate
   - Key functions: createOrg, setCreateOrgFee, setTreasury, pause/unpause
 
@@ -1258,21 +1308,26 @@ Constraints relevant to UX:
 ### Integrations and config
 
 Wallet and chain:
+
 - wagmi with injected connector (`web/lib/wagmi.ts`)
 - Base Sepolia RPC via NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL and backend RPC URLs
 
 Web API proxy:
+
 - API_PROXY_TARGET (web)
 
 Admin Console:
+
 - NEXT_PUBLIC_ADMIN_API_BASE_URL (apps/admin)
 - Admin sessions via /admin-auth and /admin-gateway endpoints
 
 Storage and exports:
+
 - Local storage or S3 for proof files
-- Profile export signer and storage via PROFILE_EXPORT_* env vars
+- Profile export signer and storage via PROFILE*EXPORT*\* env vars
 
 On-chain registry addresses:
+
 - NEXT_PUBLIC_IDENTITY_ADDRESS
 - NEXT_PUBLIC_ACHIEVO_CORE_V11_ADDRESS
 - NEXT_PUBLIC_ACHIEVO_BADGE_V11_ADDRESS
@@ -1281,79 +1336,96 @@ On-chain registry addresses:
 - ORG_REGISTRY_ADDRESS, ANCHOR_REGISTRY_ADDRESS
 
 Operational services:
-- Indexer (INDEXER_* envs)
-- Chain actions worker (CHAIN_ACTIONS_* envs)
-- Monitoring (MONITORING_* envs)
-- Health thresholds (HEALTH_* envs)
+
+- Indexer (INDEXER\_\* envs)
+- Chain actions worker (CHAIN*ACTIONS*\* envs)
+- Monitoring (MONITORING\_\* envs)
+- Health thresholds (HEALTH\_\* envs)
 
 Admin security:
+
 - ADMIN_API_KEY, ADMIN_HMAC_SECRET, ADMIN_TS_SKEW_SECONDS (legacy admin endpoints)
-- ADMIN_ACCESS_TTL_MIN, ADMIN_REFRESH_TTL_DAYS, ADMIN_LOCKOUT_*, ADMIN_CSRF_TTL_MIN
+- ADMIN*ACCESS_TTL_MIN, ADMIN_REFRESH_TTL_DAYS, ADMIN_LOCKOUT*\*, ADMIN_CSRF_TTL_MIN
 
 Third-party services:
+
 - Optional Pinata/Web3 storage tokens (PINATA_JWT, WEB3_STORAGE_TOKEN)
-- Optional S3 credentials (AWS_*)
+- Optional S3 credentials (AWS\_\*)
 
 ---
 
 ## C) UX Flow List (Actionable)
 
-1) Sign in with wallet
+1. Sign in with wallet
+
    - UI: ConnectWallet -> POST /auth/nonce -> sign -> POST /auth/login -> cookies -> GET /auth/me
 
-2) Claim Achievo username
+2. Claim Achievo username
+
    - UI: /identity
    - Steps: GET /identity/username/availability -> on-chain claim via AchievoUsernameRegistryV1 -> POST /identity/username to bind off-chain
 
-3) Create organization (on-chain gated)
+3. Create organization (on-chain gated)
+
    - UI: /orgs
    - Steps: POST /orgs/prepare -> switch chain -> wallet tx createOrg -> wait receipt -> POST /orgs (finalize) -> org page
 
-4) Create organization program and publish
+4. Create organization program and publish
+
    - UI: /orgs/[handle]/admin
    - Steps: POST /orgs/:orgId/programs -> POST /orgs/:orgId/programs/:programId/milestones -> POST /orgs/:orgId/programs/:programId/publish
 
-5) Submit organization milestone
+5. Submit organization milestone
+
    - UI: /orgs/[handle]/programs/[slug]/submit
    - Steps: POST /orgs/:orgId/programs/:programId/milestones/:milestoneId/submissions -> (optional) anchor
 
-6) Create on-chain goal
+6. Create on-chain goal
+
    - UI: /goals/new
    - Steps: upload metadata to IPFS -> createGoal or createGoalWithPeers on AchievoCore -> wait receipt -> view on /goals/[id]
 
-7) Approve a goal
+7. Approve a goal
+
    - UI: /approve
    - Steps: read goal -> check allow list -> approve on-chain
 
-8) Submit proof
+8. Submit proof
+
    - UI: /goals/[id]
    - Steps: POST /proofs/upload or /proofs/url -> optional POST /proofs/:id/anchor -> verify via /verify/proof/[id]
 
-9) Request validation and attest
+9. Request validation and attest
+
    - UI: /validators/inbox
    - Steps: POST /validations/requests -> POST /validations/requests/:id/attestation/prepare -> sign -> POST /validations/requests/:id/attest -> verify via /verify/validation/[id]
 
-10) Generate profile export
+10. Generate profile export
+
     - UI: profile page
     - Steps: POST /exports/profile -> GET /exports/[publicId] -> GET /exports/[publicId]/download -> /verify/export/[publicId]
 
-11) Create username order and accept
+11. Create username order and accept
+
     - UI: /usernames/market
     - Steps: POST /usernames/orders/prepare -> sign typed data -> POST /usernames/orders -> POST /usernames/orders/:id/accept -> (if seller tx required) POST /usernames/trades/:id/submit-tx -> wait confirmations
 
-12) Create project and invoice
+12. Create project and invoice
+
     - UI: /projects/new, /projects/[slug]/invoices/new
     - Steps: POST /projects -> POST /projects/[slug]/invoices -> PATCH /projects/[slug]/invoices/[invoiceId]
 
-13) Join party
+13. Join party
+
     - UI: /parties/[slug]
     - Steps: POST /parties/[slug]/join -> view /parties/[slug]/feed
 
-14) Verify content
-    - UI: /verify/*
+14. Verify content
+
+    - UI: /verify/\*
     - Steps: GET /verify/proof/[id], /verify/validation/[id], /verify/export/[publicId], /verify/anchor/[hash]
 
-15) Admin Console login + dry-run execute
+15. Admin Console login + dry-run execute
     - UI: apps/admin /login -> /indexer
     - Steps: POST /admin-auth/login -> GET /admin-gateway/indexer/status -> POST /admin-gateway/dry-run -> POST /admin-gateway/execute
 
@@ -1362,6 +1434,7 @@ Third-party services:
 ## D) Navigation and IA Proposal (grounded in existing routes)
 
 Web app top-level navigation:
+
 - Home (/)
 - Dashboard (/dashboard)
 - Identity (/identity)
@@ -1373,6 +1446,7 @@ Web app top-level navigation:
 - Admin (/admin) [conditional on contract owner]
 
 Web subpages and sections:
+
 - Profile: /profile/[address], /profile/professional/[handle]
 - Goals: /goals/new, /goals/[id], /approve
 - Organizations: /orgs/[handle], /orgs/[handle]/members, /orgs/[handle]/admin
@@ -1382,6 +1456,7 @@ Web subpages and sections:
 - Verification: /verify/proof/[id], /verify/validation/[id], /verify/export/[publicId], /verify/anchor/[hash], /verify/tx/[txHash]
 
 Admin Console navigation (apps/admin):
+
 - Dashboard (/)
 - Health (/health)
 - Alerts (/alerts)
@@ -1398,23 +1473,27 @@ Admin Console navigation (apps/admin):
 ## E) Gaps and UI Debt
 
 Missing UX states:
+
 - Pending on-chain confirmations for username trades and organization creation
 - Anchor verification unknown state when RPC fails (some pages still show generic errors)
 - Empty states for new users (no organizations, no goals, no proofs)
 
 Incomplete or partial features:
+
 - Goals backend endpoints are stubbed; UI is chain-only
 - Organization program discovery and management UI is minimal
 - Validation request UX is limited (attestation flow not fully guided)
 - Admin Console has no bulk tools beyond dry-run/execute per action
 
 Inconsistencies:
+
 - Some routes are chain-only (goals) while others are API-driven
 - Public share links split between /share, /s, and /share-links
 
 High-impact UX fixes (ordered by ROI):
-1) Consistent pending and retry states for on-chain actions
-2) Strong empty states and first-run guidance
-3) Validation request and attestation wizard
-4) Organization program authoring UI
-5) Marketplace settlement state tracking and notifications
+
+1. Consistent pending and retry states for on-chain actions
+2. Strong empty states and first-run guidance
+3. Validation request and attestation wizard
+4. Organization program authoring UI
+5. Marketplace settlement state tracking and notifications

@@ -4657,3 +4657,105 @@ Running 22 tests using 1 worker
 
 [WebServer] TypeError: fetch failed (ECONNREFUSED 127.0.0.1:4001) logged during run.
 ```
+
+## Backend (required)
+
+### Timestamp
+
+2026-01-27 20:46:34 +01
+
+### Command
+
+```
+npm --prefix backend run typecheck
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 typecheck
+> tsc -p tsconfig.json --noEmit
+```
+
+### Command
+
+```
+npm --prefix backend run test:unit
+```
+
+### Output
+
+```
+> achievo-backend@0.1.0 test:unit
+> jest -c jest.config.cjs --testPathPattern=unit
+
+[Nest] 21456  - 01/27/2026, 8:45:44 PM    LOG [UsernamesMarketService] {"message":"username_trade_pending","tradeId":"trade-1","orderId":"order-3","txHash":"0xabc"}
+[Nest] 8676  - 01/27/2026, 8:45:46 PM    LOG [OpsConfigService] {"message":"startup_config","report":{"service":"backend","chainId":84532,"features":{"orgCreateRequired":false,"anchoringEnabled":false,"indexerEnabled":false,"chainActionsEnabled":true,"monitoringEnabled":false,"governanceSanityCheck":false},"chain":{"orgRegistry":null,"anchorRegistry":null,"orgChainId":84532,"anchorChainId":84532},"confirmationsRequired":20,"indexer":{"startBlock":0,"batchSize":0},"secrets":{"adminKey":null,"adminHmac":null,"anchorOperator":null}}}
+[Nest] 8676  - 01/27/2026, 8:45:46 PM    LOG [OpsConfigService] {"message":"deployments_hash","hash":"9af70381323bb9456b310da493b5e342ba5f7887476760dcfa4b61e5dcfae7d4","path":"C:\\dev\\achievo\\backend\\deployments\\base-sepolia"}
+[Nest] 8676  - 01/27/2026, 8:45:46 PM    LOG [OpsConfigService] {"message":"startup_config","report":{"service":"backend","chainId":84532,"features":{"orgCreateRequired":false,"anchoringEnabled":false,"indexerEnabled":false,"chainActionsEnabled":true,"monitoringEnabled":false,"governanceSanityCheck":false},"chain":{"orgRegistry":"0xorg","anchorRegistry":"0xanchor","orgChainId":84532,"anchorChainId":84532},"confirmationsRequired":20,"indexer":{"startBlock":0,"batchSize":0},"secrets":{"adminKey":null,"adminHmac":null,"anchorOperator":null}}}
+[Nest] 8676  - 01/27/2026, 8:45:46 PM    LOG [OpsConfigService] {"message":"deployments_hash","hash":"9af70381323bb9456b310da493b5e342ba5f7887476760dcfa4b61e5dcfae7d4","path":"C:\\dev\\achievo\\backend\\deployments\\base-sepolia"}
+PASS test/unit/adminGateway.spec.ts (33.645 s)
+PASS test/unit/adminSessionAuth.spec.ts
+PASS test/unit/usernameMarket.spec.ts
+PASS test/unit/throttle.spec.ts (38.16 s)
+PASS test/unit/validationsService.spec.ts
+[Nest] 8676  - 01/27/2026, 8:45:46 PM  ERROR [OpsConfigService] Deployment compatibility failed: Org registry RPC chainId mismatch; Org registry address has no code; Anchor registry RPC chainId mismatch; Anchor registry address has no code
+PASS test/unit/opsConfig.spec.ts
+PASS test/unit/health.spec.ts
+PASS test/unit/openapi.spec.ts (42.156 s)
+PASS test/unit/adminTools.spec.ts
+PASS test/unit/orgCreation.spec.ts
+PASS test/unit/governanceSanity.spec.ts
+PASS test/unit/chainVerify.spec.ts
+PASS test/unit/indexerPipeline.spec.ts
+PASS test/unit/chainActionsWorker.spec.ts
+PASS test/unit/adminCsrfGuard.spec.ts
+PASS test/unit/orgRbac.spec.ts
+PASS test/unit/adminAuth.spec.ts
+PASS test/unit/orgRegistry.spec.ts
+PASS test/unit/monitoring.spec.ts
+PASS test/unit/consistencyScoring.spec.ts
+PASS test/unit/indexerProjector.spec.ts
+PASS test/unit/circuitBreaker.spec.ts
+PASS test/unit/adminIntent.spec.ts
+PASS test/unit/goalStatus.spec.ts
+PASS test/unit/usernameNormalize.spec.ts
+
+Test Suites: 25 passed, 25 total
+Tests:       68 passed, 68 total
+Snapshots:   0 total
+Time:        49.277 s, estimated 109 s
+Ran all test suites matching /unit/i.
+```
+
+### Command
+
+```
+nohup npm --prefix backend run dev > .logs/backend-dev.log 2>&1 &
+```
+
+### Output
+
+```
+[Nest] 14800  - 01/27/2026, 8:48:41 PM    LOG [NestApplication] Nest application successfully started
+Achievo backend listening on http://127.0.0.1:4001
+```
+
+### Command
+
+```
+powershell.exe -Command '$headers=@{ "x-api-version"="1" }; $urls=@("/health","/health/indexer","/health/chain","/health/anchoring"); foreach ($u in $urls) { try { $r=Invoke-WebRequest -Uri ("http://127.0.0.1:4001" + $u) -Headers $headers -UseBasicParsing; Write-Host ($u + " " + $r.StatusCode); Write-Host $r.Content } catch { if ($_.Exception.Response) { Write-Host ($u + " " + $_.Exception.Response.StatusCode.value__) }; if ($_.ErrorDetails) { Write-Host $_.ErrorDetails.Message } } }'
+```
+
+### Output
+
+```
+/health 200
+{"ok":true,"service":"backend","version":"0.1.0","time":"2026-01-27T19:49:44.846Z"}
+/health/indexer 200
+{"ok":false,"status":"DOWN","enabled":false,"checks":[{"name":"indexer","status":"DOWN","details":{"reason":"DISABLED"}}],"time":"2026-01-27T19:49:45.151Z"}
+/health/chain 200
+{"ok":true,"status":"OK","checks":[],"time":"2026-01-27T19:49:45.222Z"}
+/health/anchoring 200
+{"ok":false,"status":"DOWN","enabled":false,"checks":[{"name":"anchoring","status":"DOWN","details":{"reason":"DISABLED"}}],"time":"2026-01-27T19:49:45.314Z"}
+```
