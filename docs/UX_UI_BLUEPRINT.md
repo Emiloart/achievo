@@ -262,6 +262,25 @@ The market page presents:
     - Program publish: `web/app/orgs/[handle]/admin/page.tsx`
     - On-chain goal flows: `web/app/goals/new/page.tsx`, `web/app/approve/page.tsx`
 
+## P5 Cinematic theme layer (Implemented)
+
+- Theme tokens + global theme class:
+  - Token definitions: `web/styles/theme.css`
+  - Theme class + dark tokens: `web/app/layout.tsx` (html/body + `data-theme=\"dark\"`)
+- Background FX system (aurora, noise, grid):
+  - Background component: `web/components/theme/BackgroundFX.tsx`
+  - Mounted behind layout: `web/components/layout/PageLayout.tsx`
+  - Effects preference + persistence: `web/lib/effects.ts`, `web/components/layout/EffectsProvider.tsx`, `web/components/nav/GlobalNav.tsx`
+- Glass surfaces + glow rules:
+  - Card primitive: `packages/ui/src/Card.tsx`
+  - Modal/drawer shell: `web/components/ui/Modal.tsx`
+  - Inspector rail: `web/components/layout/InspectorRail.tsx`
+  - Page headers: `web/components/nav/PageHeader.tsx`
+  - Primary CTA glow: `packages/ui/src/Button.tsx`
+- Motion helpers (reduced-motion safe):
+  - Motion helper: `web/lib/motion.ts`
+  - Panel/modal animations + hover lift: `web/styles/theme.css`
+
 ## Regression safety (UX reliability)
 
 - UX regression tests: `web/tests/e2e.spec.ts`

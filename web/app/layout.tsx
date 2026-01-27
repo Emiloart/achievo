@@ -9,8 +9,8 @@ import { CommandPalette } from "../components/command/CommandPalette";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className="font-sans">
+    <html lang="en" className="theme-cinematic" data-theme="dark">
+      <body className="font-sans theme-cinematic">
         <Web3Provider>
           <PolicyProvider>
             <Suspense fallback={null}>

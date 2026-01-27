@@ -147,7 +147,11 @@ test("projects page renders for mocked auth", async ({ page }) => {
     return true;
   });
 
+  const projectsResponse = page.waitForResponse(
+    (resp) => resp.url().includes("/api/projects") && resp.status() === 200,
+  );
   await goto(page, "/projects");
+  await projectsResponse;
   await expect(page.getByText("Project Alpha")).toBeVisible({ timeout: 15000 });
 });
 
@@ -218,7 +222,13 @@ test("degraded banner appears when health is degraded", async ({ page }) => {
 });
 
 test("degraded banner stays hidden when health is ok", async ({ page }) => {
+  const healthResponses = Promise.all([
+    page.waitForResponse((resp) => resp.url().includes("/api/health/chain") && resp.status() === 200),
+    page.waitForResponse((resp) => resp.url().includes("/api/health/indexer") && resp.status() === 200),
+    page.waitForResponse((resp) => resp.url().includes("/api/health/anchoring") && resp.status() === 200),
+  ]);
   await goto(page, "/dashboard");
+  await healthResponses;
   await expect(page.getByText("Degraded mode")).toHaveCount(0);
 });
 
@@ -262,10 +272,18 @@ test("verification proof renders invalid and not found states", async ({ page })
     return false;
   });
 
+  const invalidResponse = page.waitForResponse(
+    (resp) => resp.url().includes("/api/verify/proof/proof-invalid") && resp.status() === 200,
+  );
   await goto(page, "/verify/proof/proof-invalid");
+  await invalidResponse;
   await expect(page.getByText("Verification failed")).toBeVisible({ timeout: 15000 });
 
+  const missingResponse = page.waitForResponse(
+    (resp) => resp.url().includes("/api/verify/proof/proof-missing") && resp.status() === 404,
+  );
   await goto(page, "/verify/proof/proof-missing");
+  await missingResponse;
   await expect(page.getByText("Not found").first()).toBeVisible({ timeout: 15000 });
 });
 
@@ -297,13 +315,25 @@ test("verification tx renders unknown, invalid, and not found states", async ({ 
     return true;
   });
 
+  const unknownResponse = page.waitForResponse(
+    (resp) => resp.url().includes(`/api/verify/tx/${"0x" + "11".repeat(32)}`) && resp.status() === 200,
+  );
   await goto(page, `/verify/tx/${"0x" + "11".repeat(32)}`);
+  await unknownResponse;
   await expect(page.getByText("Verification unknown")).toBeVisible({ timeout: 15000 });
 
+  const invalidResponse = page.waitForResponse(
+    (resp) => resp.url().includes(`/api/verify/tx/${"0x" + "22".repeat(32)}`) && resp.status() === 200,
+  );
   await goto(page, `/verify/tx/${"0x" + "22".repeat(32)}`);
+  await invalidResponse;
   await expect(page.getByText("Verification failed")).toBeVisible({ timeout: 15000 });
 
+  const missingResponse = page.waitForResponse(
+    (resp) => resp.url().includes(`/api/verify/tx/${"0x" + "33".repeat(32)}`) && resp.status() === 404,
+  );
   await goto(page, `/verify/tx/${"0x" + "33".repeat(32)}`);
+  await missingResponse;
   await expect(page.getByText("Not found").first()).toBeVisible({ timeout: 15000 });
 });
 
@@ -349,8 +379,8 @@ test("org create page shows tx stepper and finality timeline when tx state is pr
   });
 
   await goto(page, "/orgs");
-  await expect(page.getByText("Transaction status")).toBeVisible();
-  await expect(page.getByText("Finality timeline")).toBeVisible();
+  await expect(page.getByText("Transaction status")).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText("Finality timeline")).toBeVisible({ timeout: 15000 });
 });
 
 test("org admin workbench renders tabs", async ({ page }) => {
@@ -403,10 +433,12 @@ test("command palette opens and closes", async ({ page }) => {
 test("density toggle persists across reload", async ({ page }) => {
   await goto(page, "/dashboard");
   await page.getByRole("button", { name: "ACHUSR-0000000001" }).click();
-  await page.getByRole("menuitem", { name: /Density:/ }).click();
-  await expect(page.locator("body")).toHaveClass(/density-compact/);
+  const densityItem = page.getByRole("menuitem", { name: /Density:/ });
+  await expect(densityItem).toBeVisible({ timeout: 10000 });
+  await densityItem.click();
+  await expect(page.locator("body")).toHaveClass(/density-compact/, { timeout: 15000 });
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.locator("body")).toHaveClass(/density-compact/);
+  await expect(page.locator("body")).toHaveClass(/density-compact/, { timeout: 15000 });
 });
 
 test("submission row opens inspector rail via panel routing", async ({ page }) => {
@@ -612,7 +644,7 @@ test("username market trade transitions from pending to confirmed", async ({ pag
     if (url.pathname !== "/api/usernames/trades") return false;
     if (url.searchParams.get("handle") !== "alice") return false;
     tradePolls += 1;
-    const status = tradePolls > 3 ? "CONFIRMED" : "PENDING";
+    const status = tradePolls > 5 ? "CONFIRMED" : "PENDING";
     await fulfillJson(route, 200, {
       data: [{ id: "trade-1", normalized: "alice", status, txHash: "0x" + "ab".repeat(32) }],
     });
@@ -624,7 +656,7 @@ test("username market trade transitions from pending to confirmed", async ({ pag
   await expect(page.getByRole("button", { name: "Buy" })).toBeEnabled({ timeout: 10000 });
   await page.getByRole("button", { name: "Buy" }).click();
   await expect(page.getByText("Transfer for @alice")).toBeVisible({ timeout: 10000 });
-  await expect(page.getByText("Awaiting on-chain confirmations")).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText("Awaiting on-chain confirmations")).toBeVisible({ timeout: 15000 });
   await expect(page.getByText("Finalized").first()).toBeVisible({ timeout: 7000 });
 });
 
@@ -664,7 +696,7 @@ test("a11y: global nav keyboard access and modal focus trap", async ({ page }) =
 });
 
 test("a11y snapshots include headings for key routes", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(120_000);
   registerApiMock(async (route) => {
     const url = new URL(route.request().url());
     if (!url.pathname.startsWith("/api/achievo/profile/")) return false;

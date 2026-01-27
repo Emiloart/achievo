@@ -178,3 +178,19 @@ Expected API calls:
    - Route: `/orgs/:handle/admin` -> Submissions tab.
    - Select row checkbox -> BulkActionBar appears with selection count.
    - Files: `web/components/ui/DataTable.tsx`, `web/components/ui/BulkActionBar.tsx`, `web/components/domain/orgs/SubmissionsTable.tsx`.
+
+## P5 Cinematic theme smoke tests
+
+1. Effects toggle persists.
+   - Route: `/dashboard`.
+   - Open GlobalNav user menu -> toggle Effects.
+   - Expect `body` class switches between `fx-on` and `fx-off`.
+   - Files: `web/lib/effects.ts`, `web/components/layout/EffectsProvider.tsx`, `web/components/nav/GlobalNav.tsx`.
+2. Prefers-reduced-motion disables animation.
+   - Enable OS/browser reduced motion setting.
+   - Confirm aurora/background and panel/modal transitions are static.
+   - Files: `web/styles/theme.css`, `web/lib/motion.ts`.
+3. Mobile readability preserved.
+   - View at ≤ 768px width.
+   - Confirm glass surfaces remain legible and grid/noise are subdued.
+   - Files: `web/styles/theme.css`, `web/components/theme/BackgroundFX.tsx`.

@@ -67,7 +67,12 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
-      <button aria-label="Close modal" className="absolute inset-0 bg-overlay" onClick={onClose} type="button" />
+      <button
+        aria-label="Close modal"
+        className="absolute inset-0 bg-overlay fx-overlay"
+        onClick={onClose}
+        type="button"
+      />
       <div
         ref={ref}
         tabIndex={-1}
@@ -75,7 +80,7 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         className={clsx(
-          "relative w-full rounded-3xl border border-border bg-surface shadow-float outline-none",
+          "relative w-full rounded-3xl border border-border bg-surface shadow-float outline-none glass-surface glass-border glass-elevated fx-modal",
           sizeStyles[size],
         )}
       >
@@ -141,7 +146,12 @@ export function Drawer({ open, onClose, title, children, side = "right" }: Drawe
 
   return (
     <div className="fixed inset-0 z-50">
-      <button aria-label="Close drawer" className="absolute inset-0 bg-overlay" onClick={onClose} type="button" />
+      <button
+        aria-label="Close drawer"
+        className="absolute inset-0 bg-overlay fx-overlay"
+        onClick={onClose}
+        type="button"
+      />
       <div
         ref={ref}
         tabIndex={-1}
@@ -149,7 +159,7 @@ export function Drawer({ open, onClose, title, children, side = "right" }: Drawe
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         className={clsx(
-          "absolute bg-surface border border-border shadow-float outline-none",
+          "absolute bg-surface border border-border shadow-float outline-none glass-surface glass-border glass-elevated fx-modal",
           side === "right"
             ? "right-0 top-0 h-full w-full max-w-lg rounded-l-3xl"
             : "bottom-0 left-0 w-full max-h-[80vh] rounded-t-3xl",

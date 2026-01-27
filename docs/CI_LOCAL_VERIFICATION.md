@@ -4352,3 +4352,166 @@ Running 22 tests using 1 worker
   Consider splitting slow test files to speed up parallel execution
   22 passed (4.9m)
 ```
+
+## Web (Theme P5 cinematic layer — 2026-01-27 16:35:49)
+
+### Command
+
+```
+npm --prefix web run lint
+```
+
+### Output
+
+```
+
+> achievo-web@0.1.0 lint
+> next lint
+
+✔ No ESLint warnings or errors
+```
+
+### Command
+
+```
+npm --prefix web run typecheck
+```
+
+### Output
+
+```
+
+> achievo-web@0.1.0 typecheck
+> tsc -p tsconfig.json --noEmit
+
+```
+
+### Command
+
+```
+npm --prefix web run build
+```
+
+### Output
+
+```
+
+> achievo-web@0.1.0 build
+> next build
+
+ ⚠ Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+  ▲ Next.js 14.2.15
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · externalDir
+
+   Creating an optimized production build ...
+   Using tsconfig file: ./tsconfig.build.json
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18) 
+   Generating static pages (8/18) 
+   Generating static pages (13/18) 
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                Size     First Load JS
+┌ ○ /                                      7.55 kB         192 kB
+├ ○ /_not-found                            880 B          88.3 kB
+├ ○ /about                                 258 B           106 kB
+├ ○ /admin                                 4.45 kB         110 kB
+├ ƒ /api/[...path]                         0 B                0 B
+├ ○ /approve                               2.53 kB         204 kB
+├ ○ /dashboard                             12.1 kB         218 kB
+├ ƒ /exports/[publicId]                    4.11 kB         122 kB
+├ ƒ /goals/[id]                            8.38 kB         226 kB
+├ ○ /goals/new                             4.65 kB         200 kB
+├ ○ /identity                              3.85 kB         205 kB
+├ ƒ /invoices/public/[slug]                4.15 kB        91.6 kB
+├ ○ /orgs                                  4.69 kB         212 kB
+├ ƒ /orgs/[handle]                         8.15 kB         148 kB
+├ ƒ /orgs/[handle]/admin                   12.3 kB         152 kB
+├ ƒ /orgs/[handle]/members                 8.68 kB         130 kB
+├ ƒ /orgs/[handle]/programs/[slug]         8.43 kB         130 kB
+├ ƒ /orgs/[handle]/programs/[slug]/submit  8.77 kB         130 kB
+├ ○ /parties                               5.76 kB         116 kB
+├ ƒ /parties/[slug]                        6.79 kB         117 kB
+├ ○ /parties/new                           5.8 kB          109 kB
+├ ƒ /profile/[address]                     13.9 kB         236 kB
+├ ƒ /profile/professional/[handle]         7.88 kB         114 kB
+├ ○ /projects                              4.49 kB         195 kB
+├ ƒ /projects/[slug]                       14.2 kB         219 kB
+├ ƒ /projects/[slug]/invoices/[invoiceId]  6.62 kB         117 kB
+├ ƒ /projects/[slug]/invoices/new          6.64 kB         117 kB
+├ ○ /projects/new                          6.17 kB         109 kB
+├ ƒ /projects/share/[slug]                 4.23 kB        91.7 kB
+├ ƒ /s/[slug]                              7.98 kB         114 kB
+├ ƒ /share/[publicId]                      7.84 kB         114 kB
+├ ○ /usernames/market                      6.85 kB         211 kB
+├ ○ /validators/inbox                      11.1 kB         216 kB
+├ ○ /verify                                6.66 kB         126 kB
+├ ƒ /verify/anchor/[hash]                  3.49 kB         116 kB
+├ ƒ /verify/export/[publicId]              3.96 kB         116 kB
+├ ƒ /verify/proof/[id]                     3.95 kB         116 kB
+├ ƒ /verify/tx/[txHash]                    3.51 kB         116 kB
+└ ƒ /verify/validation/[id]                3.98 kB         116 kB
++ First Load JS shared by all              87.5 kB
+  ├ chunks/2117-e340696670a44cf1.js        31.8 kB
+  ├ chunks/fd9d1056-7264e1b4e29d00f5.js    53.6 kB
+  └ other shared chunks (total)            2.07 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+```
+
+### Command
+
+```
+NODE_OPTIONS=--max-old-space-size=4096 npm --prefix web run test:e2e
+```
+
+### Output
+
+```
+
+> achievo-web@0.1.0 test:e2e
+> playwright test
+
+[2m[WebServer] [22m [33m[1m⚠[22m[39m Disabling outputFileTracing will not be an option in the next major version. Please report any issues you may be experiencing to https://github.com/vercel/next.js/issues
+
+Running 22 tests using 1 worker
+
+  ok 1 e2e.spec.ts:120:1 › verification page renders (37.4s)
+  ok 2 e2e.spec.ts:125:1 › projects page renders for mocked auth (15.8s)
+  ok 3 e2e.spec.ts:158:1 › navigation does not request auth nonce after session established (14.5s)
+  ok 4 e2e.spec.ts:172:1 › org creation requires on-chain tx before backend finalize (11.7s)
+  ok 5 e2e.spec.ts:211:1 › degraded banner appears when health is degraded (1.6s)
+  ok 6 e2e.spec.ts:224:1 › degraded banner stays hidden when health is ok (8.8s)
+  ok 7 e2e.spec.ts:235:1 › verification unknown state renders as non-failure (13.5s)
+  ok 8 e2e.spec.ts:254:1 › verification proof renders invalid and not found states (14.7s)
+  ok 9 e2e.spec.ts:290:1 › verification tx renders unknown, invalid, and not found states (24.2s)
+  ok 10 e2e.spec.ts:340:1 › policy gating disables verify portal and username market (40.3s)
+  ok 11 e2e.spec.ts:355:1 › session indicator shows sign in when signed out (2.6s)
+  ok 12 e2e.spec.ts:373:1 › org create page shows tx stepper and finality timeline when tx state is preset (9.3s)
+[2m[WebServer] [22m[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+  ok 13 e2e.spec.ts:386:1 › org admin workbench renders tabs (29.1s)
+  ok 14 e2e.spec.ts:415:1 › validator inbox renders registration gate or inbox (11.2s)
+  ok 15 e2e.spec.ts:422:1 › command palette opens and closes (6.0s)
+  ok 16 e2e.spec.ts:433:1 › density toggle persists across reload (12.3s)
+  ok 17 e2e.spec.ts:444:1 › submission row opens inspector rail via panel routing (6.9s)
+  ok 18 e2e.spec.ts:492:1 › bulk selection shows action bar (7.7s)
+  ok 19 e2e.spec.ts:538:1 › project workbench renders tab shell (19.1s)
+  ok 20 e2e.spec.ts:610:1 › username market trade transitions from pending to confirmed (9.0s)
+  ok 21 e2e.spec.ts:663:1 › a11y: global nav keyboard access and modal focus trap (16.6s)
+  ok 22 e2e.spec.ts:698:1 › a11y snapshots include headings for key routes (37.4s)
+
+  Slow test file: e2e.spec.ts (5.8m)
+  Consider splitting slow test files to speed up parallel execution
+  22 passed (6.1m)
+```

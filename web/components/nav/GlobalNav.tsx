@@ -11,6 +11,7 @@ import { IdentityBadge } from "../IdentityBadge";
 import { GOALS_NAV, PRIMARY_NAV } from "./navItems";
 import { SessionIndicator } from "./SessionIndicator";
 import { useDensity } from "../layout/DensityProvider";
+import { useEffects } from "../layout/EffectsProvider";
 
 const ConnectWallet = dynamic(() => import("../ConnectWallet").then((m) => m.ConnectWallet), { ssr: false });
 
@@ -19,11 +20,13 @@ export function GlobalNav() {
   const { address } = useAccount();
   const { user, signOut } = useBackendAuth();
   const { density, toggleDensity } = useDensity();
+  const { effects, toggleEffects } = useEffects();
   const openCommandPalette = () => {
     if (typeof window === "undefined") return;
     window.dispatchEvent(new CustomEvent("achievo:command-palette"));
   };
   const densityLabel = density === "compact" ? "Compact" : "Comfortable";
+  const effectsLabel = effects === "on" ? "On" : "Off";
   const menuItems = [
     address
       ? {
@@ -48,6 +51,11 @@ export function GlobalNav() {
       id: "density",
       label: `Density: ${densityLabel}`,
       onSelect: () => toggleDensity(),
+    },
+    {
+      id: "effects",
+      label: `Effects: ${effectsLabel}`,
+      onSelect: () => toggleEffects(),
     },
     user
       ? {

@@ -18,7 +18,7 @@ export type PageHeaderProps = {
 
 export function PageHeader({ title, description, breadcrumbs, actions, workbench }: PageHeaderProps) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between page-header glass-surface glass-border">
       <div className="space-y-1">
         {breadcrumbs?.length ? (
           <nav className="text-xs text-textMuted">

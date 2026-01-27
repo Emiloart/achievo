@@ -32,7 +32,7 @@ export function InspectorRail({
     <aside
       data-testid="inspector-rail"
       className={clsx(
-        "fixed inset-y-0 right-0 z-40 w-full border-l border-border bg-surface shadow-float",
+        "fixed inset-y-0 right-0 z-40 w-full border-l border-border bg-surface shadow-float glass-surface glass-border glass-elevated fx-panel",
         isPinnedDisplay
           ? "lg:static lg:z-auto lg:rounded-2xl lg:border lg:shadow-none"
           : "sm:rounded-2xl lg:max-w-[420px]",

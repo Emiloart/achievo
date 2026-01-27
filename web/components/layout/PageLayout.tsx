@@ -9,12 +9,14 @@ import { SideNav } from "../nav/SideNav";
 import { DegradedBanner } from "../states/DegradedBanner";
 import { PolicyBanner } from "../policy/PolicyBanner";
 import { DensityProvider } from "./DensityProvider";
+import { EffectsProvider } from "./EffectsProvider";
 import { InspectorRail } from "./InspectorRail";
 import { readPanel, clearPanel, loadPanelMode, savePanelMode, type PanelMode } from "../../lib/panelRouting";
 import { SubmissionPanel } from "../panels/SubmissionPanel";
 import { ValidationRequestPanel } from "../panels/ValidationRequestPanel";
 import { TimeEntryPanel } from "../panels/TimeEntryPanel";
 import { ErrorState } from "../states/ErrorState";
+import { BackgroundFX } from "../theme/BackgroundFX";
 
 export function PageLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -97,24 +99,29 @@ export function PageLayout({ children }: { children: ReactNode }) {
 
   return (
     <DensityProvider>
-      <div className="min-h-screen text-text">
-        <GlobalNav />
-        <div
-          className={`mx-auto w-full max-w-6xl px-4 pb-24 pt-6 lg:grid lg:gap-8 lg:pb-12 ${
-            showPinnedInGrid ? "lg:grid-cols-[220px,1fr,420px]" : "lg:grid-cols-[220px,1fr]"
-          }`}
-        >
-          <SideNav />
-          <main className="min-h-[60vh] space-y-6">
-            <PolicyBanner />
-            <DegradedBanner />
-            <ErrorBoundary>{children}</ErrorBoundary>
-          </main>
-          {showPinnedInGrid ? inspectorRail : null}
+      <EffectsProvider>
+        <div className="min-h-screen text-text relative overflow-hidden">
+          <BackgroundFX />
+          <div className="relative z-10">
+            <GlobalNav />
+            <div
+              className={`mx-auto w-full max-w-6xl px-4 pb-24 pt-6 lg:grid lg:gap-8 lg:pb-12 ${
+                showPinnedInGrid ? "lg:grid-cols-[220px,1fr,420px]" : "lg:grid-cols-[220px,1fr]"
+              }`}
+            >
+              <SideNav />
+              <main className="min-h-[60vh] space-y-6">
+                <PolicyBanner />
+                <DegradedBanner />
+                <ErrorBoundary>{children}</ErrorBoundary>
+              </main>
+              {showPinnedInGrid ? inspectorRail : null}
+            </div>
+            {!showPinnedInGrid ? inspectorRail : null}
+            <MobileNav />
+          </div>
         </div>
-        {!showPinnedInGrid ? inspectorRail : null}
-        <MobileNav />
-      </div>
+      </EffectsProvider>
     </DensityProvider>
   );
 }
