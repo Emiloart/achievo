@@ -1,7 +1,8 @@
 # P0 UX Foundation Release Notes
 
-**Date:** [Add Date]  
+**Date:** [2-1-2026]  
 **Version:** P0 UX Foundation
+> **Detailed technical changelog** (for developers and contributors): [UX_P0_CHANGELOG.md](./UX_P0_CHANGELOG.md)
 
 We’ve rebuilt the core user experience from the ground up. This release delivers a cleaner, more consistent, and more reliable interface across the entire Achievo dApp.
 
@@ -39,4 +40,4 @@ This foundation work makes Achievo significantly more pleasant and reliable to u
 Future releases will build on this strong UX base.
 
 ---
-For developers refer to docs/UX_P0_CHANGELOG.md
+
