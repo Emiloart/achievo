@@ -1,6 +1,7 @@
 # P0 UX Foundation Changelog
 
 This changelog captures the P0 UX foundation work. It lists all modified files with exact paths and ties changes to routes.
+> **User-friendly release notes** (for customers and stakeholders): [UX_P0_RELEASE_NOTES.md](./UX_P0_RELEASE_NOTES.md)
 
 ## Changed Files
 
