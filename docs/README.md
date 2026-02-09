@@ -6,3 +6,8 @@
 - `docs/ADMIN_SECURITY_CHECKLIST.md`
 - `docs/TESTING.md`
 - `docs/CI_LOCAL_VERIFICATION.md`
+
+## UX & Product Documentation
+
+- [P0 UX Foundation Release Notes](./UX_P0_RELEASE_NOTES.md) — Customer and stakeholder summary
+- [P0 UX Foundation Changelog](./UX_P0_CHANGELOG.md) — Complete technical details and file-level changes
