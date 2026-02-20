@@ -61,6 +61,6 @@
     "web/**/*.{js,jsx,ts,tsx}": "node scripts/run-eslint.mjs"
   },
   "dependencies": {
-    "viem": "^2.41.2"
+    "viem": "^2.46.2"
   }
 }
