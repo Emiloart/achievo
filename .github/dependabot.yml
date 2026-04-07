@@ -3,53 +3,110 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 2
     groups:
       dev-dependencies:
         dependency-type: "development"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+      - dependency-name: "hardhat"
+      - dependency-name: "next"
+      - dependency-name: "typescript"
+      - dependency-name: "viem"
   - package-ecosystem: "npm"
     directory: "/backend"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 2
     groups:
       dev-dependencies:
         dependency-type: "development"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+      - dependency-name: "@nestjs/common"
+      - dependency-name: "@nestjs/core"
+      - dependency-name: "@nestjs/platform-express"
+      - dependency-name: "@nestjs/platform-fastify"
+      - dependency-name: "@nestjs/swagger"
+      - dependency-name: "@nestjs/throttler"
+      - dependency-name: "prisma"
+      - dependency-name: "@prisma/client"
+      - dependency-name: "typescript"
   - package-ecosystem: "npm"
     directory: "/web"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 2
     groups:
       dev-dependencies:
         dependency-type: "development"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+      - dependency-name: "next"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "wagmi"
+      - dependency-name: "viem"
+      - dependency-name: "tailwindcss"
+      - dependency-name: "typescript"
+      - dependency-name: "eslint"
+      - dependency-name: "eslint-config-next"
+      - dependency-name: "@playwright/test"
   - package-ecosystem: "npm"
     directory: "/packages/username"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 1
     groups:
       dev-dependencies:
         dependency-type: "development"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
   - package-ecosystem: "npm"
     directory: "/packages/achievo-config"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 1
     groups:
       dev-dependencies:
         dependency-type: "development"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
   - package-ecosystem: "npm"
     directory: "/packages/achievo-abi"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 1
     groups:
       dev-dependencies:
         dependency-type: "development"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 1
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
