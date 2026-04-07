@@ -8,6 +8,7 @@
 - [Product Surfaces](./PRODUCT_SURFACES.md)
 - [Operations](./OPERATIONS.md)
 - [Testing](./TESTING.md)
+- [Admin Security Checklist](./ADMIN_SECURITY_CHECKLIST.md)
 
 ## Historical
 
