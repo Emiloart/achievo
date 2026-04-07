@@ -1,8 +1,10 @@
-process.env.NODE_ENV = "test";
+import { applyTestEnv } from "./testEnv";
+
+applyTestEnv();
+
 process.env.JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 process.env.RPC_URL = process.env.RPC_URL || "http://localhost:8545";
 process.env.CHAIN_ID = process.env.CHAIN_ID || "84532";
-process.env.DATABASE_URL = process.env.DATABASE_URL || "postgresql://user:pass@localhost:5432/achievo_test";
 process.env.NEXT_PUBLIC_ACHIEVO_CORE_V11_ADDRESS =
   process.env.NEXT_PUBLIC_ACHIEVO_CORE_V11_ADDRESS || "0x0000000000000000000000000000000000000001";
 process.env.NEXT_PUBLIC_ACHIEVO_BADGE_V11_ADDRESS =

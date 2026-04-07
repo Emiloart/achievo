@@ -3,6 +3,7 @@ import { spawn } from "child_process";
 import { existsSync } from "fs";
 import { URL } from "url";
 import { join } from "path";
+import { assertIsolatedTestDatabaseUrl } from "../../testEnv";
 
 function stripSchema(urlRaw: string) {
   const url = new URL(urlRaw);
@@ -50,11 +51,18 @@ async function runMigrations(databaseUrl: string) {
 
 export async function prepareTestDb() {
   const baseUrl = process.env.DATABASE_URL || "";
-  if (!baseUrl) throw new Error("DATABASE_URL must be set for E2E");
+  if (!baseUrl) {
+    throw new Error(
+      "DATABASE_URL must be set for E2E. Use backend/.env.test(.local) or backend/.env.test.example with an isolated test database.",
+    );
+  }
+
+  assertIsolatedTestDatabaseUrl(baseUrl);
+
   const schema = randomSchema();
   const adminUrl = stripSchema(baseUrl);
   const client = new PrismaClient({ datasources: { db: { url: adminUrl } } });
-  await client.$executeRawUnsafe(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
+  await client.$executeRawUnsafe(`CREATE SCHEMA IF NOT EXISTS \"${schema}\"`);
   await client.$disconnect();
   const databaseUrl = withSchema(adminUrl, schema);
   await runMigrations(databaseUrl);
@@ -64,6 +72,6 @@ export async function prepareTestDb() {
 export async function dropTestSchema(adminUrl: string, schema: string) {
   if (!adminUrl || !schema) return;
   const client = new PrismaClient({ datasources: { db: { url: adminUrl } } });
-  await client.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+  await client.$executeRawUnsafe(`DROP SCHEMA IF EXISTS \"${schema}\" CASCADE`);
   await client.$disconnect();
 }
