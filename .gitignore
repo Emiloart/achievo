@@ -39,3 +39,6 @@ coverage
 /contracts/deployments/local
 /backend/storage/e2e-exports
 /backend/storage/e2e-proofs
+/web/test-results
+/.logs
+

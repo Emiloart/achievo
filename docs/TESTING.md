@@ -1,35 +1,84 @@
 # Testing Guide
 
-This document describes deterministic commands for unit and integration testing.
+This document defines the active verification commands for the current stabilization phase.
 
-## Backend unit tests
+## Phase 1 release gate
 
-```
+The working gate is:
+
+- backend unit tests
+- backend E2E
+- one web E2E smoke path
+- web build
+- admin build
+
+## Backend
+
+### Unit tests
+
+```bash
 npm --prefix backend run test:unit
 ```
 
-## Backend integration tests (self-contained)
+### Integration tests with disposable Postgres
 
-The integration test harness spins up a disposable Postgres instance via Docker Compose and loads test env vars.
-
-```
+```bash
 npm --prefix backend run test:integration:db
 ```
 
-### What it does
+What the harness does:
 
-1. Starts Postgres via `backend/docker-compose.test.yml` on port `54321`.
-2. Waits for healthcheck readiness.
-3. Loads environment from `backend/.env.test` (or `.env.test.local`, then `.env.test.example`).
-4. Runs `prisma migrate deploy` and integration tests.
-5. Tears down the DB container and volume.
+1. starts Postgres via `backend/docker-compose.test.yml` on port `54321`
+2. loads env from `backend/.env.test.local`, then `.env.test`, then `.env.test.example`
+3. runs migrations and integration tests
+4. tears down the container and volume
 
-### Common failures
+### E2E
 
-- **Docker not running**: start Docker Desktop and re-run the command.
-- **Port 54321 in use**: stop the conflicting service or change the port in `backend/docker-compose.test.yml` and `backend/.env.test.example`.
-- **Missing test env**: copy `backend/.env.test.example` to `backend/.env.test` and adjust values if needed.
+```bash
+npm --prefix backend run test:e2e
+```
 
-### Expected warnings
+E2E requires:
 
-- **OpsConfigService deployment compatibility**: unit tests log warnings when RPC URLs or contract addresses are not set in the test environment. This is expected during local unit runs and does not fail tests.
+- Docker or another isolated test database target
+- local chain tooling available to the harness
+- a safe `DATABASE_URL` that points to an isolated test database
+
+The backend test harness should refuse obvious non-test database URLs.
+
+## Web
+
+### Build
+
+```bash
+npm --prefix web run build
+```
+
+### E2E smoke
+
+```bash
+npm --prefix web run test:e2e
+```
+
+## Admin
+
+### Build
+
+```bash
+npm --prefix apps/admin run build
+```
+
+### Typecheck
+
+```bash
+npm --prefix apps/admin run typecheck
+```
+
+## Common failure cases
+
+- Docker daemon not running
+- local ports already in use
+- Prisma client not generated after schema changes
+- backend unavailable during web or admin proxy-driven flows
+- wrong environment values leaking from a developer machine into test runs
