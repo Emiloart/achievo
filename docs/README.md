@@ -1,5 +1,6 @@
 # Documentation Index
 
+- `docs/ACHIEVO_V1_RECOVERY_SCOPE_LOCK.md`
 - `docs/UX_UI_BLUEPRINT.md`
 - `docs/UX_BACKLOG.md`
 - `docs/ADMIN_CONSOLE.md`
