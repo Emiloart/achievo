@@ -1,87 +1,72 @@
 # Achievo Monorepo
 
-Achievo is a monorepo for smart contracts, a NestJS API, and Next.js apps that coordinate on-chain org registries, verifiable proofs, and user-facing credential workflows.
+Achievo is a monorepo for a verifiable program, milestone, validation, and reputation platform.
 
-## Architecture
+The product center is not a generic Web3 sandbox. The core loop is:
 
-```mermaid
-flowchart LR
-  Web[web dApp] -->|HTTP| API[backend API]
-  Admin[admin console] -->|HTTP| API
-  API -->|SQL| DB[(Postgres)]
-  API -->|RPC| Chain[(EVM networks)]
-  API --> Indexer[Indexing workers]
-```
+1. an organization publishes a program
+2. the program defines milestones
+3. a participant submits evidence
+4. a reviewer or validator decides
+5. Achievo produces a verifiable outcome
+6. that outcome can be exported, shared, and publicly verified
 
-## Monorepo layout
+## Repository structure
 
-- `web/` – public dApp (Next.js)
-- `apps/admin/` – admin console (Next.js)
-- `backend/` – API + workers (NestJS)
-- `contracts/` – Solidity contracts + scripts (Hardhat)
-- `packages/` – shared packages
+- `web/` public product app
+- `apps/admin/` admin control plane
+- `backend/` authoritative off-chain service
+- `contracts/` on-chain registries and proof-related contracts
+- `packages/` shared ABI, config, and focused reusable modules
+- `docs/` authoritative and archived documentation
 
-## Run locally
+## Current runtime baseline
 
-Install deps:
+- Recommended local Node.js baseline `20.11.1`
+- npm `10.x`
+- Next.js `14.2.15`
+- React `18.3.1`
+- NestJS `10.x`
+- Prisma `5.22.0`
+- Hardhat `3.0.11`
+
+## Local commands
+
+Install:
 
 ```bash
 npm ci
 ```
 
-Backend:
+Run:
 
 ```bash
 npm --prefix backend run dev
-```
-
-Web:
-
-```bash
 npm --prefix web run dev
-```
-
-Admin:
-
-```bash
 npm --prefix apps/admin run dev
 ```
 
-Integration tests (dockerized Postgres):
+Build:
 
 ```bash
-npm --prefix backend run test:integration:db
-```
-
-## Quality gates
-
-Repo (CI order: lint -> typecheck -> test -> build):
-
-```bash
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-```
-
-Per-app:
-
-```bash
-npm --prefix web run lint
-npm --prefix web run typecheck
+npm --prefix backend run build
 npm --prefix web run build
-
-npm --prefix apps/admin run lint
-npm --prefix apps/admin run typecheck
 npm --prefix apps/admin run build
 ```
 
-## Security model
+## Stabilization rule
 
-- dApp auth: wallet signature establishes a session; access/refresh cookies are httpOnly; CSRF protected.
-- Admin auth: email/password session with server-side HMAC gateway; secrets never leave the server.
-- Admin actions are gated via CSRF and audited; no admin secrets are exposed to the browser.
+No new domain feature work should land before the active Phase 1 gate is green:
 
-## Docs
+- backend unit
+- backend E2E
+- one web E2E smoke path
+- web build
+- admin build
 
-See `docs/README.md` for the documentation index.
+## Documentation
+
+Use [docs/README.md](./docs/README.md) as the entry point.
+
+Historical planning notes, route maps, release notes, and verification logs have been moved under `docs/archive/` and are not authoritative.
+

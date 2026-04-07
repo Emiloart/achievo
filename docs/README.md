@@ -1,15 +1,17 @@
 # Documentation Index
 
-- `docs/ACHIEVO_V1_RECOVERY_SCOPE_LOCK.md`
-- `docs/ACHIEVO_PHASE1_STABILIZATION_PLAN.md`
-- `docs/UX_UI_BLUEPRINT.md`
-- `docs/UX_BACKLOG.md`
-- `docs/ADMIN_CONSOLE.md`
-- `docs/ADMIN_SECURITY_CHECKLIST.md`
-- `docs/TESTING.md`
-- `docs/CI_LOCAL_VERIFICATION.md`
+## Authoritative
 
-## UX & Product Documentation
+- [Achievo V1 Recovery Scope Lock](./ACHIEVO_V1_RECOVERY_SCOPE_LOCK.md)
+- [Phase 1 Stabilization Plan](./ACHIEVO_PHASE1_STABILIZATION_PLAN.md)
+- [Architecture](./ARCHITECTURE.md)
+- [Product Surfaces](./PRODUCT_SURFACES.md)
+- [Operations](./OPERATIONS.md)
+- [Testing](./TESTING.md)
+- [Admin Security Checklist](./ADMIN_SECURITY_CHECKLIST.md)
 
-- [P0 UX Foundation Release Notes](./UX_P0_RELEASE_NOTES.md) — Customer and stakeholder summary
-- [P0 UX Foundation Changelog](./UX_P0_CHANGELOG.md) — Complete technical details and file-level changes
+## Historical
+
+- [Archive](./archive/README.md)
+
+Only the documents listed under `Authoritative` should drive active implementation, cleanup, and upgrade decisions.
