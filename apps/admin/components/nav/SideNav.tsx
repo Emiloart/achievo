@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -15,7 +16,7 @@ const navItems = [
   { href: "/users", label: "Users" },
   { href: "/usernames", label: "Usernames" },
   { href: "/settings", label: "Settings" },
-];
+] satisfies ReadonlyArray<{ href: Route; label: string }>;
 
 export function SideNav() {
   const pathname = usePathname();
