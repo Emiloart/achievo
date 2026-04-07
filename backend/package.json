@@ -12,6 +12,7 @@
     "prisma:migrate": "prisma migrate dev",
     "test:unit": "jest -c jest.config.cjs --testPathPattern=unit",
     "test:integration": "cross-env NODE_ENV=test prisma migrate deploy && cross-env NODE_ENV=test jest -c jest.config.cjs --testPathPattern=integration --runInBand",
+    "test:integration:db": "node scripts/test-integration-db.cjs",
     "test:e2e": "jest -c test/e2e/jest.e2e.config.cjs --runInBand",
     "e2e:setup": "node test/e2e/run-setup.cjs",
     "e2e:teardown": "node test/e2e/run-teardown.cjs",

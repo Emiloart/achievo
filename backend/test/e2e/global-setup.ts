@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "fs";
 import { join, resolve } from "path";
 import { spawn } from "child_process";
+import { applyTestEnv } from "../testEnv";
 import { startLocalChain } from "./utils/localChain";
 import { prepareTestDb } from "./utils/testDb";
 import { writeRuntime } from "./utils/runtime";
@@ -65,6 +66,8 @@ async function runDeploy(params: { rpcUrl: string; operator: string; treasury: s
 }
 
 module.exports = async () => {
+  applyTestEnv();
+
   const chain = await startLocalChain();
   const operator = chain.accounts.find((a) => a.name === "operator") || chain.accounts[4];
   const treasury = chain.accounts.find((a) => a.name === "treasury") || chain.accounts[3];
