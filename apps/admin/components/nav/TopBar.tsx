@@ -26,9 +26,12 @@ export function TopBar() {
   };
 
   const onLogout = async () => {
-    await adminApi.logout();
-    setAdmin(null);
-    router.replace("/login");
+    try {
+      await adminApi.logout();
+    } finally {
+      setAdmin(null);
+      router.replace("/login");
+    }
   };
 
   return (

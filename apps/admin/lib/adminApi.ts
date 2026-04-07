@@ -5,7 +5,7 @@ type ApiError = {
   requestId?: string | null;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL || "http://localhost:4000";
+const API_BASE = "/api/admin";
 
 function parseCookies() {
   if (typeof document === "undefined") return {};
@@ -33,7 +33,7 @@ async function request<T>(
   path: string,
   options?: {
     method?: string;
-    body?: any;
+    body?: unknown;
     retry?: boolean;
   },
 ): Promise<T> {
@@ -71,15 +71,16 @@ async function request<T>(
 }
 
 export async function login(email: string, password: string) {
-  return request<{ admin: { id: string; email: string; role: string } }>("/admin-auth/login", {
+  return request<{ admin: { id: string; email: string; role: string } }>("/login", {
     method: "POST",
     body: { email, password },
+    retry: false,
   });
 }
 
 export async function refresh() {
   try {
-    await request("/admin-auth/refresh", { method: "POST", body: {} , retry: false});
+    await request("/refresh", { method: "POST", body: {}, retry: false });
     return true;
   } catch {
     return false;
@@ -87,100 +88,100 @@ export async function refresh() {
 }
 
 export async function logout() {
-  return request("/admin-auth/logout", { method: "POST", body: {} });
+  return request<{ success: boolean }>("/logout", { method: "POST", body: {}, retry: false });
 }
 
 export async function me() {
-  return request<{ id: string; email: string; role: string; csrfToken?: string }>("/admin-auth/me");
+  return request<{ id: string; email: string; role: string }>("/me", { retry: false });
 }
 
-export async function overview() {
-  return request("/admin-gateway/overview");
+export async function overview(): Promise<any> {
+  return request<any>("/admin-gateway/overview");
 }
 
-export async function health() {
-  return request("/admin-gateway/health");
+export async function health(): Promise<any> {
+  return request<any>("/admin-gateway/health");
 }
 
-export async function alerts(params: { severity?: string; type?: string; since?: string; limit?: number }) {
+export async function alerts(params: { severity?: string; type?: string; since?: string; limit?: number }): Promise<any[]> {
   const search = new URLSearchParams();
   if (params.severity) search.set("severity", params.severity);
   if (params.type) search.set("type", params.type);
   if (params.since) search.set("since", params.since);
   if (params.limit) search.set("limit", String(params.limit));
-  return request(`/admin-gateway/alerts?${search.toString()}`);
+  return request<any[]>(`/admin-gateway/alerts?${search.toString()}`);
 }
 
-export async function chainActions(params: { status?: string; type?: string; chainId?: number; limit?: number }) {
+export async function chainActions(params: { status?: string; type?: string; chainId?: number; limit?: number }): Promise<any[]> {
   const search = new URLSearchParams();
   if (params.status) search.set("status", params.status);
   if (params.type) search.set("type", params.type);
   if (params.chainId) search.set("chainId", String(params.chainId));
   if (params.limit) search.set("limit", String(params.limit));
-  return request(`/admin-gateway/chain-actions?${search.toString()}`);
+  return request<any[]>(`/admin-gateway/chain-actions?${search.toString()}`);
 }
 
-export async function chainAction(id: string) {
-  return request(`/admin-gateway/chain-actions/${id}`);
+export async function chainAction(id: string): Promise<any> {
+  return request<any>(`/admin-gateway/chain-actions/${id}`);
 }
 
-export async function anchoringStatus() {
-  return request("/admin-gateway/anchoring/status");
+export async function anchoringStatus(): Promise<any> {
+  return request<any>("/admin-gateway/anchoring/status");
 }
 
-export async function indexerStatus() {
-  return request("/admin-gateway/indexer/status");
+export async function indexerStatus(): Promise<any> {
+  return request<any>("/admin-gateway/indexer/status");
 }
 
-export async function orgSearch(query: string) {
+export async function orgSearch(query: string): Promise<any[]> {
   const search = new URLSearchParams({ q: query });
-  return request(`/admin-gateway/orgs/search?${search.toString()}`);
+  return request<any[]>(`/admin-gateway/orgs/search?${search.toString()}`);
 }
 
-export async function orgDetail(id: string) {
-  return request(`/admin-gateway/orgs/${id}`);
+export async function orgDetail(id: string): Promise<any> {
+  return request<any>(`/admin-gateway/orgs/${id}`);
 }
 
-export async function userSearch(query: string) {
+export async function userSearch(query: string): Promise<any[]> {
   const search = new URLSearchParams({ q: query });
-  return request(`/admin-gateway/users/search?${search.toString()}`);
+  return request<any[]>(`/admin-gateway/users/search?${search.toString()}`);
 }
 
-export async function userDetail(id: string) {
-  return request(`/admin-gateway/users/${id}`);
+export async function userDetail(id: string): Promise<any> {
+  return request<any>(`/admin-gateway/users/${id}`);
 }
 
-export async function usernameSearch(query: string) {
+export async function usernameSearch(query: string): Promise<any[]> {
   const search = new URLSearchParams({ q: query });
-  return request(`/admin-gateway/usernames/search?${search.toString()}`);
+  return request<any[]>(`/admin-gateway/usernames/search?${search.toString()}`);
 }
 
-export async function adminUsers() {
-  return request("/admin-gateway/admin-users");
+export async function adminUsers(): Promise<any[]> {
+  return request<any[]>("/admin-gateway/admin-users");
 }
 
-export async function auditLogs(params: { adminUserId?: string; action?: string; since?: string; limit?: number }) {
+export async function auditLogs(params: { adminUserId?: string; action?: string; since?: string; limit?: number }): Promise<any[]> {
   const search = new URLSearchParams();
   if (params.adminUserId) search.set("adminUserId", params.adminUserId);
   if (params.action) search.set("action", params.action);
   if (params.since) search.set("since", params.since);
   if (params.limit) search.set("limit", String(params.limit));
-  return request(`/admin-gateway/audit?${search.toString()}`);
+  return request<any[]>(`/admin-gateway/audit?${search.toString()}`);
 }
 
-export async function envSummary() {
-  return request("/admin-gateway/env");
+export async function envSummary(): Promise<any> {
+  return request<any>("/admin-gateway/env");
 }
 
-export async function dryRun(action: string, payload: Record<string, any>) {
-  return request("/admin-gateway/dry-run", {
+export async function dryRun(action: string, payload: Record<string, any>): Promise<any> {
+  return request<any>("/admin-gateway/dry-run", {
     method: "POST",
     body: { action, payload },
   });
 }
 
-export async function execute(intentId: string, confirmPhrase: string, payload: Record<string, any>) {
-  return request("/admin-gateway/execute", {
+export async function execute(intentId: string, confirmPhrase: string, payload: Record<string, any>): Promise<any> {
+  return request<any>("/admin-gateway/execute", {
     method: "POST",
     body: { intentId, confirmPhrase, payload },
   });

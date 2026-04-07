@@ -37,10 +37,6 @@ export default function SettingsPage() {
     }
   }, [admin?.role]);
 
-  if (admin?.role !== "SUPERADMIN") {
-    return <div className="card">Superadmin role required to manage admin users.</div>;
-  }
-
   const selectedUser = users.find((user) => user.id === selectedId);
 
   useEffect(() => {
@@ -48,6 +44,10 @@ export default function SettingsPage() {
     setSelectedRole(selectedUser.role);
     setSelectedActive(Boolean(selectedUser.isActive));
   }, [selectedUser]);
+
+  if (admin?.role !== "SUPERADMIN") {
+    return <div className="card">Superadmin role required to manage admin users.</div>;
+  }
 
   return (
     <div className="stack">

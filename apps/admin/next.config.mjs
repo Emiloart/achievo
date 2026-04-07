@@ -4,15 +4,12 @@ const nextConfig = {
     typedRoutes: true,
   },
   async headers() {
-    const apiBase = process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL;
-    const connectSrc = ["'self'", "data:", "https:", "http:", "ws:", "wss:"];
-    if (apiBase) connectSrc.push(apiBase);
     const csp = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
-      `connect-src ${connectSrc.join(" ")}`,
+      "connect-src 'self' ws: wss:",
       "font-src 'self'",
       "frame-ancestors 'none'",
       "object-src 'none'",
