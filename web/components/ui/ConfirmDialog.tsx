@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "../../../packages/ui/src/Button";
-import { Input } from "../../../packages/ui/src/Input";
+import { Input } from "./primitives";
 import { Modal } from "./Modal";
 
 export type ConfirmDialogProps = {

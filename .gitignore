@@ -15,7 +15,7 @@ artifacts
 cache
 
 # Typechain output
-types
+/types
 
 # Hardhat coverage reports
 coverage
@@ -41,4 +41,3 @@ coverage
 /backend/storage/e2e-proofs
 /web/test-results
 /.logs
-

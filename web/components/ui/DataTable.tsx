@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Checkbox } from "../../../packages/ui/src/Checkbox";
+import { Checkbox } from "./primitives";
 import { useDensity } from "../layout/DensityProvider";
 
 type Column<T> = {

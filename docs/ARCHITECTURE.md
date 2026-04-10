@@ -50,7 +50,7 @@ Shared configuration, ABI, and focused reusable modules. Shared packages should 
 - React `18.3.1`
 - NestJS `10.x`
 - Prisma `5.22.0`
-- Hardhat `3.0.11`
+- Hardhat `3.3.0`
 
 These versions are the current operating baseline, not an upgrade target. Major upgrades remain gated by the Phase 1 stabilization plan.
 
@@ -63,4 +63,3 @@ When architectural guidance conflicts, use this order:
 3. `docs/ACHIEVO_PHASE1_STABILIZATION_PLAN.md`
 4. current code
 5. archived docs only when still consistent with the above
-

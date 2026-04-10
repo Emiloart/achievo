@@ -28,23 +28,25 @@ export function SideNav() {
             ))}
           </div>
         </div>
-        <div className="space-y-2">
-          <div className="text-xs font-semibold uppercase tracking-wide text-textMuted">Goals</div>
-          <div className="space-y-1">
-            {GOALS_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href as Route}
-                className={clsx(
-                  "flex items-center rounded-full px-3 py-2 text-sm transition",
-                  isActive(pathname, item.href) ? "bg-surface2 text-text" : "text-textMuted hover:text-text",
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
+        {GOALS_NAV.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-wide text-textMuted">Goals</div>
+            <div className="space-y-1">
+              {GOALS_NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href as Route}
+                  className={clsx(
+                    "flex items-center rounded-full px-3 py-2 text-sm transition",
+                    isActive(pathname, item.href) ? "bg-surface2 text-text" : "text-textMuted hover:text-text",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </nav>
     </aside>
   );

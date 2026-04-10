@@ -3,8 +3,7 @@ import Link from "next/link";
 
 import { getApiErrorMessage } from "../lib/apiError";
 import { useState, useEffect } from "react";
-import { useAccount, useReadContracts } from "wagmi";
-import { coreAddress, coreAbi } from "../lib/contracts";
+import { useAccount } from "wagmi";
 import { formatAchievoId } from "../lib/userId";
 import { ipfsToHttp } from "../lib/ipfs";
 import { useIdentityId } from "../hooks/useIdentity";
@@ -31,18 +30,6 @@ export default function HomePage() {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
-
-  const { data } = useReadContracts({
-    allowFailure: false,
-    contracts: [
-      { address: coreAddress, abi: coreAbi, functionName: "peerThreshold" },
-      { address: coreAddress, abi: coreAbi, functionName: "nextGoalId" },
-    ],
-  });
-
-  const thresholdRaw = data?.[0] as unknown as bigint | undefined;
-  const threshold = thresholdRaw !== undefined ? Number(thresholdRaw) : undefined;
-  const nextId = data?.[1] as unknown as bigint | undefined;
 
   // Avoid hydration mismatch by waiting for client mount before rendering wallet-dependent text
   if (!mounted) {
@@ -78,23 +65,30 @@ export default function HomePage() {
     <div className="space-y-12">
       <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-6">
-          <Badge variant="info">Trust-first credentials</Badge>
+          <Badge variant="info">Verifiable program credentials</Badge>
           <h1 className="text-4xl font-display leading-tight text-text">
-            Achievo turns achievements into verifiable, shareable proof.
+            From program milestones to public verification.
           </h1>
           <p className="text-sm text-textMuted">
-            Issue canonical hashes, signatures, and optional on-chain anchors for proofs, validations, and exports.
-            Build credibility without leaking private details.
+            Achievo helps organizations define programs, collect evidence, route validation, and publish exportable
+            proof artifacts with readable trust states.
           </p>
           <div className="flex flex-wrap gap-3">
-            <ButtonLink href="/identity">Claim Achievo ID</ButtonLink>
+            <ButtonLink href="/orgs">Explore organizations</ButtonLink>
             <ButtonLink href="/verify" variant="secondary">
-              Verify a claim
+              Verify a credential
             </ButtonLink>
           </div>
           <div className="rounded-2xl border border-border bg-surface px-4 py-3 text-xs text-textMuted">
-            {!address && "Connect your wallet to access dashboard features and mint proofs."}
-            {address && !userId && "No Achievo ID for this wallet yet. Claim one to start anchoring."}
+            {!address && "Connect your wallet to claim an Achievo ID and participate in program submissions."}
+            {address && !userId && (
+              <span>
+                No Achievo ID for this wallet yet.{" "}
+                <Link className="underline text-accent" href="/identity">
+                  Claim one before submitting evidence
+                </Link>
+              </span>
+            )}
             {address && userId > 0n && (
               <span>
                 Signed in as {formatAchievoId(userId)}.{" "}
@@ -108,16 +102,20 @@ export default function HomePage() {
         <div className="space-y-4">
           <Card>
             <CardBody className="space-y-2">
-              <div className="text-xs uppercase tracking-wide text-textMuted">Network telemetry</div>
-              <div className="text-3xl font-semibold text-text">{threshold !== undefined ? threshold : "-"}</div>
-              <div className="text-xs text-textMuted">Peer threshold required to approve a goal.</div>
+              <div className="text-xs uppercase tracking-wide text-textMuted">Golden path</div>
+              <div className="text-xl font-semibold text-text">Org - Program - Milestone - Submission</div>
+              <div className="text-xs text-textMuted">
+                The product center is issuer workflow, evidence review, and trusted completion.
+              </div>
             </CardBody>
           </Card>
           <Card>
             <CardBody className="space-y-2">
-              <div className="text-xs uppercase tracking-wide text-textMuted">Next goal id</div>
-              <div className="text-3xl font-semibold text-text">{nextId?.toString() ?? "-"}</div>
-              <div className="text-xs text-textMuted">New achievements increment this value.</div>
+              <div className="text-xs uppercase tracking-wide text-textMuted">Trust states</div>
+              <div className="text-xl font-semibold text-text">Submitted, reviewed, attested, exported, verified</div>
+              <div className="text-xs text-textMuted">
+                Verification pages and exports should tell the same credential story without ambiguity.
+              </div>
             </CardBody>
           </Card>
         </div>
@@ -160,9 +158,6 @@ export default function HomePage() {
                     <div className="text-xs text-textMuted">@{r.username || "-"}</div>
                     <div className="text-xs text-textMuted">ID: {r.achusrId || "-"}</div>
                     <div className="text-xs text-textMuted break-all">Wallet: {r.walletAddress}</div>
-                    <div className="text-xs text-textMuted">
-                      Goals: {r.goalsCount ?? 0} - Badges: {r.badgesCount ?? 0} - Level {r.level ?? 1}
-                    </div>
                     <Link href={`/profile/${r.walletAddress}`} className="text-xs text-accent hover:underline">
                       View Profile &rarr;
                     </Link>

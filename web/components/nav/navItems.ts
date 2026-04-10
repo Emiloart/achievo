@@ -1,24 +1,19 @@
 export type NavItem = { label: string; href: string };
 
+// Deferred modules remain routable directly but should not dominate the v1 navigation.
 export const PRIMARY_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Identity", href: "/identity" },
-  { label: "Orgs", href: "/orgs" },
-  { label: "Projects", href: "/projects" },
-  { label: "Parties", href: "/parties" },
-  { label: "Usernames", href: "/usernames/market" },
+  { label: "Organizations", href: "/orgs" },
   { label: "Verify", href: "/verify" },
 ];
 
-export const GOALS_NAV: NavItem[] = [
-  { label: "New goal", href: "/goals/new" },
-  { label: "Approvals", href: "/approve" },
-];
+export const GOALS_NAV: NavItem[] = [];
 
 export const MOBILE_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Identity", href: "/identity" },
-  { label: "Orgs", href: "/orgs" },
+  { label: "Organizations", href: "/orgs" },
   { label: "Verify", href: "/verify" },
 ];
 

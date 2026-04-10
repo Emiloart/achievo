@@ -29,6 +29,13 @@ Make Achievo safe to continue upgrading by restoring trust boundaries, completin
 
 Phase 1 is complete only when the repo can support focused product work on the v1 core without contradictory security behavior, stubbed core proof flows, or unreliable backend test/runtime behavior.
 
+## Current Continuation Point
+
+- `main` already contains the root `AGENTS.md`, v1-aligned root docs, and the baseline server-mediated admin boundary.
+- Workstream 1 remains open for verification, regression coverage, and residual hardening.
+- The next highest-value implementation continuation point is Workstream 2: Proofs domain.
+- Public IA cleanup that removes product drift without expanding scope is allowed when it reinforces the v1 product center.
+
 ## Working Rules
 
 - This is a single stabilization stream. Do not run parallel feature work against the same problem space.
@@ -59,7 +66,7 @@ This order is mandatory for Phase 1.
 
 Reasoning:
 
-- the admin browser/backend trust boundary is currently contradictory in code versus documentation
+- the admin browser/backend trust boundary baseline has landed, but still needs verification and hardening to stay trustworthy
 - proofs are still a core-domain hole rather than a polish gap
 - backend source integrity and runtime/test alignment are structural blockers to confident progress
 
@@ -73,11 +80,10 @@ The browser should communicate with the Next.js admin server routes under `/api/
 
 ### Current problems
 
-- `apps/admin/lib/adminApi.ts` defaults to direct browser calls against `http://localhost:4001`
-- `apps/admin/components/auth/AdminSessionProvider.tsx` checks for backend auth cookies in `document.cookie`
-- `apps/admin/lib/server/adminSession.ts` defines a separate server session cookie model
-- `apps/admin/app/api/admin/[...path]/route.ts` already implements a guarded proxy layer
-- `docs/ADMIN_SECURITY_CHECKLIST.md` claims the browser uses `/api/admin/*` only, which is not currently true in the client code
+- the core browser-to-server boundary has landed, but it still needs explicit regression coverage
+- admin browser traffic must remain locked to `/api/admin/*` as new console features are added
+- logout, refresh rotation, CSRF enforcement, and audit behavior need to stay explicit rather than being assumed from code inspection
+- the checklist and route-layer implementation must continue to match exactly as the admin surface evolves
 
 ### Primary file targets
 
@@ -98,15 +104,15 @@ The browser should communicate with the Next.js admin server routes under `/api/
 
 #### 1.1 Browser API normalization
 
-- Change admin client requests to target `/api/admin/*` by default.
-- Remove direct-browser dependence on backend host configuration for normal admin usage.
+- Keep admin client requests targeting `/api/admin/*` by default.
+- Prevent regressions that would reintroduce direct-browser backend origin dependence.
 - Preserve server-side backend URL configuration inside the Next.js server layer only.
 
 #### 1.2 Session model unification
 
-- Make the browser session model depend on the admin console session, not backend cookies.
-- Remove client checks for `ach_admin_access` and `ach_admin_refresh` in `document.cookie`.
-- Ensure session hydration flows through `/api/admin/me` and `/api/admin/refresh`.
+- Keep the browser session model dependent on the admin console session, not backend cookies.
+- Ensure client state continues to hydrate through `/api/admin/me` and `/api/admin/refresh`.
+- Cover the session contract with targeted tests rather than relying on manual inspection.
 
 #### 1.3 CSRF and refresh contract cleanup
 
