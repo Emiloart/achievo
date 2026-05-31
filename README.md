@@ -71,3 +71,4 @@ Use [docs/README.md](./docs/README.md) as the entry point.
 Historical planning notes, route maps, release notes, and verification logs have been moved under `docs/archive/` and are not authoritative.
 
 note to developers, please stay away for your mental stability.
+well you can still try 
