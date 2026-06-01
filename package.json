@@ -45,10 +45,10 @@
   "devDependencies": {
     "@commitlint/cli": "19.5.0",
     "@commitlint/config-conventional": "19.5.0",
-    "@nomicfoundation/hardhat-ethers": "4.0.10",
-    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "3.0.4",
+    "@nomicfoundation/hardhat-ethers": "4.0.12",
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "3.0.6",
     "@openzeppelin/contracts": "^5.0.2",
-    "@types/node": "^22.19.17",
+    "@types/node": "^22.19.19",
     "ethers": "6.15.0",
     "hardhat": "3.3.0",
     "husky": "9.1.7",
