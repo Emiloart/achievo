@@ -1,5 +1,5 @@
 # Achievo
-
+ paused, will continue when the world is ready
 **Verifiable on-chain achievement and identity infrastructure.**
 
 Achievo is a production-grade platform for building trust through structured programs, evidence collection, validation, and portable proof artifacts. Organizations issue milestones. Contributors submit evidence. Validators attest. Achievo produces cryptographically verifiable outcomes that can be exported, shared, and publicly confirmed.
