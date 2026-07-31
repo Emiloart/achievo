@@ -33,6 +33,8 @@ Outcome exported & publicly verified
 - **Exports & Artifacts** – Portable credentials for LinkedIn, wallets, and external systems
 - **Admin Control Plane** – Operator dashboard for health, auditing, and policy
 
+
+
 ### Secondary (Supported, Not Primary)
 
 - Projects, privacy controls, anchoring & indexing
